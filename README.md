@@ -1,7 +1,9 @@
-TaskWarrior - Google Calendar synchronizer
+# TaskWarrior - Google Calendar synchronizer
 
 **Current module is still under heavy development. That means that the following
 instructions are merely project specifications and not ready-to-use features**
+
+## Motivation / Repo information
 
 Current repo is an attempt at synchronizing reminders across TaskWarrior and
 Google Calendar. The reason for the latter combination is that, while
@@ -29,3 +31,7 @@ solution. In case the latter behavior is desired, users may just run the `TODO`
 script periodically e.g. using a cronjob.
 
 % TODO - Add synchronization instructions
+
+## Installation instructions
+
+## Common usage scenarios
