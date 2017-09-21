@@ -4,8 +4,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class TaskWarriorSide(object):
-    """Current class handles the taskwarrior client."""
+class TaskWarriorSide(GenericSide):
+    """Current class handles the TaskWarrior client."""
     def __init__(self, rem_key="remindme"):
         super(TaskWarriorSide, self).__init__()
 
@@ -24,30 +24,41 @@ class TaskWarriorSide(object):
         super(TaskWarriorSide, self).get_reminders()
         return self.tw.filter_tasks(filter_dict={'tags': self.rem_key})
 
+    def _add_reminder(self, description, rem):
+        """Add a new reminder as a TW task.
 
-    def apply_changes(self, changed_rems):
+        :param summary str Summary of the reminder to be added. Due to the
+        taskw Python API this is a separate field
+        :param rem dict This should contain only keys that exist in standard TW
+        tasks (e.g., proj, tag, due)
+        """
+        self.tw.task_add(description=description, **rem)
+
+
+
+
+    def update_reminder(self, rem):
         """Apply the list of changed reminders in the local TaskWarrior
         database.
 
         ..note::
-        List of changed reminders doesn't have to contain all the TW task keys
-        but only the ones that are to be modified
-
-        :param list changed_rems List of reminders that have changed.
-        :return: True if changes were successfully applied
-
+        Reminder doesn't have to contain all the TW task keys but only the ones
+        that are to be modified. Reminder to be updated may be a new reminder
+        altogether. If so, TaskWarriorSide instance is going to instantiate it
+        with a call to the _add_reminder method
         """
-        super(TaskWarriorSide, self).apply_changes()
 
-        # TODO - Assert that all reminders have the appropriate reminder tag
+        super(TaskWarriorSide, self).update_reminder()
+
+        # TODO - Assert that the reminder has the appropriate reminder tag
 
         # TODO - Actually apply the changes
-        # changed_rems may have a valid ID if they already exist in the local
-        # db but if they don't additional reminder tasks are to be added
+        # Reminder may have a valid ID if they already exist in the local
+        # db but if they don't, additional reminder tasks are to be added
         raise NotImplementedError("TODO")
 
-    def reminder_add(self, description, **kw):
-        super(TaskWarriorSide, self).reminder_add()
+    def add_reminder(self, description, **kw):
+        super(TaskWarriorSide, self).add_reminder()
 
         tw = TaskWarrior()
         tw.task_add(description, tag=self.rem_key, **kw)
