@@ -1,3 +1,0 @@
-[submodule "third_party/pypref"]
-	path = third_party/pypref
-	url = https://github.com/bergercookie/pypref
