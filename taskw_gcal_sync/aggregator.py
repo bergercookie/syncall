@@ -1,6 +1,6 @@
 from taskw_gcal_sync import TaskWarriorSide
 from taskw_gcal_sync import GCalSide
-from utils import ResolutionNewestWins
+from .utils import ResolutionNewestWins
 from bidict import bidict
 import os
 import sys
@@ -9,7 +9,6 @@ import logging
 modules_dir = os.path.join(os.path.dirname(__file__), "..", "third_party")
 if modules_dir not in sys.path:
     sys.path.insert(0, modules_dir)
-from pypref import SinglePreferences as PREF
 
 
 class Preferences(PREF):
@@ -31,12 +30,12 @@ class Preferences(PREF):
         Set preferences and write preferences file by erasing any existing one.
         This is an override of the parent method that also adds aditional lines
         at the given indices.
-        
+
         :Parameters:
             #. preferences (dictionary): The preferences dictionary.
             #. ad_lines (list): list of tuples containing the index and the
             line to be added at that index in the file
-            #. dynamic (None, dictionary): The dynamic dictionary. If None dynamic 
+            #. dynamic (None, dictionary): The dynamic dictionary. If None dynamic
                dictionary won't be updated.
         """
 
@@ -48,10 +47,10 @@ logger = logging.getLogger(__name__)
 class TWGCalAggregator(object):
     """Object is the connector between the TaskWarrior and the Google
     Calendar sides.
-    
+
     Having an aggregator is handy for managing push/pull/sync directives in a
     compact manner.
-    
+
     """
     def __init__(self, resol_strat=ResolutionNewestWins(), **kargs):
         super(TWGCalAggregator, self, **kargs).__init__()
@@ -117,7 +116,7 @@ class TWGCalAggregator(object):
         Current method **does not** take care of the conflict resolution.
         """
 
-        
+
         tw_rems = self.tw_side.get_reminders()
         gcal_rems = self.gcal_side.get_reminders()
 
@@ -129,7 +128,7 @@ class TWGCalAggregator(object):
 
         :param dict conflicts Dictionary of conflicts. Keys are the same as the
         return type of the find_diffs method
-        
+
         """
         raise NotImplementedError("TODO")
 

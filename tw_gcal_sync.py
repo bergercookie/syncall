@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from taskw_gcal_sync import TWGCalAggregator, GCalSide, TaskWarriorSide
 

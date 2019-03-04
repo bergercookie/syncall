@@ -15,7 +15,7 @@ class ResolutionStrategy(object):
 
     def resolve_conflicts(self, rems):
         """Method for resolving a bunch of reminders.
-        
+
         :return: Dictionary containing a version of the inputted dictionary
         without the overriden reminders.
         :rtype: dict
@@ -34,7 +34,7 @@ class ResolutionStrategy(object):
 
         """
         logger.info("Resolving individual conflict...")
-        
+
 
 class ResolutionNewestWins(ResolutionStrategy):
     """Conflict resolution strategy which picks the reminder that was last
@@ -48,4 +48,3 @@ class ResolutionNewestWins(ResolutionStrategy):
     def resolve_conflict(self, tw_rem, gcal_rem):
         super(ResolutionNewestWins, self).resolve_conflict()
         raise NotImplementedError("TODO")
- 
