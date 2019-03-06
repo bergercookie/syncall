@@ -7,6 +7,10 @@ import atexit
 import os
 import sys
 
+from uuid import UUID
+from datetime import datetime, timedelta
+from dateutil.tz import tzutc
+
 
 class TWGCalAggregator():
     """Aggregator class: TaskWarrior <-> Google Calendar sides.
@@ -64,18 +68,60 @@ class TWGCalAggregator():
         """
         pass
 
-
     def find_diffs(self, tw_items, gcal_items):
         """Find the differences between the items in TW and GCal."""
         raise NotImplementedError("TODO")
 
-    def convert_tw_to_gcal(tw_item):
-        """Convert a TW item to a Google Calendar event."""
-        raise NotImplementedError("TODO")
+        return {}
 
-    def convert_gcal_to_tw(gcal_item):
-        """Convert a GCal item to a TW item."""
-        raise NotImplementedError("TODO")
+    @staticmethod
+    def convert_tw_to_gcal(tw_item: dict) -> dict:
+        """Convert a TW item to a Gcal event.
+
+        .. note:: Do not convert the ID as that may change either manually or
+                  after marking the task as "DONE"
+        """
+
+        assert all([i in tw_item.keys()
+                    for i in ['description', 'status', 'uuid']]) and \
+            "Missing keys in tw_item"
+
+        gcal_item = {}
+
+        # Summary
+        gcal_item['summary'] = tw_item['description']
+
+        # description
+        gcal_item['description'] = "{meta_title}\n\n"\
+            .format(desc=tw_item['description'],
+                    meta_title='IMPORTED FROM TASKWARRIOR',
+                    )
+        for k in ['status', 'uuid']:
+            gcal_item['description'] += '\n* {}: {}'.format(k, tw_item[k])
+
+        # Handle dates:
+        # - If given due date -> (start=entry, end=due)
+        # - Else -> (start=entry, end=entry+1)
+        entry_dt = GCalSide.format_datetime(tw_item['entry'])
+        gcal_item['start'] = \
+            {'dateTime': entry_dt}
+        if 'due' in tw_item.keys():
+            due_dt = GCalSide.format_datetime(tw_item['due'])
+            gcal_item['end'] = {'dateTime': due_dt}
+        else:
+            gcal_item['end'] = {'dateTime': GCalSide.format_datetime(
+                tw_item['entry'] + timedelta(days=1)) }
+
+        # modified -> updated
+        gcal_item['updated'] = GCalSide.format_datetime(tw_item['modified'])
+
+        return gcal_item
+
+    @staticmethod
+    def convert_gcal_to_tw(gcal_item: dict) -> dict:
+        """Convert a GCal event to a TW item."""
+
+        return {}
 
     def find_in_tw(self, gcal_item):
         """Given a GCal reminder event find the corresponding reminder in TW, if the

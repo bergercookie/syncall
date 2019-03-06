@@ -1,5 +1,5 @@
 # Compiled source #
-###################
+######################
 *.com
 *.class
 *.dll
@@ -9,7 +9,7 @@
 *.pyc
 
 # Packages #
-############
+######################
 # it's better to unpack these files and commit the raw source
 # git has its own built in compression methods
 *.7z
@@ -37,20 +37,32 @@
 ehthumbs.db
 Thumbs.db
 
-# Various
+tags
 
-*~
-*.swp
-*.pyo
-.build
-build
-*.egg-info
-dist
-test.html
-*.egg*
-*.pdf
-.tox/*
+# Python
+######################
+.mypy_cache
+
+_build
+
+build*
+documentation
+*.user*
+log
+*.dir*
+*.a
+*.make
+doc/html*
+doc/latex*
 
 # Vim
-
 Session.vim
+.netrwhist
+*~
+tags
+.projections.json
+compile_commands.json
+
+# backup files - created during sed operations
+*.bak
+s1.py

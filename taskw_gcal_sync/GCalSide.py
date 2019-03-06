@@ -4,11 +4,10 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
-import datetime
 import httplib2
 import os
-import time
-import logging
+
+from datetime import datetime
 
 class GCalSide(GenericSide):
     """GCalSide interacts with the Google Calendar API.
@@ -116,7 +115,7 @@ class GCalSide(GenericSide):
         # Get the ID of the calendar of interest
         cal_id = self.fetch_cal_id_from_summary(cal_summary=self.config["calendar_summary"])
 
-        events = None
+        events = []
         request = self.service.events().list(calendarId=cal_id)
 
         # Loop until all pages have been processed.
@@ -146,3 +145,11 @@ class GCalSide(GenericSide):
         credentials = self._get_credentials()
         http = credentials.authorize(httplib2.Http())
         self.service = discovery.build('calendar', 'v3', http=http)
+
+    @staticmethod
+    def format_datetime(dt: datetime) -> str:
+        """
+        Format a datetime object to the ISO speicifications containing the 'T'
+        and 'Z' separators
+        """
+        return dt.strftime("%Y-%m-%dT%H:%M:%SZ")

@@ -1,0 +1,59 @@
+tw_item:
+  description: Kalimera!
+  entry: 2019-03-05 00:03:09+00:00
+  id: 276
+  modified: 2019-03-05 00:03:09+00:00
+  status: pending
+  tags:
+  - remindme
+  urgency: 0
+  uuid: !!python/object:uuid.UUID
+    int: 168941310994917300384925376981287779
+gcal_item:
+  created: '2019-03-05T01:04:54.000Z'
+  creator:
+    email: nikos.koukis.utility@gmail.com
+  description: This is a funny description
+  end:
+    dateTime: '2019-03-05T05:00:00Z'
+  etag: '"3103656118695000"'
+  htmlLink: https://www.google.com/calendar/event?eid=NHZkNmcwOG41ZDAzbWRqMGllbmVtZzJiNTAgYWw4dGVvYm9zMGcwcW41cHVpZDdxMW9zdGtAZw
+  iCalUID: 4vd6g08n5d03mdj0ienemg2b50@google.com
+  id: 4vd6g08n5d03mdj0ienemg2b50
+  kind: calendar#event
+  location: Brixton, London, UK
+  organizer:
+    displayName: TaskWarrior Reminders
+    email: al8teobos0g0qn5puid7q1ostk@group.calendar.google.com
+    self: true
+  reminders:
+    overrides:
+    - method: popup
+      minutes: 60
+    - method: popup
+      minutes: 10
+    - method: email
+      minutes: 1440
+    useDefault: false
+  sequence: 0
+  start:
+    dateTime: '2019-03-05T04:00:00Z'
+  status: confirmed
+  summary: kalimera
+  updated: '2019-03-05T23:20:59.688Z'
+gcal_item_expected:
+  description: 'IMPORTED FROM TASKWARRIOR
+
+
+
+    * status: pending
+
+    * uuid: 00208973-20da-4988-ae3e-58ef3650c363'
+  end:
+    dateTime: '2019-03-06T00:03:09Z'
+  start:
+    dateTime: '2019-03-05T00:03:09Z'
+  summary: Kalimera!
+  updated: '2019-03-05T00:03:09Z'
+tw_item_expected:
+  urgency: 0

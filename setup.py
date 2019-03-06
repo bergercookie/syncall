@@ -33,6 +33,7 @@ setup(name=PKG_NAME,
           "apiclient",
           "google-api-python-client",
           "rfc3339",
+
       ),
       url='https://github.org/bergercookie/{}'.format(PKG_NAME),
       download_url='https://github.org/bergercookie/{}'.format(PKG_NAME),
