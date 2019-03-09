@@ -15,18 +15,20 @@ def get_object_unique_name(obj):
     return "{}_{}".format(type(obj).__name__, hex(id(obj)))
 
 
-def any_one(*args):
-    """True if any of the arguments of the iterable is True.
+def xor(*args):
+    """True if exactly one of the arguments of the iterable is True.
 
-    >>> any_one(1,2,3,)
+    >>> xor(0,1,0,)
     True
-    >>> any_one(False, False, False)
+    >>> xor(1,2,3,)
     False
-    >>> any_one("kalimera", "kalinuxta")
+    >>> xor(False, False, False)
+    False
+    >>> xor("kalimera", "kalinuxta")
+    False
+    >>> xor("", "a", "")
     True
-    >>> any_one("", "a", "")
-    True
-    >>> any_one("", "", "")
+    >>> xor("", "", "")
     False
     """
     return sum([bool(i) for i in args]) == 1

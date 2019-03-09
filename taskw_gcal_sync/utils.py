@@ -1,5 +1,6 @@
 import abc
 
+
 class ResolutionStrategy():
     """Interface for Resolution strategies."""
     __metaclass__ = abc.ABCMeta

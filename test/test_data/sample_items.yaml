@@ -9,41 +9,16 @@ tw_item:
   urgency: 0
   uuid: !!python/object:uuid.UUID
     int: 168941310994917300384925376981287779
-gcal_item:
-  created: '2019-03-05T01:04:54.000Z'
-  creator:
-    email: nikos.koukis.utility@gmail.com
-  description: This is a funny description
-  end:
-    dateTime: '2019-03-05T05:00:00Z'
-  etag: '"3103656118695000"'
-  htmlLink: https://www.google.com/calendar/event?eid=NHZkNmcwOG41ZDAzbWRqMGllbmVtZzJiNTAgYWw4dGVvYm9zMGcwcW41cHVpZDdxMW9zdGtAZw
-  iCalUID: 4vd6g08n5d03mdj0ienemg2b50@google.com
-  id: 4vd6g08n5d03mdj0ienemg2b50
-  kind: calendar#event
-  location: Brixton, London, UK
-  organizer:
-    displayName: TaskWarrior Reminders
-    email: al8teobos0g0qn5puid7q1ostk@group.calendar.google.com
-    self: true
-  reminders:
-    overrides:
-    - method: popup
-      minutes: 60
-    - method: popup
-      minutes: 10
-    - method: email
-      minutes: 1440
-    useDefault: false
-  sequence: 0
-  start:
-    dateTime: '2019-03-05T04:00:00Z'
-  status: confirmed
-  summary: kalimera
-  updated: '2019-03-05T23:20:59.688Z'
+  annotations:
+  - This is the annotation text
+  - This is the other annotation text
 gcal_item_expected:
   description: 'IMPORTED FROM TASKWARRIOR
 
+
+    * Annotation 1: This is the annotation text
+
+    * Annotation 2: This is the other annotation text
 
 
     * status: pending
@@ -54,6 +29,46 @@ gcal_item_expected:
   start:
     dateTime: '2019-03-05T00:03:09Z'
   summary: Kalimera!
-  updated: '2019-03-05T00:03:09Z'
+gcal_item:
+  created: '2019-03-08T00:29:06.000Z'
+  creator: {email: nikos.koukis.utility@gmail.com}
+  description: '
+
+    The same old description
+
+
+    * Annotation 1: kalimera
+
+    * Annotation 2: kalinuxta kai kali vradia
+
+
+    * uuid: 00208973-20da-4988-ae3e-58ef3650c363
+
+
+    * status: waiting'
+  end: {dateTime: '2019-03-04T05:00:00Z'}
+  etag: '"3104009893204000"'
+  extendedProperties:
+    private: {everyoneDeclinedDismissed: '-1'}
+  htmlLink: https://www.google.com/calendar/event?eid=NTJnZ2JhOTJsOXBoNGQwZ2hhYmkzb2hkaDcgYWw4dGVvYm9zMGcwcW41cHVpZDdxMW9zdGtAZw
+  iCalUID: 52ggba92l9ph4d0ghabi3ohdh7@google.com
+  id: 52ggba92l9ph4d0ghabi3ohdh7
+  kind: calendar#event
+  organizer: {displayName: TaskWarrior Reminders, email: al8teobos0g0qn5puid7q1ostk@group.calendar.google.com,
+    self: true}
+  reminders: {useDefault: true}
+  sequence: 0
+  start: {dateTime: '2019-03-04T04:00:00Z'}
+  status: confirmed
+  summary: another summary goes here
+  updated: '2019-03-08T00:29:06.602Z'
 tw_item_expected:
-  urgency: 0
+  annotations:
+  - kalimera
+  - kalinuxta kai kali vradia
+  description: another summary goes here
+  due: 2019-03-04 05:00:00
+  entry: 2019-03-04 04:00:00
+  status: waiting
+  uuid: !!python/object:uuid.UUID
+    int: 168941310994917300384925376981287779

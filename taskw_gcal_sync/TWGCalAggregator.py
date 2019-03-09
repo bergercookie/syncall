@@ -1,9 +1,12 @@
-from taskw_gcal_sync import TaskWarriorSide
 from taskw_gcal_sync import GCalSide
+from taskw_gcal_sync import TaskWarriorSide
 from taskw_gcal_sync.PrefsManager import PrefsManager
-from .utils import ResolutionNewestWins
+from taskw_gcal_sync.clogger import setup_logging
+
 from bidict import bidict
+from typing import Any, Tuple, List, Dict, Union
 import atexit
+import logging
 import os
 import sys
 
@@ -11,6 +14,8 @@ from uuid import UUID
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
 
+logger = logging.getLogger(__name__)
+setup_logging(__name__)
 
 class TWGCalAggregator():
     """Aggregator class: TaskWarrior <-> Google Calendar sides.
@@ -68,11 +73,23 @@ class TWGCalAggregator():
         """
         pass
 
-    def find_diffs(self, tw_items, gcal_items):
-        """Find the differences between the items in TW and GCal."""
+    def compare_tw_gcal_items(self, tw_item, gcal_item) -> Any:
+        """Compare a TW and a GCal item and find any differences.
+
+        :returns: True if there is no difference, tuple of tuples of keys of
+                  that they differ at otherwise
+        """
+        # 'update' time shouldn't matter on whether two items are identical
         raise NotImplementedError("TODO")
 
-        return {}
+    def is_same_event(self, tw_item, gcal_item) -> bool:
+        """
+        Returns True if the events are equivalent (check ID/UUID
+        correspondence), False otherwise
+        """
+
+        # Check the bidict
+        raise NotImplementedError("TODO")
 
     @staticmethod
     def convert_tw_to_gcal(tw_item: dict) -> dict:
@@ -92,10 +109,15 @@ class TWGCalAggregator():
         gcal_item['summary'] = tw_item['description']
 
         # description
-        gcal_item['description'] = "{meta_title}\n\n"\
+        gcal_item['description'] = "{meta_title}\n"\
             .format(desc=tw_item['description'],
-                    meta_title='IMPORTED FROM TASKWARRIOR',
-                    )
+                    meta_title='IMPORTED FROM TASKWARRIOR',)
+        if 'annotations' in tw_item.keys():
+            for i, a in enumerate(tw_item['annotations']):
+                gcal_item['description'] += '\n* Annotation {}: {}' \
+                    .format(i+1, a)
+
+        gcal_item['description'] += '\n'
         for k in ['status', 'uuid']:
             gcal_item['description'] += '\n* {}: {}'.format(k, tw_item[k])
 
@@ -110,18 +132,94 @@ class TWGCalAggregator():
             gcal_item['end'] = {'dateTime': due_dt}
         else:
             gcal_item['end'] = {'dateTime': GCalSide.format_datetime(
-                tw_item['entry'] + timedelta(days=1)) }
-
-        # modified -> updated
-        gcal_item['updated'] = GCalSide.format_datetime(tw_item['modified'])
+                tw_item['entry'] + timedelta(days=1))}
 
         return gcal_item
 
     @staticmethod
     def convert_gcal_to_tw(gcal_item: dict) -> dict:
         """Convert a GCal event to a TW item."""
+        annotations, status, uuid = \
+            TWGCalAggregator._parse_gcal_item_desc(gcal_item)
+        assert isinstance(annotations, list)
+        assert isinstance(status, str)
+        assert isinstance(uuid, UUID) or uuid is None
 
-        return {}
+        tw_item: Dict[str, Any] = {}
+        # annotations
+        tw_item['annotations'] = annotations
+        # Status
+        if status not in ['pending', 'completed', 'deleted', 'waiting',
+                          'recurring']:
+            logger.warn(
+                "Invalid status %s in GCal->TW conversion of item:" % status)
+        else:
+            tw_item['status'] = status
+
+        # uuid - may just be created -, thus not there
+        if uuid is not None:
+            tw_item['uuid'] = uuid
+
+        # Description
+        tw_item['description'] = gcal_item['summary']
+
+        # entry
+        tw_item['entry'] = GCalSide.parse_datetime(gcal_item['start']['dateTime'])
+        tw_item['due'] = GCalSide.parse_datetime(gcal_item['end']['dateTime'])
+
+        # Note:
+        # Don't add extra fields of GCal as TW annotations 'cause then, if
+        # converted backwards, these annotations are going in the description of
+        # the Gcal event and then these are going into the event description and
+        # this happens on every conversion. Add them as new TW UDAs if needed
+
+        # add annotation
+        return tw_item
+
+    @staticmethod
+    def _parse_gcal_item_desc(gcal_item: dict) -> Tuple[List[str], str,
+                                                        Union[UUID, None]]:
+        """Parse the necessary TW fields off a Google Calendar Item.
+
+        """
+        annotations: List[str] = []
+        status = 'pending'
+        uuid = None
+
+        if 'description' not in gcal_item.keys():
+            return annotations, status, uuid
+
+        gcal_desc = gcal_item['description']
+        # strip whitespaces, empty lines
+        lines = [l.strip() for l in gcal_desc.split('\n') if l][1:]
+
+        # annotations
+        i = 0
+        for i, l in enumerate(lines):
+            parts = l.split(':', maxsplit=1)
+            if len(parts) == 2 and parts[0].lower().startswith("* annotation"):
+                annotations.append(parts[1].strip())
+            else:
+                break
+
+        if i == len(lines) - 1:
+            return annotations, status, uuid
+
+        # Iterate through rest of lines, find only the status and uuid ones
+        for l in lines[i:]:
+            parts = l.split(':', maxsplit=1)
+            if len(parts) == 2:
+                start = parts[0].lower()
+                if start.startswith("* status"):
+                    status = parts[1].strip().lower()
+                elif start.startswith("* uuid"):
+                    try:
+                        uuid = UUID(parts[1].strip())
+                    except ValueError as err:
+                        logger.error("Invalid UUID %s provided during GCal -> TW conversion, Using None..."
+                                     % err)
+
+        return annotations, status, uuid
 
     def find_in_tw(self, gcal_item):
         """Given a GCal reminder event find the corresponding reminder in TW, if the

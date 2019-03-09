@@ -6,8 +6,7 @@ from oauth2client import tools
 from oauth2client.file import Storage
 import httplib2
 import os
-
-from datetime import datetime
+import datetime
 
 class GCalSide(GenericSide):
     """GCalSide interacts with the Google Calendar API.
@@ -18,6 +17,7 @@ class GCalSide(GenericSide):
     """
 
     SCOPES = 'https://www.googleapis.com/auth/calendar'
+    datetime_format = "%Y-%m-%dT%H:%M:%SZ"
 
     def __init__(self, **kargs):
         super(GCalSide, self).__init__()
@@ -151,5 +151,18 @@ class GCalSide(GenericSide):
         """
         Format a datetime object to the ISO speicifications containing the 'T'
         and 'Z' separators
+
+        >>> GCalSide.format_datetime(datetime.datetime(2019, 3, 5, 0, 3, 9))
+        '2019-03-05T00:03:09Z'
         """
-        return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        return dt.strftime(GCalSide.datetime_format)
+
+    @staticmethod
+    def parse_datetime(dt: str) -> datetime.datetime:
+        """
+        Parse datetime given in the GCal foramt ('T', 'Z' separators)
+
+        >>> GCalSide.parse_datetime('2019-03-05T00:03:09Z')
+        datetime.datetime(2019, 3, 5, 0, 3, 9)
+        """
+        return datetime.datetime.strptime(dt, GCalSide.datetime_format)
