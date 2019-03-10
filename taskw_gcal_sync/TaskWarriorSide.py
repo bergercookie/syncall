@@ -38,24 +38,23 @@ class TaskWarriorSide(GenericSide):
     def update_item(self, item):
         """Update an already added item.
         """
-        super(TaskWarriorSide, self).update_item(item)
-
         # Make sure it's there
 
         # Update
         raise NotImplementedError("TODO")
 
-    def add_item(self, summary: str, **kargs):
-        super(TaskWarriorSide, self).add_item(summary)
-
-        self.tw.task_add(summary, tags=self.config['tags'], **kargs)
-
-    def _add_item(self, summary: str, **kargs):
+    def add_item(self, item) -> dict:
         """Add a new Item as a TW task.
 
-        :param summary: Summary of the Item to be added. Due to the taskw Python
-                        API this is a separate field
-        :param kargs: This should contain only keys that exist in standard TW
-                      tasks (e.g., proj, tag, due)
+        :param item:  This should contain only keys that exist in standard TW
+                      tasks (e.g., proj, tag, due). It is mandatory that it
+                      contains the 'description' key for the task title
         """
-        self.tw.task_add(summary=summary, **kargs)
+        assert('description' in item)
+        len_print = min(10, len(item['desscription']))
+        self.logger.info("Adding item - \"{}\"..."
+                         .format(item['description'][0:len_print]))
+        description = item.pop('description')
+        new_item = self.tw.task_add(description=description, **item)
+
+        return new_item

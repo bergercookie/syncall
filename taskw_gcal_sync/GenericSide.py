@@ -60,8 +60,12 @@ class GenericSide():
         # TODO
 
         # Update
+        # TODO
 
     @abc.abstractmethod
-    def add_item(self, item, **kargs):
-        """Add a new item."""
+    def add_item(self, item: dict) -> dict:
+        """Add a new item.
+
+        :returns: The newly added event
+        """
         raise NotImplementedError("Implement in derived")

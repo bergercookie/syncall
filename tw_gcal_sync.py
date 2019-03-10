@@ -28,6 +28,10 @@ def main():
         print("tw_items: ", tw_items)
         print("gcal_items: ", gcal_items)
 
+        # Check and potentially register items
+        aggregator.register_items(tw_items, "tw")
+        aggregator.register_items(gcal_items, "gcal")
+
         # tw_side.add_reminder("This is the new reminder", due="2018-01-01")
         # print("Reminders: {}".format(reminders))
         # print("Length: {}".format(len(reminders)))

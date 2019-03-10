@@ -4,7 +4,7 @@ from taskw_gcal_sync.PrefsManager import PrefsManager
 from taskw_gcal_sync.clogger import setup_logging
 
 from bidict import bidict
-from typing import Any, Tuple, List, Dict, Union
+from typing import Any, Tuple, List, Dict, Union, Set
 import atexit
 import logging
 import os
@@ -35,6 +35,8 @@ class TWGCalAggregator():
 
         # Own config
         self.config = {}
+        self.config['tw_id_key'] = 'uuid'
+        self.config['gcal_id_key'] = 'htmlLink'
         self.config.update(**kargs)  # Update
 
         # Sides config + Initialisation
@@ -51,7 +53,7 @@ class TWGCalAggregator():
         # Correspondences between the TW reminders and the GCal events
         # The following fields are used for finding matches:
         # TaskWarrior: uuid
-        # GCal: eventId
+        # GCal: id
         if "tw_gcal_ids" not in self.prefs_manager:
             self.prefs_manager["tw_gcal_ids"] = bidict()
         self.tw_gcal_ids = self.prefs_manager["tw_gcal_ids"]
@@ -73,23 +75,62 @@ class TWGCalAggregator():
         """
         pass
 
-    def compare_tw_gcal_items(self, tw_item, gcal_item) -> Any:
+    def register_items(self, items: Tuple[Dict[str, Any]], item_type: str):
+        """Register a list of items.
+
+        - Register in the broker
+        - Add the corresponding item in the other form (TW if registering GCal
+          event or the other way around)
+
+        :param item_type: "tw" / "gcal"
+        """
+        assert(item_type in ["tw", "gcal"])
+
+        registered_ids = self.tw_gcal_ids if item_type == 'tw' else \
+            self.tw_gcal_ids.inverse
+        side = self.gcal_side if item_type == "tw" else self.gcal_side  # Use opposite side!
+        convert_fun = TWGCalAggregator.convert_tw_to_gcal \
+            if item_type == "tw" \
+            else TWGCalAggregator.convert_gcal_to_tw
+
+        type_key = self.config["{}_id_key".format(item_type)]
+        opposite_type = "gcal" if item_type == "tw" else "tw"
+        opposite_type_key = self.config["{}_id_key".format(opposite_type)]
+
+        for item in items:
+            _id = str(item[type_key])
+
+            # Check if I have this item in the register
+            if _id not in registered_ids.keys():
+                # Create the item in TW
+                logger.info("Inserting item, [{}] id: {}...".format(item_type,
+                                                                    _id))
+
+                # Cache it with pickle - f=_id
+
+                # Add it to TW/GCal
+                item_converted = convert_fun(item)
+                item_registered = side.add_item(item_converted)
+
+                #  Add registry entry
+                registered_ids[_id] = item_registered[opposite_type_key]
+
+    @staticmethod
+    def compare_tw_gcal_items(tw_item: dict, gcal_item: dict) -> Tuple[Set[str],
+                                                                       Dict[str, Tuple[Any, Any]]]:
         """Compare a TW and a GCal item and find any differences.
 
-        :returns: True if there is no difference, tuple of tuples of keys of
-                  that they differ at otherwise
+        :returns: list of different keys and Dictionary with the differences for
+                  same keys
         """
-        # 'update' time shouldn't matter on whether two items are identical
-        raise NotImplementedError("TODO")
+        # Compare in TW form
+        tw_item_out = TWGCalAggregator.convert_gcal_to_tw(gcal_item)
+        diff_keys = {k for k in set(tw_item) ^ set(tw_item_out)}
+        changes = {k: (tw_item[k], tw_item_out[k])
+                   for k in set(tw_item) & set(tw_item_out)
+                   if tw_item[k] != tw_item_out[k]}
 
-    def is_same_event(self, tw_item, gcal_item) -> bool:
-        """
-        Returns True if the events are equivalent (check ID/UUID
-        correspondence), False otherwise
-        """
-
-        # Check the bidict
-        raise NotImplementedError("TODO")
+        return diff_keys, changes
 
     @staticmethod
     def convert_tw_to_gcal(tw_item: dict) -> dict:
@@ -139,6 +180,8 @@ class TWGCalAggregator():
     @staticmethod
     def convert_gcal_to_tw(gcal_item: dict) -> dict:
         """Convert a GCal event to a TW item."""
+
+        # Parse the description
         annotations, status, uuid = \
             TWGCalAggregator._parse_gcal_item_desc(gcal_item)
         assert isinstance(annotations, list)
@@ -152,7 +195,8 @@ class TWGCalAggregator():
         if status not in ['pending', 'completed', 'deleted', 'waiting',
                           'recurring']:
             logger.warn(
-                "Invalid status %s in GCal->TW conversion of item:" % status)
+                "Invalid status %s in GCal->TW conversion of item. Skipping status:"
+                % status)
         else:
             tw_item['status'] = status
 
@@ -216,23 +260,22 @@ class TWGCalAggregator():
                     try:
                         uuid = UUID(parts[1].strip())
                     except ValueError as err:
-                        logger.error("Invalid UUID %s provided during GCal -> TW conversion, Using None..."
-                                     % err)
+                        logger.error(
+                            "Invalid UUID %s provided during GCal -> TW conversion, Using None..."
+                            % err)
 
         return annotations, status, uuid
 
-    def find_in_tw(self, gcal_item):
-        """Given a GCal reminder event find the corresponding reminder in TW, if the
+    def find_in_tw(self, gcal_item) -> Union[Tuple[UUID, Dict], None]:
+        """Given a GCal event find the corresponding reminder in TW, if the
         latter exists.
 
-        :return: (ID, dict)for corresponding tw reminder, or (None, {}) if a
+        :return: (ID, dict) for corresponding TW reminder, or None if a
         valid one is not found
         :rtype: tuple
         """
 
-        assert 'id' in gcal_item.keys()
-        tw_uuid = self.tw_gcal_ids.inv[gcal_item['id']]
-        return self.tw_side.tw.get_task(uuid=tw_uuid)
+        pass
 
     def find_in_gcal(self, tw_item):
         """Given a TW reminder find the corresponding GCal event, if the
@@ -242,7 +285,5 @@ class TWGCalAggregator():
         found
         """
 
-        assert 'uuid' in tw_item
-        gcal_id = self.tw_gcal_ids[tw_item['uuid']]
+        pass
 
-        # TODO

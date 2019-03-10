@@ -43,11 +43,12 @@ class GCalSide(GenericSide):
         # connect
         self.logger.info("Connecting...")
         self.gain_access()
+        self.config['calendar_id'] = \
+            self._fetch_cal_id_from_summary(self.config["calendar_summary"])
         self.logger.info("Connected.")
 
         # Create calendar if not there
-        cal_id = self.fetch_cal_id_from_summary(self.config["calendar_summary"])
-        if not cal_id:
+        if not self.config['calendar_id']:
             self.logger.info("Creating calendar \"%s\""
                              % self.config["calendar_summary"])
             new_cal = {
@@ -91,7 +92,7 @@ class GCalSide(GenericSide):
             self.logger.info('Using already cached credentials...')
         return credentials
 
-    def fetch_cal_id_from_summary(self, cal_summary):
+    def _fetch_cal_id_from_summary(self, cal_summary):
         """Return the id of the Calendar based on the given Summary.
 
         :returns: id or None if that was not found
@@ -113,10 +114,9 @@ class GCalSide(GenericSide):
     def get_items(self):
         """Get all the events for the calendar that we use."""
         # Get the ID of the calendar of interest
-        cal_id = self.fetch_cal_id_from_summary(cal_summary=self.config["calendar_summary"])
 
         events = []
-        request = self.service.events().list(calendarId=cal_id)
+        request = self.service.events().list(calendarId=self.config['calendar_id'])
 
         # Loop until all pages have been processed.
         while request is not None:
@@ -134,12 +134,15 @@ class GCalSide(GenericSide):
         return events
 
     def update_item(self, item):
-        super(GCalSide, self).update_item(item)
         raise NotImplementedError("TODO")
 
-    def _add_item(self, item):
-        super(GCalSide, self)._add_item(item)
-        raise NotImplementedError("TODO")
+    def add_item(self, item) -> str:
+        event = self.service.events().insert(
+            calendarId=self.config["calendar_id"],
+            body=item).execute()
+        self.logger.debug('Event created: \"%s\"' % event.get('htmlLink'))
+
+        return event
 
     def gain_access(self):
         credentials = self._get_credentials()
@@ -147,7 +150,7 @@ class GCalSide(GenericSide):
         self.service = discovery.build('calendar', 'v3', http=http)
 
     @staticmethod
-    def format_datetime(dt: datetime) -> str:
+    def format_datetime(dt: datetime.datetime) -> str:
         """
         Format a datetime object to the ISO speicifications containing the 'T'
         and 'Z' separators
@@ -160,7 +163,7 @@ class GCalSide(GenericSide):
     @staticmethod
     def parse_datetime(dt: str) -> datetime.datetime:
         """
-        Parse datetime given in the GCal foramt ('T', 'Z' separators)
+        Parse datetime given in the GCal format ('T', 'Z' separators)
 
         >>> GCalSide.parse_datetime('2019-03-05T00:03:09Z')
         datetime.datetime(2019, 3, 5, 0, 3, 9)
