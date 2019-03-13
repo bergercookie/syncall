@@ -8,6 +8,8 @@ from typing import Any, Tuple, List, Dict, Union, Set
 import atexit
 import logging
 import os
+from functools import partial
+import pickle
 import sys
 
 from uuid import UUID
@@ -17,6 +19,9 @@ from dateutil.tz import tzutc
 logger = logging.getLogger(__name__)
 setup_logging(__name__)
 
+pickle_dump = partial(pickle.dump, protocol=0)
+
+
 class TWGCalAggregator():
     """Aggregator class: TaskWarrior <-> Google Calendar sides.
 
@@ -25,8 +30,6 @@ class TWGCalAggregator():
 
     """
     def __init__(self, tw_config: dict, gcal_config: dict, **kargs):
-        super(TWGCalAggregator, self, **kargs).__init__()
-
         assert isinstance(tw_config, dict)
         assert isinstance(gcal_config, dict)
 
@@ -34,9 +37,15 @@ class TWGCalAggregator():
         self.prefs_manager = PrefsManager("taskw_gcal_sync")
 
         # Own config
-        self.config = {}
+        self.config: Dict[str, Any] = {}
         self.config['tw_id_key'] = 'uuid'
-        self.config['gcal_id_key'] = 'htmlLink'
+        self.config['gcal_id_key'] = 'id'
+        self.config['tw_serdes_dir'] = os.path.join(
+            self.prefs_manager.prefs_dir_full,
+            'pickle_tw')
+        self.config['gcal_serdes_dir'] = os.path.join(
+            self.prefs_manager.prefs_dir_full,
+            'pickle_gcal')
         self.config.update(**kargs)  # Update
 
         # Sides config + Initialisation
@@ -70,6 +79,10 @@ class TWGCalAggregator():
         self.tw_side.start()
         self.gcal_side.start()
 
+        # make sure pickle dirs are there
+        os.makedirs(self.config['tw_serdes_dir'], exist_ok=True)
+        os.makedirs(self.config['gcal_serdes_dir'], exist_ok=True)
+
     def cleanup(self):
         """Method to be called automatically on instance destruction.
         """
@@ -88,36 +101,83 @@ class TWGCalAggregator():
 
         registered_ids = self.tw_gcal_ids if item_type == 'tw' else \
             self.tw_gcal_ids.inverse
-        side = self.gcal_side if item_type == "tw" else self.gcal_side  # Use opposite side!
+        side = self.tw_side if item_type == "tw" else self.gcal_side
+        other_side = self.gcal_side if item_type == "tw" else self.gcal_side
         convert_fun = TWGCalAggregator.convert_tw_to_gcal \
             if item_type == "tw" \
             else TWGCalAggregator.convert_gcal_to_tw
 
         type_key = self.config["{}_id_key".format(item_type)]
-        opposite_type = "gcal" if item_type == "tw" else "tw"
-        opposite_type_key = self.config["{}_id_key".format(opposite_type)]
+        other_type = "gcal" if item_type == "tw" else "tw"
+        other_type_key = self.config["{}_id_key".format(other_type)]
+        serdes_dir = self.config["{}_serdes_dir".format(
+            "tw" if item_type == "tw" else "gcal")]
+        other_serdes_dir = self.config["{}_serdes_dir".format(
+            "gcal" if item_type == "tw" else "gcal")]
 
         for item in items:
             _id = str(item[type_key])
 
             # Check if I have this item in the register
             if _id not in registered_ids.keys():
-                # Create the item in TW
-                logger.info("Inserting item, [{}] id: {}...".format(item_type,
+                # Create the item
+                logger.info("[{}] Inserting item, id: {}...".format(item_type,
                                                                     _id))
-
-                # Cache it with pickle - f=_id
 
                 # Add it to TW/GCal
                 item_converted = convert_fun(item)
-                item_registered = side.add_item(item_converted)
+                other_item_created = other_side.add_item(item_converted)
 
                 #  Add registry entry
-                registered_ids[_id] = item_registered[opposite_type_key]
+                registered_ids[_id] = other_item_created[other_type_key]
+
+                # Cache both sides with pickle - f=_id
+                pickle_dump(item,
+                            open(os.path.join(serdes_dir, _id), 'wb'))
+                pickle_dump(other_item_created,
+                            open(os.path.join(other_serdes_dir,
+                                              registered_ids[_id]), 'wb'))
+
+            else:
+                # already in registry
+
+                # Update item
+                # import ipdb; ipdb.set_trace()
+                prev_item = pickle.load(
+                    open(os.path.join(serdes_dir, _id), 'rb'))
+
+                if prev_item != item:
+                    other_id = registered_ids[_id]
+                    other_item = other_side.get_single_item(other_id)
+                    assert other_item, \
+                        "{} not found on other side".format(other_id)
+                    prev_other_item = pickle.load(open(
+                        os.path.join(other_serdes_dir, other_id), 'rb'))
+
+                    # Make sure that counterpart has not changed
+                    # otherwise deal with conflict
+                    if other_item != prev_other_item:
+                        raise NotImplementedError(
+                            "Conflict resolution required!")
+                    else:
+                        logger.info("[{}] Updating conterpart item, id: {}..."
+                                    .format(item_type, other_id))
+                        # Convert to and update other side
+                        other_item_new = convert_fun(item)
+                        other_side.update_item(other_id, **other_item_new)
+
+                    # # Update cached version
+                    pickle.dump(item, open(os.path.join(serdes_dir, _id), 'wb'))
+                    pickle.dump(other_item,
+                                open(os.path.join(other_serdes_dir, other_id), 'wb'))
+
+                else:
+                    logger.info("[{}] Unchanged item, id: {}...".format(
+                        item_type, _id))
 
     @staticmethod
-    def compare_tw_gcal_items(tw_item: dict, gcal_item: dict) -> Tuple[Set[str],
-                                                                       Dict[str, Tuple[Any, Any]]]:
+    def compare_tw_gcal_items(tw_item: dict, gcal_item: dict) \
+            -> Tuple[Set[str], Dict[str, Tuple[Any, Any]]]:
         """Compare a TW and a GCal item and find any differences.
 
         :returns: list of different keys and Dictionary with the differences for
@@ -261,7 +321,8 @@ class TWGCalAggregator():
                         uuid = UUID(parts[1].strip())
                     except ValueError as err:
                         logger.error(
-                            "Invalid UUID %s provided during GCal -> TW conversion, Using None..."
+                            "Invalid UUID %s provided during GCal "
+                            "-> TW conversion, Using None..."
                             % err)
 
         return annotations, status, uuid

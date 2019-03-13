@@ -1,5 +1,6 @@
 from taskw_gcal_sync import GenericSide
 
+from googleapiclient.http import HttpError
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
@@ -7,6 +8,7 @@ from oauth2client.file import Storage
 import httplib2
 import os
 import datetime
+from typing import Any, Dict, Union
 
 class GCalSide(GenericSide):
     """GCalSide interacts with the Google Calendar API.
@@ -45,8 +47,6 @@ class GCalSide(GenericSide):
         self.gain_access()
         self.config['calendar_id'] = \
             self._fetch_cal_id_from_summary(self.config["calendar_summary"])
-        self.logger.info("Connected.")
-
         # Create calendar if not there
         if not self.config['calendar_id']:
             self.logger.info("Creating calendar \"%s\""
@@ -56,6 +56,8 @@ class GCalSide(GenericSide):
             }
             ret = self.service.calendars().insert(body=new_cal).execute()
             self.logger.info("Created, id: %s" % ret["id"])
+            self.config['calendar_id'] = ret["id"]
+        self.logger.info("Connected.")
 
     def _get_credentials_file(self):
         """Return the path to the credentials file.
@@ -92,7 +94,7 @@ class GCalSide(GenericSide):
             self.logger.info('Using already cached credentials...')
         return credentials
 
-    def _fetch_cal_id_from_summary(self, cal_summary):
+    def _fetch_cal_id_from_summary(self, cal_summary: str):
         """Return the id of the Calendar based on the given Summary.
 
         :returns: id or None if that was not found
@@ -111,8 +113,11 @@ class GCalSide(GenericSide):
             ret = None
         return ret
 
-    def get_items(self):
-        """Get all the events for the calendar that we use."""
+    def get_all_items(self, **kargs):
+        """Get all the events for the calendar that we use.
+
+        :param kargs: Extra options for the call
+        """
         # Get the ID of the calendar of interest
 
         events = []
@@ -133,8 +138,23 @@ class GCalSide(GenericSide):
 
         return events
 
-    def update_item(self, item):
-        raise NotImplementedError("TODO")
+    def get_single_item(self, _id: str) -> Union[dict, None]:
+        try:
+            return self.service.events().get(
+                calendarId=self.config['calendar_id'],
+                eventId=_id).execute()
+        except HttpError:
+            return None
+
+    def update_item(self, item_id: str, **changes):
+        # Check if item is there
+        event = self.service.events().get(
+            calendarId=self.config["calendar_id"],
+            eventId=item_id).execute()
+        event.update(changes)
+        self.service.events().update(
+            calendarId=self.config["calendar_id"],
+            eventId=event['id'], body=event).execute()
 
     def add_item(self, item) -> str:
         event = self.service.events().insert(
