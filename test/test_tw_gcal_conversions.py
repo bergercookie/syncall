@@ -23,10 +23,13 @@ class TestConversions(GenericTestCase):
             conts = yaml.load(fname)
 
         self.gcal_item = conts['gcal_item']
-        self.tw_item = conts['tw_item']
-
-        self.gcal_item_expected = conts['gcal_item_expected']
         self.tw_item_expected = conts['tw_item_expected']
+
+        self.tw_item = conts['tw_item']
+        self.gcal_item_expected = conts['gcal_item_expected']
+
+        self.gcal_item_w_date = conts['gcal_item_w_date']
+        self.tw_item_w_date_expected = conts['tw_item_w_date_expected']
 
     def test_tw_gcal_basic_convert(self):
         """Basic TW -> GCal conversion."""
@@ -40,6 +43,12 @@ class TestConversions(GenericTestCase):
         tw_item_out = TWGCalAggregator.convert_gcal_to_tw(self.gcal_item)
         self.assertDictEqual(tw_item_out, self.tw_item_expected)
 
+    def test_gcal_tw_date_convert(self):
+        """GCal (with 'date' subfield) -> TW conversion."""
+        self.load_sample_items()
+        tw_item_out = TWGCalAggregator.convert_gcal_to_tw(self.gcal_item_w_date)
+        self.assertDictEqual(tw_item_out, self.tw_item_w_date_expected)
+
     def test_tw_gcal_n_back(self):
         """ TW -> GCal -> TW conversion"""
         self.load_sample_items()
@@ -47,7 +56,7 @@ class TestConversions(GenericTestCase):
             TWGCalAggregator.convert_tw_to_gcal(self.tw_item))
 
         self.assertSetEqual(set(self.tw_item) ^ set(tw_item_out),
-                            set({'due', 'id', 'modified', 'tags', 'urgency'}))
+                            set({'due', 'id', 'tags', 'urgency'}))
 
         intersection = set(self.tw_item) & set(tw_item_out)
         self.assertDictEqual({i: self.tw_item[i] for i in intersection},
@@ -60,8 +69,7 @@ class TestConversions(GenericTestCase):
             TWGCalAggregator.convert_gcal_to_tw(self.gcal_item))
 
         self.assertSetEqual(set(self.gcal_item) ^ set(gcal_item_out),
-                            set({'htmlLink', 'updated',
-                                 'kind', 'etag',
+                            set({'htmlLink', 'kind', 'etag',
                                  'extendedProperties', 'creator',
                                  'created', 'organizer',
                                  'sequence', 'status',
@@ -74,7 +82,7 @@ class TestConversions(GenericTestCase):
             tw_item=self.tw_item,
             gcal_item=self.gcal_item_expected)
         self.assertTupleEqual(diffs,
-                              ({'modified', 'urgency', 'due', 'id', 'tags'},
+                              ({'urgency', 'due', 'id', 'tags'},
                                {}))
 
         diffs = TWGCalAggregator.compare_tw_gcal_items(

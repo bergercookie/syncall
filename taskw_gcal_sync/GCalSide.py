@@ -1,5 +1,6 @@
 from taskw_gcal_sync import GenericSide
 
+from googleapiclient.http import HttpError
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
@@ -7,6 +8,8 @@ from oauth2client.file import Storage
 import httplib2
 import os
 import datetime
+from typing import Any, Dict, Union
+import re
 
 class GCalSide(GenericSide):
     """GCalSide interacts with the Google Calendar API.
@@ -17,7 +20,8 @@ class GCalSide(GenericSide):
     """
 
     SCOPES = 'https://www.googleapis.com/auth/calendar'
-    datetime_format = "%Y-%m-%dT%H:%M:%SZ"
+    _datetime_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    _date_format = "%Y-%m-%d"
 
     def __init__(self, **kargs):
         super(GCalSide, self).__init__()
@@ -31,8 +35,7 @@ class GCalSide(GenericSide):
                                                '.gcal_client_secret.json'),
             'credentials_dir': os.path.join(os.path.expanduser('~'),
                                             '.gcal_credentials'),
-            'credentials_fname': os.path.join(os.path.expanduser('~'),
-                                              'gcal_sync.json',)
+            'credentials_fname': 'gcal_sync.json',
         }
         self.config.update(kargs)
 
@@ -45,8 +48,6 @@ class GCalSide(GenericSide):
         self.gain_access()
         self.config['calendar_id'] = \
             self._fetch_cal_id_from_summary(self.config["calendar_summary"])
-        self.logger.info("Connected.")
-
         # Create calendar if not there
         if not self.config['calendar_id']:
             self.logger.info("Creating calendar \"%s\""
@@ -56,6 +57,8 @@ class GCalSide(GenericSide):
             }
             ret = self.service.calendars().insert(body=new_cal).execute()
             self.logger.info("Created, id: %s" % ret["id"])
+            self.config['calendar_id'] = ret["id"]
+        self.logger.info("Connected.")
 
     def _get_credentials_file(self):
         """Return the path to the credentials file.
@@ -92,7 +95,7 @@ class GCalSide(GenericSide):
             self.logger.info('Using already cached credentials...')
         return credentials
 
-    def _fetch_cal_id_from_summary(self, cal_summary):
+    def _fetch_cal_id_from_summary(self, cal_summary: str):
         """Return the id of the Calendar based on the given Summary.
 
         :returns: id or None if that was not found
@@ -111,8 +114,11 @@ class GCalSide(GenericSide):
             ret = None
         return ret
 
-    def get_items(self):
-        """Get all the events for the calendar that we use."""
+    def get_all_items(self, **kargs):
+        """Get all the events for the calendar that we use.
+
+        :param kargs: Extra options for the call
+        """
         # Get the ID of the calendar of interest
 
         events = []
@@ -133,10 +139,28 @@ class GCalSide(GenericSide):
 
         return events
 
-    def update_item(self, item):
-        raise NotImplementedError("TODO")
+    def get_single_item(self, _id: str) -> Union[dict, None]:
+        try:
+            return self.service.events().get(
+                calendarId=self.config['calendar_id'],
+                eventId=_id).execute()
+        except HttpError:
+            return None
 
-    def add_item(self, item) -> str:
+    def update_item(self, item_id: str, **changes):
+        GCalSide._sanitize_all_datetimes(changes)
+
+        # Check if item is there
+        event = self.service.events().get(
+            calendarId=self.config["calendar_id"],
+            eventId=item_id).execute()
+        event.update(changes)
+        self.service.events().update(
+            calendarId=self.config["calendar_id"],
+            eventId=event['id'], body=event).execute()
+
+    def add_item(self, item) -> dict:
+        GCalSide._sanitize_all_datetimes(item)
         event = self.service.events().insert(
             calendarId=self.config["calendar_id"],
             body=item).execute()
@@ -150,22 +174,102 @@ class GCalSide(GenericSide):
         self.service = discovery.build('calendar', 'v3', http=http)
 
     @staticmethod
+    def get_date_key(d: dict) -> str:
+        """
+        Get key corresponding to date -> 'date' or 'dateTime'
+        """
+        assert len(d) == 1, "Input dictionary contains more than 1 key"
+        assert 'dateTime' in d.keys() or 'date' in d.keys(), \
+            "None of the required keys is in the dictionary"
+        return 'date' if d.get('date', None) else 'dateTime'
+
+    @staticmethod
+    def get_event_time(item: dict, t: str) -> datetime.datetime:
+        """
+        Return the start/end datetime in datetime format.
+
+        :param t: Time to query, 'start' or 'end'
+        """
+        assert t in ['start', 'end']
+        assert t in item.keys(), "'end' key not found in item"
+        dt = GCalSide.parse_datetime(
+            item[t][GCalSide.get_date_key(item[t])])
+        return dt
+
+    @staticmethod
     def format_datetime(dt: datetime.datetime) -> str:
         """
         Format a datetime object to the ISO speicifications containing the 'T'
         and 'Z' separators
 
-        >>> GCalSide.format_datetime(datetime.datetime(2019, 3, 5, 0, 3, 9))
-        '2019-03-05T00:03:09Z'
+        >>> GCalSide.format_datetime(datetime.datetime(2019, 3, 5, 0, 3, 9, 1234))
+        '2019-03-05T00:03:09.001234Z'
+        >>> GCalSide.format_datetime(datetime.datetime(2019, 3, 5, 0, 3, 9, 123))
+        '2019-03-05T00:03:09.000123Z'
         """
-        return dt.strftime(GCalSide.datetime_format)
+        assert isinstance(dt, datetime.datetime)
+        dt_out = dt.strftime(GCalSide._datetime_format)
+        return dt_out
 
     @staticmethod
     def parse_datetime(dt: str) -> datetime.datetime:
         """
-        Parse datetime given in the GCal format ('T', 'Z' separators)
+        Parse datetime given in the GCal format ('T', 'Z' separators).
 
         >>> GCalSide.parse_datetime('2019-03-05T00:03:09Z')
         datetime.datetime(2019, 3, 5, 0, 3, 9)
+        >>> GCalSide.parse_datetime('2019-03-05')
+        datetime.datetime(2019, 3, 5, 0, 0)
+        >>> GCalSide.parse_datetime('2019-03-05T00:03:01.1234Z')
+        datetime.datetime(2019, 3, 5, 0, 3, 1, 123400)
+        >>> GCalSide.parse_datetime('2019-03-08T00:29:06.602Z')
+        datetime.datetime(2019, 3, 8, 0, 29, 6, 602000)
         """
-        return datetime.datetime.strptime(dt, GCalSide.datetime_format)
+        assert isinstance(dt, str)
+        dt2 = dt
+        if 'T' in dt:
+            # Adjust for microseconds
+            g = re.match(".*:\d\d\.(\d*)Z$", dt)
+            if g is None or not g.groups():
+                dt2 = dt[:-1] + '.000000' + 'Z'
+            elif len(g.groups()[0]) <= 6:
+                dt2 = dt[:-1 - len(g.groups()[0])] \
+                    + g.groups()[0] \
+                    + '0' * (6 - len(g.groups()[0])) + 'Z'
+
+            _format = GCalSide._datetime_format
+        else:
+            _format = GCalSide._date_format
+
+        dt_out = datetime.datetime.strptime(dt2, _format)
+        return dt_out
+
+    @staticmethod
+    def _sanitize_all_datetimes(item: dict) -> None:
+        item['updated'] = GCalSide.sanitize_datetime(item['updated'])
+        if 'dateTime' in item['start']:
+            item['start']['dateTime'] = \
+                GCalSide.sanitize_datetime(item['start']['dateTime'])
+        if 'dateTime' in item['end']:
+            item['end']['dateTime'] = \
+                GCalSide.sanitize_datetime(item['end']['dateTime'])
+
+    @staticmethod
+    def sanitize_datetime(dt: str) -> str:
+        """Given a date in str, make sure that the HH:MM:SS is not 00:00:00.
+
+        >>> GCalSide.sanitize_datetime('2019-03-08T00:00:00.602Z')
+        '2019-03-07T23:59:00.602000Z'
+        >>> GCalSide.sanitize_datetime('2019-03-08T00:00:00.0000Z')
+        '2019-03-07T23:59:00.000000Z'
+        >>> GCalSide.sanitize_datetime('2019-03-08T00:29:06.602Z')
+        '2019-03-08T00:29:06.602000Z'
+        """
+
+        dt_dt = GCalSide.parse_datetime(dt)
+        if dt_dt.hour == 0 and dt_dt.minute == 0 and dt_dt.second == 0:
+            # dt_dt += datetime.timedelta(days=1)
+            dt_dt -= datetime.timedelta(minutes=1)
+
+        return GCalSide.format_datetime(dt_dt)
+

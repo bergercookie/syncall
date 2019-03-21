@@ -8,6 +8,8 @@ from typing import Any, Tuple, List, Dict, Union, Set
 import atexit
 import logging
 import os
+from functools import partial
+import pickle
 import sys
 
 from uuid import UUID
@@ -17,6 +19,9 @@ from dateutil.tz import tzutc
 logger = logging.getLogger(__name__)
 setup_logging(__name__)
 
+pickle_dump = partial(pickle.dump, protocol=0)
+
+
 class TWGCalAggregator():
     """Aggregator class: TaskWarrior <-> Google Calendar sides.
 
@@ -25,8 +30,6 @@ class TWGCalAggregator():
 
     """
     def __init__(self, tw_config: dict, gcal_config: dict, **kargs):
-        super(TWGCalAggregator, self, **kargs).__init__()
-
         assert isinstance(tw_config, dict)
         assert isinstance(gcal_config, dict)
 
@@ -34,9 +37,18 @@ class TWGCalAggregator():
         self.prefs_manager = PrefsManager("taskw_gcal_sync")
 
         # Own config
-        self.config = {}
+        self.config: Dict[str, Any] = {}
         self.config['tw_id_key'] = 'uuid'
-        self.config['gcal_id_key'] = 'htmlLink'
+        self.config['gcal_id_key'] = 'id'
+        self.config['tw_modify_key'] = 'modified'
+        self.config['gcal_modify_key'] = 'updated'
+        self.config['gcal_id_key'] = 'id'
+        self.config['tw_serdes_dir'] = os.path.join(
+            self.prefs_manager.prefs_dir_full,
+            'pickle_tw')
+        self.config['gcal_serdes_dir'] = os.path.join(
+            self.prefs_manager.prefs_dir_full,
+            'pickle_gcal')
         self.config.update(**kargs)  # Update
 
         # Sides config + Initialisation
@@ -45,7 +57,6 @@ class TWGCalAggregator():
         self.tw_side = TaskWarriorSide(**tw_config_new)
 
         gcal_config_new = {
-            "credentials_dir": self.prefs_manager.prefs_dir_full,
         }
         gcal_config_new.update(tw_config)
         self.gcal_side = GCalSide(**gcal_config_new)
@@ -70,6 +81,10 @@ class TWGCalAggregator():
         self.tw_side.start()
         self.gcal_side.start()
 
+        # make sure pickle dirs are there
+        os.makedirs(self.config['tw_serdes_dir'], exist_ok=True)
+        os.makedirs(self.config['gcal_serdes_dir'], exist_ok=True)
+
     def cleanup(self):
         """Method to be called automatically on instance destruction.
         """
@@ -88,36 +103,120 @@ class TWGCalAggregator():
 
         registered_ids = self.tw_gcal_ids if item_type == 'tw' else \
             self.tw_gcal_ids.inverse
-        side = self.gcal_side if item_type == "tw" else self.gcal_side  # Use opposite side!
+        # side = self.tw_side if item_type == "tw" else self.gcal_side
+        other_side = self.gcal_side if item_type == "tw" else self.tw_side
         convert_fun = TWGCalAggregator.convert_tw_to_gcal \
             if item_type == "tw" \
             else TWGCalAggregator.convert_gcal_to_tw
 
         type_key = self.config["{}_id_key".format(item_type)]
-        opposite_type = "gcal" if item_type == "tw" else "tw"
-        opposite_type_key = self.config["{}_id_key".format(opposite_type)]
+        other_type = "gcal" if item_type == "tw" else "tw"
+        other_type_key = self.config["{}_id_key".format(other_type)]
+        serdes_dir = self.config["{}_serdes_dir".format(
+            "tw" if item_type == "tw" else "gcal")]
+        other_serdes_dir = self.config["{}_serdes_dir".format(
+            "gcal" if item_type == "tw" else "tw")]
 
         for item in items:
             _id = str(item[type_key])
 
             # Check if I have this item in the register
             if _id not in registered_ids.keys():
-                # Create the item in TW
-                logger.info("Inserting item, [{}] id: {}...".format(item_type,
-                                                                    _id))
-
-                # Cache it with pickle - f=_id
+                # Create the item
+                logger.info("[{}] Inserting item, id: {}...".format(
+                    item_type, _id))
 
                 # Add it to TW/GCal
                 item_converted = convert_fun(item)
-                item_registered = side.add_item(item_converted)
+                try:
+                    other_item_created = other_side.add_item(item_converted)
+                except:
+                    logger.error("Adding item \"{}\" failed.\n"
+                                 "Item contents:\n\n{}\n\nException: {}"
+                                 .format(_id, item_converted, sys.exc_info()))
+                else:
+                    #  Add registry entry
+                    registered_ids[_id] = \
+                        str(other_item_created[other_type_key])
 
-                #  Add registry entry
-                registered_ids[_id] = item_registered[opposite_type_key]
+                    # Cache both sides with pickle - f=_id
+                    pickle_dump(item,
+                                open(os.path.join(serdes_dir, _id), 'wb'))
+                    pickle_dump(other_item_created,
+                                open(os.path.join(other_serdes_dir,
+                                                  registered_ids[_id]), 'wb'))
+
+            else:
+                # already in registry
+
+                # Update item
+                prev_item = pickle.load(
+                    open(os.path.join(serdes_dir, _id), 'rb'))
+
+                if self.item_has_update(prev_item, item, item_type):
+                    other_id = registered_ids[_id]
+                    other_item = other_side.get_single_item(other_id)
+                    assert other_item, \
+                        "{} not found on other side".format(other_id)
+
+                    logger.info("[{}] Item has changed, id: {}..."
+                                .format(item_type, _id))
+
+                    # Make sure that counterpart has not changed
+                    # otherwise deal with conflict
+                    prev_other_item = pickle.load(open(
+                        os.path.join(other_serdes_dir, other_id), 'rb'))
+                    if self.item_has_update(prev_other_item, other_item,
+                                            other_type):
+                        raise NotImplementedError(
+                            "Conflict resolution required!")
+                    else:
+                        logger.info("[{}] Updating conterpart item, id: {}..."
+                                    .format(item_type, other_id))
+                        # Convert to and update other side
+                        other_item_new = convert_fun(item)
+
+                        try:
+                            other_side.update_item(other_id, **other_item_new)
+                        except:
+                            logger.error("Updating item \"{}\" failed.\nItem contents:"
+                                         "\n\n{}\n\nException: {}\n"
+                                         .format(_id, other_item_new,
+                                                 sys.exc_info()))
+                        else:
+                            # Update cached version
+                            pickle_dump(
+                                item,
+                                open(os.path.join(serdes_dir,
+                                                  _id), 'wb'))
+                            pickle_dump(
+                                other_item_new,
+                                open(os.path.join(other_serdes_dir,
+                                                  other_id), 'wb'))
+                else:
+                    logger.info("[{}] Unchanged item, id: {}...".format(
+                        item_type, _id))
+
+    def item_has_update(self,
+                        prev_item: dict, new_item: dict, item_type: str) \
+            -> bool:
+        """Determine whether the item has been updated."""
+        assert(item_type in ["tw", "gcal"])
+
+        mod_time_key = self.config["{}_modify_key".format(item_type)]
+        mod_time_prev = prev_item[mod_time_key]
+        mod_time_new = new_item[mod_time_key]
+
+        # Either in datetime form or in str form the `<` will still be valid
+        if isinstance(mod_time_prev, datetime):
+            return mod_time_prev.replace(tzinfo=None) < \
+                mod_time_new.replace(tzinfo=None)
+        else:
+            return mod_time_prev < mod_time_new
 
     @staticmethod
-    def compare_tw_gcal_items(tw_item: dict, gcal_item: dict) -> Tuple[Set[str],
-                                                                       Dict[str, Tuple[Any, Any]]]:
+    def compare_tw_gcal_items(tw_item: dict, gcal_item: dict) \
+            -> Tuple[Set[str], Dict[str, Tuple[Any, Any]]]:
         """Compare a TW and a GCal item and find any differences.
 
         :returns: list of different keys and Dictionary with the differences for
@@ -141,7 +240,7 @@ class TWGCalAggregator():
         """
 
         assert all([i in tw_item.keys()
-                    for i in ['description', 'status', 'uuid']]) and \
+                    for i in ['description', 'status', 'uuid']]), \
             "Missing keys in tw_item"
 
         gcal_item = {}
@@ -165,15 +264,22 @@ class TWGCalAggregator():
         # Handle dates:
         # - If given due date -> (start=entry, end=due)
         # - Else -> (start=entry, end=entry+1)
-        entry_dt = GCalSide.format_datetime(tw_item['entry'])
+        entry_dt = tw_item['entry']
+        entry_dt_gcal_str = GCalSide.format_datetime(entry_dt)
         gcal_item['start'] = \
-            {'dateTime': entry_dt}
+            {'dateTime': entry_dt_gcal_str}
         if 'due' in tw_item.keys():
-            due_dt = GCalSide.format_datetime(tw_item['due'])
-            gcal_item['end'] = {'dateTime': due_dt}
+            due_dt_gcal = GCalSide.format_datetime(tw_item['due'])
+            gcal_item['end'] = {'dateTime': due_dt_gcal}
         else:
-            gcal_item['end'] = {'dateTime': GCalSide.format_datetime(
-                tw_item['entry'] + timedelta(days=1))}
+            gcal_item['end'] = {'dateTime':
+                                GCalSide.format_datetime(
+                                    entry_dt + timedelta(hours=1))}
+
+        # update time
+        if 'modified' in tw_item.keys():
+            gcal_item['updated'] = \
+                GCalSide.format_datetime(tw_item['modified'])
 
         return gcal_item
 
@@ -208,8 +314,14 @@ class TWGCalAggregator():
         tw_item['description'] = gcal_item['summary']
 
         # entry
-        tw_item['entry'] = GCalSide.parse_datetime(gcal_item['start']['dateTime'])
-        tw_item['due'] = GCalSide.parse_datetime(gcal_item['end']['dateTime'])
+
+        tw_item['entry'] = GCalSide.get_event_time(gcal_item, t='start')
+        tw_item['due'] = GCalSide.get_event_time(gcal_item, t='end')
+
+        # update time
+        if 'updated' in gcal_item.keys():
+            tw_item['modified'] = \
+                GCalSide.parse_datetime(gcal_item['updated'])
 
         # Note:
         # Don't add extra fields of GCal as TW annotations 'cause then, if
@@ -223,7 +335,7 @@ class TWGCalAggregator():
     @staticmethod
     def _parse_gcal_item_desc(gcal_item: dict) -> Tuple[List[str], str,
                                                         Union[UUID, None]]:
-        """Parse the necessary TW fields off a Google Calendar Item.
+        """Parse and return the necessary TW fields off a Google Calendar Item.
 
         """
         annotations: List[str] = []
@@ -261,29 +373,9 @@ class TWGCalAggregator():
                         uuid = UUID(parts[1].strip())
                     except ValueError as err:
                         logger.error(
-                            "Invalid UUID %s provided during GCal -> TW conversion, Using None..."
+                            "Invalid UUID %s provided during GCal "
+                            "-> TW conversion, Using None..."
                             % err)
 
         return annotations, status, uuid
-
-    def find_in_tw(self, gcal_item) -> Union[Tuple[UUID, Dict], None]:
-        """Given a GCal event find the corresponding reminder in TW, if the
-        latter exists.
-
-        :return: (ID, dict) for corresponding TW reminder, or None if a
-        valid one is not found
-        :rtype: tuple
-        """
-
-        pass
-
-    def find_in_gcal(self, tw_item):
-        """Given a TW reminder find the corresponding GCal event, if the
-        latter exists.
-
-        :return: ID of corresponding GCal reminder, None if a valid one is not
-        found
-        """
-
-        pass
 

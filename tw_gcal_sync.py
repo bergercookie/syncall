@@ -13,7 +13,7 @@ def main():
     logger.info("Initialising...")
 
     tw_config = {
-        "tags": "remindme",
+        "tags": ["remindme"],
     }
     gcal_config = {
     }
@@ -23,18 +23,12 @@ def main():
 
         aggregator.start()
 
-        tw_items = aggregator.tw_side.get_items()
-        gcal_items = aggregator.gcal_side.get_items()
-        print("tw_items: ", tw_items)
-        print("gcal_items: ", gcal_items)
+        tw_items = aggregator.tw_side.get_all_items()
+        gcal_items = aggregator.gcal_side.get_all_items()
 
         # Check and potentially register items
         aggregator.register_items(tw_items, "tw")
         aggregator.register_items(gcal_items, "gcal")
-
-        # tw_side.add_reminder("This is the new reminder", due="2018-01-01")
-        # print("Reminders: {}".format(reminders))
-        # print("Length: {}".format(len(reminders)))
 
 
 if __name__ == "__main__":

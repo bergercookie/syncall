@@ -25,13 +25,41 @@ gcal_item_expected:
 
     * uuid: 00208973-20da-4988-ae3e-58ef3650c363'
   end:
-    dateTime: '2019-03-06T00:03:09Z'
+    dateTime: '2019-03-05T01:03:09.000000Z'
   start:
-    dateTime: '2019-03-05T00:03:09Z'
+    dateTime: '2019-03-05T00:03:09.000000Z'
   summary: Kalimera!
+  updated: '2019-03-05T00:03:09.000000Z'
+gcal_item_w_date:
+  created: '2019-03-16T16:01:32.000Z'
+  creator: {displayName: Kalimeras, email: kalimera@gmail.com}
+  end: {date: '2019-03-09'}
+  etag: '"3105504184972000"'
+  extendedProperties:
+    private: {everyoneDeclinedDismissed: '-1'}
+  htmlLink: https://www.google.com/calendar/event?eid=MnMzYWNybjU4NmU0ZWQ3ZWZmNDlqYTkxb2ggdWl2ZTZwdDZkZHQ5ZWFkMjFqcnNnOWVtOGdAZw
+  iCalUID: 2s3acrn586e4ed7eff49ja91oh@google.com
+  id: 2s3acrn586e4ed7eff49ja91oh
+  kind: calendar#event
+  organizer: {displayName: TaskWarrior Reminders, email: uive6pt6ddt9ead21jrsg9em8g@group.calendar.google.com,
+    self: true}
+  reminders: {useDefault: true}
+  sequence: 0
+  start: {date: '2019-03-08'}
+  status: confirmed
+  summary: gcal original event
+  transparency: transparent
+  updated: '2019-03-16T16:01:32.486Z'
+tw_item_w_date_expected:
+  annotations: []
+  description: gcal original event
+  due: 2019-03-09 00:00:00
+  entry: 2019-03-08 00:00:00
+  status: pending
+  modified: 2019-03-16 16:01:32.486000
 gcal_item:
   created: '2019-03-08T00:29:06.000Z'
-  creator: {email: nikos.koukis.utility@gmail.com}
+  creator: {email: kalimera@gmail.com}
   description: '
 
     The same old description
@@ -45,7 +73,7 @@ gcal_item:
     * uuid: 00208973-20da-4988-ae3e-58ef3650c363
 
 
-    * status: waiting'
+    * status: pending'
   end: {dateTime: '2019-03-04T05:00:00Z'}
   etag: '"3104009893204000"'
   extendedProperties:
@@ -69,6 +97,7 @@ tw_item_expected:
   description: another summary goes here
   due: 2019-03-04 05:00:00
   entry: 2019-03-04 04:00:00
-  status: waiting
+  status: pending
   uuid: !!python/object:uuid.UUID
     int: 168941310994917300384925376981287779
+  modified: 2019-03-08 00:29:06.602000
