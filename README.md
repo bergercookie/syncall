@@ -1,37 +1,67 @@
-# TaskWarrior - Google Calendar synchronizer
+# Taskwarrior - Google Calendar synchroniser
 
-**Current module is still under heavy development. That means that the following
-instructions are merely project specifications and not ready-to-use features**
+<p align="center">
+  <a href="https://travis-ci.org/bergercookie/taskw_gcal_sync" alt="Build Status">
+  <img src="https://travis-ci.org/bergercookie/taskw_gcal_sync.svg?branch=master" /></a>
+</p>
 
-## Motivation / Repo information
+```
+ _            _                                _
+| |_ __ _ ___| | ____      __   __ _  ___ __ _| |    ___ _   _ _ __   ___
+| __/ _` / __| |/ /\ \ /\ / /  / _` |/ __/ _` | |   / __| | | | '_ \ / __|
+| || (_| \__ \   <  \ V  V /  | (_| | (_| (_| | |   \__ \ |_| | | | | (__
+ \__\__,_|___/_|\_\  \_/\_/____\__, |\___\__,_|_|___|___/\__, |_| |_|\___|
+                         |_____|___/           |_____|   |___/
+```
 
-Current repo is an attempt at synchronizing reminders across TaskWarrior and
-Google Calendar. The reason for the latter combination is that, while
-TaskWarrior is an excellent tool when it comes to keeping todo lists, keeping
-track of project goals etc., lacks the portability and simplicity of Google
-Calendar and its reminders. The latter also has the following advantages:
+## Description
+
+`taskw_gcal_sync` provides a solution for bidirectional synchronisation between
+[Taskwarrior](https://taskwarrior.org) and [Google
+Calendar](https://calendar.google.com). Given a *Calendar* name for Google
+Calendar and a *filter* for Taskwarrior (currently only a single tag is
+supported and tested) synchronise all the events between them.
+
+Overall, it supports synchronisation on the following events:
+
+  - Creation of an event
+  - Modification of an (existing) event
+  - [ONGOING] Deletion of an event
+
+The aforementioned features should work bidirectional, meaning a reminder
+created in Taskwarrior is uploaded to Google calendar. If either side modifies
+it, then the other side is also getting the modification and vice-versa
+
+## Motivation
+
+While Taskwarrior is an excellent tool when it comes to keeping TODO lists,
+keeping track of project goals etc., lacks the portability, simplicity and
+minimalistic design of Google Calendar. The latter also has the following
+advantages:
 
 - Automatic sync across all your devices
-- Super easy addition of new reminders using voice commands
-- Actual reminding of reminders and flexibility in defining the reminder time
+- Comfortable addition/modification of events using voice commands
+- Actual reminding of events with a variety of mechanisms
 
-Current script takes care of:
+## Mechanics
 
-- Adding/Modifying reminders across the two services
-- Mark reminders as done
-- Deleting reminders
-
-The aforementioned features should work bidirectional, meaning a reminder addded
-by TW is uploaded to GCal where it can be modified. The TW reminder is then to
-be updated based on the modified content.
-
-To achive synchronization across the two services, we use a push-pull mechanism
+To achieve synchronization across the two services, we use a push-pull mechanism
 which is far easier and less troublesome than an automatic synchronization
-solution. In case the latter behavior is desired, users may just run the `TODO`
-script periodically e.g. using a cronjob.
-
-% TODO - Add synchronization instructions
+solution. In case the latter behavior is desired, users may just run the
+script periodically e.g., using a `cron`.
 
 ## Installation instructions
 
-## Common usage scenarios
+TODO
+
+## Usage instructions
+
+TODO
+
+## TODO List
+
+See [ISSUES list](https://github.com/bergercookie/taskw_gcal_sync/issues) for
+the issues that I'm currently either working on or interested in implementing in
+the near future. In case there's something you are interesting in working on,
+don't hesitate to either ask for clarifications or just do it and directly make
+a PR
