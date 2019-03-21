@@ -1,8 +1,12 @@
 # Taskwarrior - Google Calendar synchroniser
 
 <p align="center">
-  <a href="https://travis-ci.org/bergercookie/taskw_gcal_sync" alt="Build Status">
-  <img src="https://travis-ci.org/bergercookie/taskw_gcal_sync.svg?branch=master" /></a>
+  <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="master">
+  <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=master" /></a>
+  <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="devel">
+  <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=devel" /></a>
+  <a href="https://www.codacy.com/app/bergercookie/taskw_gcal_sync" alt="Quality - devel">
+  <img src="https://api.codacy.com/project/badge/Grade/57206a822c41420bb5792b2cb70f06b5"/></a>
 </p>
 
 ```
@@ -52,16 +56,26 @@ script periodically e.g., using a `cron`.
 
 ## Installation instructions
 
-TODO
+Requirements:
+
+- Taskwarrior - [Installation instructions](https://taskwarrior.org/download/)
+- Python version >= 3.5 (yes I know, but [mypy](http://mypy-lang.org/) rocks!)
+- Python package dependencies:  `pip3 install --user . # from the repo root dir`
 
 ## Usage instructions
 
 TODO
 
+## Troubleshooting
+
+Having trouble installing or using the tool? Take a look at either the
+continuous-integration configuration or the unittsests for the installation
+steps or the recommended way of using the python code respectively.
+
 ## TODO List
 
 See [ISSUES list](https://github.com/bergercookie/taskw_gcal_sync/issues) for
-the issues that I'm currently either working on or interested in implementing in
+the things that I'm currently either working on or interested in implementing in
 the near future. In case there's something you are interesting in working on,
 don't hesitate to either ask for clarifications or just do it and directly make
-a PR
+a PR.
