@@ -7,6 +7,8 @@
   <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=devel" /></a>
   <a href="https://www.codacy.com/app/bergercookie/taskw_gcal_sync" alt="Quality - devel">
   <img src="https://api.codacy.com/project/badge/Grade/57206a822c41420bb5792b2cb70f06b5"/></a>
+  <a href="https://www.codacy.com/app/bergercookie/taskw_gcal_sync">
+  <img src="https://api.codacy.com/project/badge/Coverage/57206a822c41420bb5792b2cb70f06b5"/></a>
 </p>
 
 ```

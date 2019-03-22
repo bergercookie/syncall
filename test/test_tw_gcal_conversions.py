@@ -62,6 +62,7 @@ class TestConversions(GenericTestCase):
         self.assertDictEqual({i: self.tw_item[i] for i in intersection},
                              {i: tw_item_out[i] for i in intersection})
 
+
     def test_gcal_tw_n_back(self):
         """ GCal -> TW -> GCal conversion"""
         self.load_sample_items()

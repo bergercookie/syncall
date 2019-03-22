@@ -42,4 +42,5 @@ setup(name=PKG_NAME,
       scripts=['tw_gcal_sync.py', ],
       packages=[PKG_NAME, ],
       platforms="Linux",
+      test_suite="test"
       )
