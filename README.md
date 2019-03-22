@@ -43,9 +43,9 @@ keeping track of project goals etc., lacks the portability, simplicity and
 minimalistic design of Google Calendar. The latter also has the following
 advantages:
 
-- Automatic sync across all your devices
-- Comfortable addition/modification of events using voice commands
-- Actual reminding of events with a variety of mechanisms
+  - Automatic sync across all your devices
+  - Comfortable addition/modification of events using voice commands
+  - Actual reminding of events with a variety of mechanisms
 
 ## Mechanics
 
@@ -58,9 +58,9 @@ script periodically e.g., using a `cron`.
 
 Requirements:
 
-- Taskwarrior - [Installation instructions](https://taskwarrior.org/download/)
-- Python version >= 3.5 (yes I know, but [mypy](http://mypy-lang.org/) rocks!)
-- Python package dependencies:  `pip3 install --user . # from the repo root dir`
+  - Taskwarrior - [Installation instructions](https://taskwarrior.org/download/)
+  - Python version >= 3.5 (yes I know, but [mypy](http://mypy-lang.org/) rocks!)
+  - Python package dependencies:  `pip3 install --user . # from the repo root dir`
 
 ## Usage instructions
 

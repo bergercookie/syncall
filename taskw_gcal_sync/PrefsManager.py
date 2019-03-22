@@ -6,8 +6,6 @@ import re
 import sh
 import yaml
 
-from .clogger import setup_logging
-from .helpers import get_object_unique_name
 
 class PrefsManager():
     """Manage application-related preferences."""
@@ -26,6 +24,8 @@ class PrefsManager():
 
                             Default value: $HOME/.config/<appname>/config.yaml
 
+        .. todo:: Verify that the directory structure is as it should be - on
+                  directory structure creation
         """
         super(PrefsManager, self).__init__()
         logger_name = "{}_{}".format(__name__, id(__name__))
@@ -67,8 +67,6 @@ class PrefsManager():
         # If prefs_dir_full doesn't exist this along with all the files in it
         # should be created
         if os.path.isdir(self.prefs_dir_full):  # already there
-            """.. todo::Verify that the directory structure is as it should be
-            """
             self.logger.info("Loading preferences from cache...")
         else:
             self.logger.info("Creating preferences directory from scratch...")
