@@ -46,6 +46,7 @@ tags
 coverage.xml
 htmlcov/
 *egg-info
+dist/
 
 # CMake builds
 

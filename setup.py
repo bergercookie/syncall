@@ -8,16 +8,15 @@ author = "Nikos Koukis"
 author_email = "nickkouk@gmail.com"
 
 
-# Utility function to read the README file.
-# Used for the long_description.
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
 setup(name=PKG_NAME,
-      version='0.0.1',
+      version='0.0.2',
       description='Taskwarrior <-> Google Calendar synchronisation tool',
       long_description=read('README.md'),
+      long_description_content_type="text/markdown",
       author=author,
       author_email=author_email,
       maintainer=author,
@@ -34,12 +33,19 @@ setup(name=PKG_NAME,
           "sh",
           "taskw",
           "pyyaml",
+          "typing",
       ),
       url='https://github.org/bergercookie/{}'.format(PKG_NAME),
       download_url='https://github.org/bergercookie/{}'.format(PKG_NAME),
       dependency_links=[],
       scripts=['tw_gcal_sync.py', ],
       packages=[PKG_NAME, ],
-      platforms="Linux",
-      test_suite="test"
-      )
+      test_suite="test",
+      classifiers=[
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: Unix",
+      ])

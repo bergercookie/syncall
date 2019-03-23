@@ -1,15 +1,28 @@
 # Taskwarrior - Google Calendar synchroniser
 
-<p align="center">
-  <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="master">
-  <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=master" /></a>
-  <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="devel">
-  <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=devel" /></a>
-  <a href="https://www.codacy.com/app/bergercookie/taskw_gcal_sync" alt="Quality - devel">
-  <img src="https://api.codacy.com/project/badge/Grade/57206a822c41420bb5792b2cb70f06b5"/></a>
-  <a href="https://www.codacy.com/app/bergercookie/taskw_gcal_sync">
-  <img src="https://api.codacy.com/project/badge/Coverage/57206a822c41420bb5792b2cb70f06b5"/></a>
-</p>
+<table>
+<table>
+  <td>master</td>
+  <td>
+    <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="master">
+    <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=master" /></a>
+  </td>
+  <td>devel</td>
+  <td>
+    <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="devel">
+    <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=devel" /></a>
+  </td>
+</tr>
+</table>
+
+<a href="https://www.codacy.com/app/bergercookie/taskw_gcal_sync" alt="Quality - devel">
+<img src="https://api.codacy.com/project/badge/Grade/57206a822c41420bb5792b2cb70f06b5"/></a>
+<a href="https://www.codacy.com/app/bergercookie/taskw_gcal_sync">
+<img src="https://api.codacy.com/project/badge/Coverage/57206a822c41420bb5792b2cb70f06b5"/></a>
+<a href=https://github.com/bergercookie/taskw_gcal_sync/blob/devel/LICENSE" alt="LICENCE">
+<img src="https://img.shields.io/github/license/bergercookie/taskw_gcal_sync.svg" /></a>
+<a href="https://pypi.org/project/taskw-gcal-sync/" alt="pypi">
+<img src="https://img.shields.io/pypi/pyversions/taskw_gcal_sync.svg" /></a>
 
 ```
  _            _                                _
