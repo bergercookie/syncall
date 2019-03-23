@@ -15,12 +15,11 @@ class TestConversions(GenericTestCase):
 
     def setUp(self):
         self.maxDiff = None
-        pass
 
     def load_sample_items(self):
         with open(Path(GenericTestCase.DATA_FILES_PATH, 'sample_items.yaml'),
                   'r') as fname:
-            conts = yaml.load(fname)
+            conts = yaml.load(fname, Loader=yaml.Loader)
 
         self.gcal_item = conts['gcal_item']
         self.tw_item_expected = conts['tw_item_expected']

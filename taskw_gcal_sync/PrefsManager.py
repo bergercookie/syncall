@@ -39,7 +39,7 @@ class PrefsManager():
         self.cleaned_up = False
 
         # Preferences top-level directory
-        self.prefs_dir = os.path.basename(re.sub('\.py$', '', self.app_name))
+        self.prefs_dir = os.path.basename(re.sub(r'\.py$', '', self.app_name))
         self.prefs_dir_full = os.path.join(os.path.expanduser('~'), '.config',
                                            self.prefs_dir)
 
@@ -75,7 +75,7 @@ class PrefsManager():
 
         # static preferences file
         with open(self.prefs_file_static_full, 'r') as static_f:
-            tmp = yaml.load(static_f)
+            tmp = yaml.load(static_f, Loader=yaml.Loader)
             if tmp:
                 self.conts = tmp
 

@@ -24,7 +24,6 @@ setup(name=PKG_NAME,
       maintainer_email=author_email,
       license='BSD 3-clause',
       install_requires=(
-          "apiclient",
           "bidict",
           "click",
           "colorlog",

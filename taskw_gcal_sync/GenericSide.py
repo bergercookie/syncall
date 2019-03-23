@@ -1,7 +1,7 @@
 import abc
 import logging
 from taskw_gcal_sync.clogger import setup_logging
-from typing import Any, Dict, Union
+from typing import Dict, Union
 
 class GenericSide():
     """Interface for interacting with the various services.

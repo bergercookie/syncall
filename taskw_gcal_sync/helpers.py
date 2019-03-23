@@ -41,11 +41,11 @@ def get_valid_filename(s) -> str:
     non-string objects that will however be able to convert to strings via the
     str operator.
 
-    >>> get_valid_filename("5678^()^")
+    >>> get_valid_filename(r"5678^()^")
     '5678____'
-    >>> get_valid_filename("a|string\\go/es||here")
+    >>> get_valid_filename(r"a|string\\go/es||here")
     'a_string_go_es__here'
-    >>> get_valid_filename("strin***g")
+    >>> get_valid_filename(r"strin***g")
     'strin___g'
 
     .. seealso::

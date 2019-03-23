@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from taskw_gcal_sync import TWGCalAggregator, GCalSide, TaskWarriorSide
+from taskw_gcal_sync import TWGCalAggregator
 from taskw_gcal_sync.clogger import setup_logging
 import logging
 
