@@ -62,13 +62,6 @@ advantages:
 - Comfortable addition/modification of events using voice commands
 - Actual reminding of events with a variety of mechanisms
 
-## Mechanics
-
-To achieve synchronization across the two services, we use a push-pull mechanism
-which is far easier and less troublesome than an automatic synchronization
-solution. In case the latter behavior is desired, users may just run the
-script periodically e.g., using a `cron`.
-
 ## Installation instructions
 
 Requirements:
@@ -77,15 +70,52 @@ Requirements:
 - Python version >= 3.5 (yes I know, but [mypy](http://mypy-lang.org/) rocks!)
 - Python package dependencies:  `pip3 install --user . # from the repo root dir`
 
+Installation Choices:
+
+- Pypi: `pip3 install --user --upgrade taskw_gcal_sync`
+  + (will not contain latest version)
+- github: `pip3 install --user git+https://github.com/bergercookie/taskw_gcal_sync`
+- Download and install locally - bleeding edge
+
+    ```sh
+    git clone https://github.com/bergercookie/taskw_gcal_sync
+    cd taskw_gcal_sync
+    git checkout devel
+    pip3 install --user --upgrade .
+    ```
+
 ## Usage instructions
 
-TODO
+Run the `tw_gcal_sync` to synchronise the Google calendar of your choice with
+the selected Taskwarrior tag(s). Run with `--help` for the list of options.
+
+```sh
+# Sync the +remindme Taskwarrior tag with the calendar named "TW Reminders"
+
+tw_gcal_sync --help
+tw_gcal_sync -t remindme -c "TW Reminders"
+```
+
+
+
+## Mechanics
+
+To achieve synchronization across the two services, we use a push-pull mechanism
+which is far easier and less troublesome than an automatic synchronization
+solution. In case the latter behavior is desired, users may just run the
+script periodically e.g., using a `cron`.
+
 
 ## Troubleshooting
 
 Having trouble installing or using the tool? Take a look at either the
 continuous-integration configuration or the unittsests for the installation
 steps or the recommended way of using the python code respectively.
+
+## Self Promotion
+
+If you find this tool useful, please [star it on
+Github](https://github.com/bergercookie/taskw_gcal_sync)
 
 ## TODO List
 

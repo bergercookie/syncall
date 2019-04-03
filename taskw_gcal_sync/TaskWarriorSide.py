@@ -77,8 +77,9 @@ class TaskWarriorSide(GenericSide):
 
         curr_status = item.get('status', None)
         if curr_status not in ['pending', 'done']:
-            self.logger.info("Invalid status of task: {}, setting it to pending"
-                             .format(item['status']))
+            self.logger.info(
+                "Invalid status of task: \"%s\", setting it to pending"
+                % item['status'])
             item['status'] = 'pending'
 
         item.setdefault('tags', [])

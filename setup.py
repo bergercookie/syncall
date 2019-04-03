@@ -38,7 +38,7 @@ setup(name=PKG_NAME,
       url='https://github.org/bergercookie/{}'.format(PKG_NAME),
       download_url='https://github.org/bergercookie/{}'.format(PKG_NAME),
       dependency_links=[],
-      scripts=['tw_gcal_sync.py', ],
+      scripts=['tw_gcal_sync', ],
       packages=[PKG_NAME, ],
       test_suite="test",
       classifiers=[
@@ -47,5 +47,9 @@ setup(name=PKG_NAME,
           "Programming Language :: Python :: 3.7",
           "Programming Language :: Python :: 3.8",
           "License :: OSI Approved :: MIT License",
-          "Operating System :: Unix",
-      ])
+          "Operating System :: Unix", ],
+      package_data={PKG_NAME:
+                    ['res/gcal_client_secret.json', ],
+                    },
+
+      )

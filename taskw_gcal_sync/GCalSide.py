@@ -9,6 +9,7 @@ import httplib2
 import os
 import datetime
 from typing import Any, Dict, Union
+import pkg_resources
 import re
 
 class GCalSide(GenericSide):
@@ -31,8 +32,9 @@ class GCalSide(GenericSide):
             'calendar_summary': 'TaskWarrior Reminders',
             'calendar_id': None,
             'app_name': 'Google Calendar Sync',
-            'client_secret_file': os.path.join(os.path.expanduser('~'),
-                                               '.gcal_client_secret.json'),
+            'client_secret_file': pkg_resources.resource_filename(
+                "taskw_gcal_sync", os.path.join("res",
+                                                "gcal_client_secret.json")),
             'credentials_dir': os.path.join(os.path.expanduser('~'),
                                             '.gcal_credentials'),
             'credentials_fname': 'gcal_sync.json',
