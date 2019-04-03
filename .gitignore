@@ -42,6 +42,13 @@ tags
 # Python
 ######################
 .mypy_cache
+.coverage
+coverage.xml
+htmlcov/
+*egg-info
+dist/
+
+# CMake builds
 
 _build
 

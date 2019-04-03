@@ -51,10 +51,10 @@ def setup_logging(logger_name: str):
     """
     root = logging.getLogger(logger_name)
     root.setLevel(logging.DEBUG)
-    format = '%(name)s: %(asctime)s - %(levelname)-8s - %(message)s'
+    _format = '%(name)s: %(asctime)s - %(levelname)-8s - %(message)s'
     date_format = '%Y-%m-%d %H:%M:%S'
     if 'colorlog' in sys.modules and os.isatty(2):
-        cformat = '%(log_color)s' + format
+        cformat = '%(log_color)s' + _format
         f = colorlog.ColoredFormatter(cformat, date_format,
                                       log_colors={'DEBUG': 'cyan',
                                                   'INFO': 'green',
@@ -62,7 +62,7 @@ def setup_logging(logger_name: str):
                                                   'ERROR': 'bold_red',
                                                   'CRITICAL': 'bold_red'})
     else:
-        f = logging.Formatter(format, date_format)
+        f = logging.Formatter(_format, date_format)
 
     # dump to Console
     ch = logging.StreamHandler()
@@ -76,5 +76,5 @@ def setup_logging(logger_name: str):
         os.remove(logging_fname)
 
     fh = logging.FileHandler(logging_fname)
-    fh.setFormatter(logging.Formatter(format, date_format))
+    fh.setFormatter(logging.Formatter(_format, date_format))  # type: ignore
     root.addHandler(fh)

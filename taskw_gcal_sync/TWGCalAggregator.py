@@ -14,7 +14,6 @@ import sys
 
 from uuid import UUID
 from datetime import datetime, timedelta
-from dateutil.tz import tzutc
 
 logger = logging.getLogger(__name__)
 setup_logging(__name__)
@@ -150,6 +149,8 @@ class TWGCalAggregator():
                 # already in registry
 
                 # Update item
+                # todo: if this fails might be because they cleared only the
+                # pickle directories and not the cfg file
                 prev_item = pickle.load(
                     open(os.path.join(serdes_dir, _id), 'rb'))
 
@@ -179,10 +180,11 @@ class TWGCalAggregator():
                         try:
                             other_side.update_item(other_id, **other_item_new)
                         except:
-                            logger.error("Updating item \"{}\" failed.\nItem contents:"
-                                         "\n\n{}\n\nException: {}\n"
-                                         .format(_id, other_item_new,
-                                                 sys.exc_info()))
+                            logger.error(
+                                "Updating item \"{}\" failed.\nItem contents:"
+                                "\n\n{}\n\nException: {}\n"
+                                .format(_id, other_item_new,
+                                        sys.exc_info()))
                         else:
                             # Update cached version
                             pickle_dump(
@@ -297,6 +299,11 @@ class TWGCalAggregator():
         tw_item: Dict[str, Any] = {}
         # annotations
         tw_item['annotations'] = annotations
+
+        # alias - make aliases dict?
+        if status == 'done':
+            status = 'completed'
+
         # Status
         if status not in ['pending', 'completed', 'deleted', 'waiting',
                           'recurring']:

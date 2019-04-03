@@ -8,37 +8,48 @@ author = "Nikos Koukis"
 author_email = "nickkouk@gmail.com"
 
 
-# Utility function to read the README file.
-# Used for the long_description.
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
 setup(name=PKG_NAME,
-      version='0.0.1',
+      version='0.0.2',
       description='Taskwarrior <-> Google Calendar synchronisation tool',
       long_description=read('README.md'),
+      long_description_content_type="text/markdown",
       author=author,
       author_email=author_email,
       maintainer=author,
       maintainer_email=author_email,
       license='BSD 3-clause',
       install_requires=(
-          "oauth2client",
-          "sh",
+          "bidict",
           "click",
           "colorlog",
-          "bidict",
-          "taskw",
-          "apiclient",
           "google-api-python-client",
+          "mypy",
+          "oauth2client",
           "rfc3339",
-
+          "sh",
+          "taskw",
+          "pyyaml",
+          "typing",
       ),
       url='https://github.org/bergercookie/{}'.format(PKG_NAME),
       download_url='https://github.org/bergercookie/{}'.format(PKG_NAME),
-      dependency_links=["https://github.com/bergercookie/pymendeley/tarball/master#egg=package-0.1.1", ],
-      scripts=['tw_gcal_sync.py', ],
+      dependency_links=[],
+      scripts=['tw_gcal_sync', ],
       packages=[PKG_NAME, ],
-      platforms="Linux",
+      test_suite="test",
+      classifiers=[
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: Unix", ],
+      package_data={PKG_NAME:
+                    ['res/gcal_client_secret.json', ],
+                    },
+
       )

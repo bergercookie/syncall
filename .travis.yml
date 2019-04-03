@@ -1,0 +1,46 @@
+language: python
+env:
+  global:
+    - PKG_NAME: taskw_gcal_sync
+matrix:
+  include:
+    - os: linux
+      python: 3.6
+      dist: trusty
+    - os: linux
+      python: 3.7
+      dist: xenial
+    - os: linux
+      python: 3.8-dev
+      dist: xenial
+    - os: linux
+      python: nightly
+      dist: xenial
+dist: xenial
+sudo: required
+cache:
+  - pip
+before_install:
+  - sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 6B05F25D762E3157
+  - sudo apt-get update
+  - sudo apt-get install taskwarrior || sudo apt-get install task
+  - pip install codacy-coverage coverage
+install:
+  - pip install .
+script:
+  - python -m unittest
+  - ./test/run_doctests.sh
+  - ./scripts/do_coverage.sh
+deploy:
+  provider: pypi
+  user: bergercookie
+  server: https://upload.pypi.org/
+  password:
+    secure: FmuNG0ghGA8ftDbcUy5qy7/KRTp2loPDPFnlmXvWDPVY8gNIWVAB9zQWm7+FteMPL+Fw4HnuR7T41bAS3vB4xWdET/vRZDatxkTHTVqL80IBreOIdTyB+oZ48ObcAX5aUgxQmti8l5E365Hd61vuMK6FO3ZMMt01uz/bXNda5FH6ZqbVEUotb5CkUXsseQ8I/bH2n4F4gxPaBBit8T759nFvH73FjJs34QrRNlQ5i/19iiHnVAvGwrvtGtdJtrMqHR3UbGOtClQH7vRNoFPWuYt6BhTlgkHrCZNT4e9SAVaSHFJtqEAGqg66pUiSiCDiqDSlt84VFqUE72zMnWO1V99lDkfqpH3qD+1CUNfobUEnCZGiUEiGpjXFzgDYGsI/MqeABK3VswiYdQCXjQTenX/5ogVIyFSaDPyE6/5W8Z5Vy1lUh4wXqTtIjtPI8bWn9KHwSxPLhM3m6B5qKU6WAYyuuxXuV61aY96T+sP9mQKvDuhXthE+zrrs8XzjertZWZBBn4JePmiJTlx4AKYpf0pVpdRP8Cpnmbyb2TiGNhUmBna5iOJa0Fa+d4ePP9ObuHx0k+krYLdcLnJRLH8snNVhheTTDkiS8WgnwdrkQ8m1yaEFj1VH5rqNk35xI76F1KAITO6WnWkkwt7dYKynKO2xHQ6SQhYg8YMa3a9jNkc=
+  on:
+    # branch: devel
+    tags: true
+  distributions: sdist bdist_wheel
+  skip_existing: true
+after_deploy:
+  - ./scripts/after_deploy.sh
