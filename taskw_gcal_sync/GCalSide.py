@@ -1,15 +1,15 @@
 from taskw_gcal_sync import GenericSide
 
 from googleapiclient.http import HttpError
-from apiclient import discovery
-from oauth2client import client
-from oauth2client import tools
-from oauth2client.file import Storage
+from googleapiclient import discovery
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 import httplib2
 import os
 import datetime
 from typing import Any, Dict, Union
 import pkg_resources
+import pickle
 import re
 
 class GCalSide(GenericSide):
@@ -31,13 +31,11 @@ class GCalSide(GenericSide):
         self.config = {
             'calendar_summary': 'TaskWarrior Reminders',
             'calendar_id': None,
-            'app_name': 'Google Calendar Sync',
             'client_secret_file': pkg_resources.resource_filename(
                 "taskw_gcal_sync", os.path.join("res",
                                                 "gcal_client_secret.json")),
-            'credentials_dir': os.path.join(os.path.expanduser('~'),
-                                            '.gcal_credentials'),
-            'credentials_fname': 'gcal_sync.json',
+            'credentials_cache': os.path.join(os.path.expanduser('~'),
+                                              '.gcal_credentials.pickle'),
         }
         self.config.update(kargs)
 
@@ -61,41 +59,6 @@ class GCalSide(GenericSide):
             self.logger.info("Created, id: %s" % ret["id"])
             self.config['calendar_id'] = ret["id"]
         self.logger.info("Connected.")
-
-    def _get_credentials_file(self):
-        """Return the path to the credentials file.
-
-        Useful method for running this script from an arbitrary dir.
-        """
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(script_dir, self.config['client_secret_file'])
-
-    def _get_credentials(self):
-        """Gets valid user credentials from storage.
-
-        If nothing has been stored, or if the stored credentials are invalid,
-        the OAuth2 flow is completed to obtain the new credentials.
-
-        Returns:
-            Credentials, the obtained credential.
-        """
-        if not os.path.isdir(self.config['credentials_dir']):
-            os.makedirs(self.config['credentials_dir'])
-        credentials_path = os.path.join(self.config['credentials_dir'],
-                                        self.config['credentials_fname'])
-
-        store = Storage(credentials_path)
-        credentials = store.get()
-        if not credentials or credentials.invalid:
-            self.logger.info('Credentials not there. Fetching them...')
-            flow = client.flow_from_clientsecrets(
-                self._get_credentials_file(), GCalSide.SCOPES)
-            flow.user_agent = self.config['app_name']
-            credentials = tools.run_flow(flow, store)
-            self.logger.info('Storing credentials in %s' % credentials_path)
-        else:
-            self.logger.info('Using already cached credentials...')
-        return credentials
 
     def _fetch_cal_id_from_summary(self, cal_summary: str):
         """Return the id of the Calendar based on the given Summary.
@@ -170,10 +133,49 @@ class GCalSide(GenericSide):
 
         return event
 
+    def _get_credentials_file(self):
+        """Return the path to the credentials file.
+
+        Useful method for running this script from an arbitrary dir.
+        """
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        return os.path.join(script_dir, self.config['client_secret_file'])
+
+    def _get_credentials(self):
+        """Gets valid user credentials from storage.
+
+        If nothing has been stored, or if the stored credentials are invalid,
+        the OAuth2 flow is completed to obtain the new credentials.
+
+        :return: Credentials, the obtained credentials.
+        """
+
+        creds = None
+        credentials_cache = self.config['credentials_cache']
+        if os.path.isfile(credentials_cache):
+            with open(credentials_cache, 'rb') as token:
+                creds = pickle.load(token)
+
+        if not creds or not creds.valid:
+            self.logger.info('Invalid credentials. Fetching them...')
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'taskw_gcal_sync/res/gcal_client_secret.json',
+                    GCalSide.SCOPES)
+                creds = flow.run_local_server()
+            # Save the credentials for the next run
+            with open(credentials_cache, 'wb') as token:
+                pickle.dump(creds, token)
+        else:
+            self.logger.info('Using already cached credentials...')
+
+        return creds
+
     def gain_access(self):
-        credentials = self._get_credentials()
-        http = credentials.authorize(httplib2.Http())
-        self.service = discovery.build('calendar', 'v3', http=http)
+        creds = self._get_credentials()
+        self.service = discovery.build('calendar', 'v3', credentials=creds)
 
     @staticmethod
     def get_date_key(d: dict) -> str:

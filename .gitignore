@@ -73,3 +73,5 @@ compile_commands.json
 # backup files - created during sed operations
 *.bak
 s1.py
+
+quickstart
