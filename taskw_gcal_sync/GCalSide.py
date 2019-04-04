@@ -4,13 +4,13 @@ from googleapiclient.http import HttpError
 from googleapiclient import discovery
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-import httplib2
 import os
 import datetime
-from typing import Any, Dict, Union
+from typing import Any, Union
 import pkg_resources
 import pickle
 import re
+
 
 class GCalSide(GenericSide):
     """GCalSide interacts with the Google Calendar API.

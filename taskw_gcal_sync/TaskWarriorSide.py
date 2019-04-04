@@ -1,7 +1,7 @@
 from taskw_gcal_sync import GenericSide
 from taskw import TaskWarrior
 from uuid import UUID
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Union
 
 class TaskWarriorSide(GenericSide):
     """Handles interaction with the TaskWarrior client."""

@@ -74,4 +74,4 @@ compile_commands.json
 *.bak
 s1.py
 
-quickstart
+quickstart.py

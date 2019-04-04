@@ -96,15 +96,12 @@ tw_gcal_sync --help
 tw_gcal_sync -t remindme -c "TW Reminders"
 ```
 
-
-
 ## Mechanics
 
 To achieve synchronization across the two services, we use a push-pull mechanism
 which is far easier and less troublesome than an automatic synchronization
 solution. In case the latter behavior is desired, users may just run the
 script periodically e.g., using a `cron`.
-
 
 ## Troubleshooting
 
