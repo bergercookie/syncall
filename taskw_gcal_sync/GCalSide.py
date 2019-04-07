@@ -5,6 +5,7 @@ from googleapiclient import discovery
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import os
+from overrides import overrides
 import datetime
 from typing import Any, Union
 import pkg_resources
@@ -36,12 +37,15 @@ class GCalSide(GenericSide):
                                                 "gcal_client_secret.json")),
             'credentials_cache': os.path.join(os.path.expanduser('~'),
                                               '.gcal_credentials.pickle'),
+            # on calendarList.get() it also returns the cancelled/deleted items
+            'ignore_cancelled': True,
         }
         self.config.update(kargs)
 
         # If you modify this, delete your previously saved credentials
         self.service = None
 
+    @overrides
     def start(self):
         # connect
         self.logger.info("Connecting...")
@@ -79,6 +83,7 @@ class GCalSide(GenericSide):
             ret = None
         return ret
 
+    @overrides
     def get_all_items(self, **kargs):
         """Get all the events for the calendar that we use.
 
@@ -87,7 +92,8 @@ class GCalSide(GenericSide):
         # Get the ID of the calendar of interest
 
         events = []
-        request = self.service.events().list(calendarId=self.config['calendar_id'])
+        request = self.service.events().list(
+            calendarId=self.config['calendar_id'])
 
         # Loop until all pages have been processed.
         while request is not None:
@@ -104,15 +110,21 @@ class GCalSide(GenericSide):
 
         return events
 
+    @overrides
     def get_single_item(self, _id: str) -> Union[dict, None]:
         try:
-            return self.service.events().get(
+            ret = self.service.events().get(
                 calendarId=self.config['calendar_id'],
                 eventId=_id).execute()
+            if ret['status'] == 'cancelled':
+                ret = None
         except HttpError:
-            return None
+            ret = None
+        finally:
+            return ret
 
-    def update_item(self, item_id: str, **changes):
+    @overrides
+    def update_item(self, item_id, **changes):
         GCalSide._sanitize_all_datetimes(changes)
 
         # Check if item is there
@@ -124,6 +136,7 @@ class GCalSide(GenericSide):
             calendarId=self.config["calendar_id"],
             eventId=event['id'], body=event).execute()
 
+    @overrides
     def add_item(self, item) -> dict:
         GCalSide._sanitize_all_datetimes(item)
         event = self.service.events().insert(
@@ -132,6 +145,12 @@ class GCalSide(GenericSide):
         self.logger.debug('Event created: \"%s\"' % event.get('htmlLink'))
 
         return event
+
+    @overrides
+    def delete_single_item(self, item_id) -> None:
+        self.service.events().delete(
+            calendarId=self.config["calendar_id"],
+            eventId=item_id).execute()
 
     def _get_credentials_file(self):
         """Return the path to the credentials file.

@@ -1,7 +1,9 @@
 from taskw_gcal_sync import GenericSide
 from taskw import TaskWarrior
+from overrides import overrides
 from uuid import UUID
 from typing import Dict, List, Union
+
 
 class TaskWarriorSide(GenericSide):
     """Handles interaction with the TaskWarrior client."""
@@ -10,7 +12,8 @@ class TaskWarriorSide(GenericSide):
 
         # Tags are used to filter the tasks for both *push* and *pull*.
         self.config = {
-            'tags': []
+            'tags': [],
+            'ignore_deleted': True,  # Account for deleted items?
         }
         self.config.update(**kargs)
         assert isinstance(self.config['tags'], list), \
@@ -34,6 +37,7 @@ class TaskWarriorSide(GenericSide):
             self.items = self.tw.load_tasks()
             self.reload_items = False
 
+    @overrides
     def get_all_items(self, **kargs):
         """Fetch the tasks off the local taskw db.
 
@@ -48,10 +52,13 @@ class TaskWarriorSide(GenericSide):
         tasks = [t for t in tasks if tags.issubset(t.get('tags', []))]
         return tasks
 
-    def get_single_item(self, _id: str) -> Union[dict, None]:
-        t = self.tw.get_task(id=_id)[-1] or None
-        return t
+    @overrides
+    def get_single_item(self, item_id: str) -> Union[dict, None]:
+        t = self.tw.get_task(id=item_id)[-1] or None
+        assert 'status' in t.keys()  # type: ignore
+        return t if t['status'] != 'deleted' else None  # type: ignore
 
+    @overrides
     def update_item(self, item_id: str, **changes):
         """Update an already added item.
 
@@ -64,6 +71,7 @@ class TaskWarriorSide(GenericSide):
         d.update(changes)
         self.tw.task_update(d)
 
+    @overrides
     def add_item(self, item) -> dict:
         """Add a new Item as a TW task.
 
@@ -87,8 +95,12 @@ class TaskWarriorSide(GenericSide):
 
         description = item.pop('description')
         new_item = self.tw.task_add(description=description, **item)
-        len_print = min(10, len(description))
+        len_print = min(20, len(description))
         self.logger.info("Task \"{}\" created - \"{}\"..."
                          .format(new_item['id'], description[0:len_print]))
 
         return new_item
+
+    @overrides
+    def delete_single_item(self, item_id) -> None:
+        self.tw.task_delete(id=item_id)
