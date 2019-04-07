@@ -45,11 +45,11 @@ Overall, it supports synchronisation on the following events:
 
 - Creation of an event
 - Modification of an (existing) event
-- **ONGOING** Deletion of an event
+- Deletion of an event
 
 The aforementioned features should work bidirectional, meaning a reminder
-created in Taskwarrior is uploaded to Google calendar. If either side modifies
-it, then the other side is also getting the modification and vice-versa
+created, modified, or deleted from Google Calendar should also be created,
+modified, or deleted respectively in TaskWarrior and vice-versa
 
 ## Motivation
 
