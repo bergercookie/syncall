@@ -40,6 +40,10 @@ def main(gcal_calendar, tw_tags):
         aggregator.register_items(tw_items, "tw")
         aggregator.register_items(gcal_items, "gcal")
 
+        # Synchronise deleted items
+        aggregator.synchronise_deleted_items("tw")
+        aggregator.synchronise_deleted_items("gcal")
+
 
 if __name__ == "__main__":
     main()

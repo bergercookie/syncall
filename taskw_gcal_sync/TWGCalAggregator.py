@@ -1,4 +1,5 @@
 from taskw_gcal_sync import GCalSide
+from taskw_gcal_sync import GenericSide
 from taskw_gcal_sync import TaskWarriorSide
 from taskw_gcal_sync.PrefsManager import PrefsManager
 from taskw_gcal_sync.clogger import setup_logging
@@ -89,8 +90,9 @@ class TWGCalAggregator():
         """
         pass
 
-    def register_items(self, items: Tuple[Dict[str, Any]], item_type: str):
-        """Register a list of items.
+    def register_items(self, items: Tuple[Dict[str, Any]], item_type: str) \
+            -> None:
+        """Register a list of items coming from the side of `item_type`.
 
         - Register in the broker
         - Add the corresponding item in the other form (TW if registering GCal
@@ -102,20 +104,16 @@ class TWGCalAggregator():
 
         registered_ids = self.tw_gcal_ids if item_type == 'tw' else \
             self.tw_gcal_ids.inverse
-        # side = self.tw_side if item_type == "tw" else self.gcal_side
-        other_side = self.gcal_side if item_type == "tw" else self.tw_side
+        _, other_side = self._get_side_instances(item_type)
         convert_fun = TWGCalAggregator.convert_tw_to_gcal \
             if item_type == "tw" \
             else TWGCalAggregator.convert_gcal_to_tw
 
-        type_key = self.config["{}_id_key".format(item_type)]
         other_type = "gcal" if item_type == "tw" else "tw"
-        other_type_key = self.config["{}_id_key".format(other_type)]
-        serdes_dir = self.config["{}_serdes_dir".format(
-            "tw" if item_type == "tw" else "gcal")]
-        other_serdes_dir = self.config["{}_serdes_dir".format(
-            "gcal" if item_type == "tw" else "tw")]
+        type_key, other_type_key = self._get_type_keys(item_type)
+        serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
 
+        logger.info("[{}] Registering items...".format(item_type))
         for item in items:
             _id = str(item[type_key])
 
@@ -154,50 +152,157 @@ class TWGCalAggregator():
                 prev_item = pickle.load(
                     open(os.path.join(serdes_dir, _id), 'rb'))
 
-                if self.item_has_update(prev_item, item, item_type):
-                    other_id = registered_ids[_id]
-                    other_item = other_side.get_single_item(other_id)
-                    assert other_item, \
-                        "{} not found on other side".format(other_id)
-
-                    logger.info("[{}] Item has changed, id: {}..."
-                                .format(item_type, _id))
-
-                    # Make sure that counterpart has not changed
-                    # otherwise deal with conflict
-                    prev_other_item = pickle.load(open(
-                        os.path.join(other_serdes_dir, other_id), 'rb'))
-                    if self.item_has_update(prev_other_item, other_item,
-                                            other_type):
-                        raise NotImplementedError(
-                            "Conflict resolution required!")
-                    else:
-                        logger.info("[{}] Updating conterpart item, id: {}..."
-                                    .format(item_type, other_id))
-                        # Convert to and update other side
-                        other_item_new = convert_fun(item)
-
-                        try:
-                            other_side.update_item(other_id, **other_item_new)
-                        except:
-                            logger.error(
-                                "Updating item \"{}\" failed.\nItem contents:"
-                                "\n\n{}\n\nException: {}\n"
-                                .format(_id, other_item_new,
-                                        sys.exc_info()))
-                        else:
-                            # Update cached version
-                            pickle_dump(
-                                item,
-                                open(os.path.join(serdes_dir,
-                                                  _id), 'wb'))
-                            pickle_dump(
-                                other_item_new,
-                                open(os.path.join(other_serdes_dir,
-                                                  other_id), 'wb'))
-                else:
+                # Unchanged item
+                if not self.item_has_update(prev_item, item, item_type):
                     logger.info("[{}] Unchanged item, id: {}...".format(
                         item_type, _id))
+                    continue
+
+                # Item has changed
+
+                other_id = registered_ids[_id]
+                other_item = other_side.get_single_item(other_id)
+                assert other_item, \
+                    "{} not found on other side".format(other_id)
+
+                logger.info("[{}] Item has changed, id: {}..."
+                            .format(item_type, _id))
+
+                # Make sure that counterpart has not changed
+                # otherwise deal with conflict
+                prev_other_item = pickle.load(open(
+                    os.path.join(other_serdes_dir, other_id), 'rb'))
+                if self.item_has_update(prev_other_item, other_item,
+                                        other_type):
+                    raise NotImplementedError("Conflict resolution required!")
+                else:
+                    logger.info("[{}] Updating conterpart item, id: {}..."
+                                .format(item_type, other_id))
+                    # Convert to and update other side
+                    other_item_new = convert_fun(item)
+
+                    try:
+                        other_side.update_item(other_id, **other_item_new)
+                    except:
+                        logger.error(
+                            "Updating item \"{}\" failed.\nItem contents:"
+                            "\n\n{}\n\nException: {}\n"
+                            .format(_id, other_item_new, sys.exc_info()))
+                    else:
+                        # Update cached version
+                        pickle_dump(
+                            item, open(os.path.join(serdes_dir,
+                                                    _id), 'wb'))
+                        pickle_dump(
+                            other_item_new, open(os.path.join(other_serdes_dir,
+                                                              other_id), 'wb'))
+
+    def _get_serdes_dirs(self, item_type: str) -> Tuple[str, str]:
+        assert(item_type in ["tw", "gcal"])
+
+        serdes_dir = self.config["{}_serdes_dir".format(
+            "tw" if item_type == "tw" else "gcal")]
+        other_serdes_dir = self.config["{}_serdes_dir".format(
+            "gcal" if item_type == "tw" else "tw")]
+
+        return serdes_dir, other_serdes_dir
+
+    def _get_side_instances(self, item_type: str) \
+            -> Tuple[GenericSide, GenericSide]:
+        assert(item_type in ["tw", "gcal"])
+
+        side = self.tw_side if item_type == "tw" else self.gcal_side
+        other_side = self.gcal_side if item_type == "tw" else self.tw_side
+
+        return side, other_side
+
+    def _get_type_keys(self, item_type: str) \
+            -> Tuple[str, str]:
+        """ Get the key by which we access the items of each side."""
+        assert(item_type in ["tw", "gcal"])
+
+        other_type = "gcal" if item_type == "tw" else "tw"
+        type_key = self.config["{}_id_key".format(item_type)]
+        other_type_key = self.config["{}_id_key".format(other_type)]
+
+        return type_key, other_type_key
+
+    def synchronise_deleted_items(self, item_type: str) -> None:
+        """ Synchronise a task deleted at the side of `item_type`.
+
+        Deleted tasks are detected from cached entries in the items mapping that
+        don't exist anymore in the side of `item_type`.
+
+        :param item_type: "tw" / "gcal"
+        """
+        assert(item_type in ["tw", "gcal"])
+
+        # iterate through all the cached mappings - verify that they exist in
+        # the side (TW/GCal)
+        registered_ids = self.tw_gcal_ids if item_type == 'tw' else \
+            self.tw_gcal_ids.inverse
+        other_registered_ids = self.tw_gcal_ids if item_type == 'gcal' else \
+            self.tw_gcal_ids.inverse
+        side, other_side = self._get_side_instances(item_type)
+        other_type = "gcal" if item_type == "tw" else "tw"
+        type_key, other_type_key = self._get_type_keys(item_type)
+        serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
+
+        logger.info("[{}] Deleting items...".format(item_type))
+
+        other_to_remove: List[str] = []
+        for _id, other_id in registered_ids.items():
+            item_side = side.get_single_item(_id)
+            if item_side is not None:
+                continue  # still there
+
+            # item deleted
+            logger.info("[{}] Synchronising deleted item, id: {}..."
+                        .format(item_type, _id))
+
+            other_item = other_side.get_single_item(other_id)
+            assert other_item, \
+                "{} not found on other side".format(other_id)
+
+            # Make sure that counterpart has not changed
+            # otherwise deal with conflict
+            prev_other_item = pickle.load(open(
+                os.path.join(other_serdes_dir, other_id), 'rb'))
+            if self.item_has_update(prev_other_item, other_item,
+                                    other_type):
+                raise NotImplementedError("Conflict resolution required!")
+
+            try:
+                # delete item
+                other_side.delete_single_item(other_id)
+
+                # delete mapping
+                other_to_remove.append(other_id)
+
+                # remove serdes files
+                for p in [os.path.join(serdes_dir, _id),
+                          os.path.join(other_serdes_dir, other_id)]:
+                    os.remove(p)
+            except FileNotFoundError:
+                logger.error(
+                    "File not found on os.remove."
+                    "This may indicate a bug, please report it at: {}\n\n"
+                    .format("github.com/bergercookie/taskw_gcal_sync",
+                            sys.exc_info()))
+            except KeyError:
+                logger.error(
+                    "Item to delete [{}] is not present."
+                    "\n\n{}\n\nException: {}\n"
+                    .format(_id, other_item, sys.exc_info()))
+            except:
+                logger.error(
+                    "Deleting item \"{}\" failed.\nItem contents:"
+                    "\n\n{}\n\nException: {}\n"
+                    .format(_id, other_item, sys.exc_info()))
+
+        # Remove ids (out of loop)
+        for other_id in other_to_remove:
+            other_registered_ids.pop(other_id)
 
     def item_has_update(self,
                         prev_item: dict, new_item: dict, item_type: str) \
