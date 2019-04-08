@@ -105,9 +105,18 @@ script periodically e.g., using a `cron`.
 
 ## Troubleshooting
 
-Having trouble installing or using the tool? Take a look at either the
-continuous-integration configuration or the unittsests for the installation
-steps or the recommended way of using the python code respectively.
+* Having trouble installing or using the tool? Take a look at either the
+    continuous-integration configuration or the unittsests for the installation
+    steps or the recommended way of using the python code respectively.
+* Something doesn't work? Does the script fail midway through?
+  * Record the problem and report it in the ISSUES page. Include as much
+      information as possible so that I can reproduce it.
+  * Clean the configuration file. By default that's going to be
+      `$HOME/.config/taskw_gcal_sync`
+
+      `rm -rf ~/.config/taskw_gcal_sync`
+  * Remove the corresponding Google Calendar
+  * Rerun synchronisation from scratch
 
 ## Self Promotion
 
