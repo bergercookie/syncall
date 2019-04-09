@@ -69,7 +69,7 @@ Requirements:
 - Taskwarrior - [Installation instructions](https://taskwarrior.org/download/)
 - Python version >= 3.5 (yeah kind of restrictive, but
   [mypy](http://mypy-lang.org/) rocks!)
-- Python package dependencies:  `pip3 install --user . # from the repo root dir`
+- Python package dependencies:  `pip3 install --user --upgrade requirements.txt # from the repo root dir`
 
 Installation Choices:
 
@@ -82,7 +82,7 @@ Installation Choices:
     git clone https://github.com/bergercookie/taskw_gcal_sync
     cd taskw_gcal_sync
     git checkout devel
-    pip3 install --user --upgrade .
+    pip3 install --user --upgrade -r requirements.txt
     ```
 
 ## Usage instructions

@@ -26,7 +26,7 @@ before_install:
   - sudo apt-get install taskwarrior || sudo apt-get install task
   - pip install codacy-coverage coverage
 install:
-  - pip install .
+  - pip install -r requirements.txt
 script:
   - python -m unittest
   - ./test/run_doctests.sh

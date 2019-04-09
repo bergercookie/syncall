@@ -103,4 +103,4 @@ class TaskWarriorSide(GenericSide):
 
     @overrides
     def delete_single_item(self, item_id) -> None:
-        self.tw.task_delete(id=item_id)
+        self.tw.task_delete(uuid=item_id)
