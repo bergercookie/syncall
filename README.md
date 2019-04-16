@@ -69,7 +69,7 @@ Requirements:
 - Taskwarrior - [Installation instructions](https://taskwarrior.org/download/)
 - Python version >= 3.5 (yeah kind of restrictive, but
   [mypy](http://mypy-lang.org/) rocks!)
-- Python package dependencies:  `pip3 install --user --upgrade requirements.txt # from the repo root dir`
+- Python package dependencies:  `pip3 install --user --upgrade -r requirements.txt # from the repo root dir`
 
 Installation Choices:
 

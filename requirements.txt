@@ -1,2 +1,2 @@
--e git+https://github.com/bergercookie/taskw#egg=taskw
+-e git+https://github.com/bergercookie/taskw.git@develop#egg=taskw
 .
