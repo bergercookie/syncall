@@ -1,7 +1,6 @@
 # Taskwarrior - Google Calendar synchroniser
 
 <table>
-<table>
   <td>master</td>
   <td>
     <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="master">
@@ -12,7 +11,6 @@
     <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="devel">
     <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=devel" /></a>
   </td>
-</tr>
 </table>
 
 <a href="https://www.codacy.com/app/bergercookie/taskw_gcal_sync" alt="Quality - devel">
