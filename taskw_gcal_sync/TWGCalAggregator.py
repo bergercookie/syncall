@@ -377,16 +377,19 @@ class TWGCalAggregator():
             gcal_item['description'] += '\n* {}: {}'.format(k, tw_item[k])
 
         # Handle dates:
-        # - If given due date -> (start=entry, end=due)
+        # - If given due date -> (start=due-1, end=due)
         # - Else -> (start=entry, end=entry+1)
-        entry_dt = tw_item['entry']
-        entry_dt_gcal_str = GCalSide.format_datetime(entry_dt)
-        gcal_item['start'] = \
-            {'dateTime': entry_dt_gcal_str}
         if 'due' in tw_item.keys():
             due_dt_gcal = GCalSide.format_datetime(tw_item['due'])
+            gcal_item['start'] = {'dateTime':
+                                  GCalSide.format_datetime(
+                                      tw_item['due'] - timedelta(hours=1))}
             gcal_item['end'] = {'dateTime': due_dt_gcal}
         else:
+            entry_dt = tw_item['entry']
+            entry_dt_gcal_str = GCalSide.format_datetime(entry_dt)
+            gcal_item['start'] = {'dateTime': entry_dt_gcal_str}
+
             gcal_item['end'] = {'dateTime':
                                 GCalSide.format_datetime(
                                     entry_dt + timedelta(hours=1))}
