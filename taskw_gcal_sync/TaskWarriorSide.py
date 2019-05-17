@@ -64,9 +64,14 @@ class TaskWarriorSide(GenericSide):
 
         :raises ValaueError: In case the item is not present in the db
         """
-        if 'id' in changes.keys():
-            changes.pop(id)  # type: ignore
+        changes.pop('id', False)
         t = self.tw.get_task(uuid=UUID(item_id))[-1]
+
+        # task CLI doesn't allow `imask`
+        unwanted_keys = ['imask', 'recur', 'rtype', 'parent']
+        for i in unwanted_keys:
+            t.pop(i, False)
+
         d = dict(t)
         d.update(changes)
         self.tw.task_update(d)

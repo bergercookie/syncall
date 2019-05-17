@@ -127,6 +127,8 @@ class TWGCalAggregator():
                 item_converted = convert_fun(item)
                 try:
                     other_item_created = other_side.add_item(item_converted)
+                except KeyboardInterrupt:
+                    raise
                 except:
                     logger.error("Adding item \"{}\" failed.\n"
                                  "Item contents:\n\n{}\n\nException: {}"
@@ -174,28 +176,32 @@ class TWGCalAggregator():
                     os.path.join(other_serdes_dir, other_id), 'rb'))
                 if self.item_has_update(prev_other_item, other_item,
                                         other_type):
-                    raise NotImplementedError("Conflict resolution required!")
-                else:
-                    logger.info("[{}] Updating conterpart item, id: {}..."
-                                .format(item_type, other_id))
-                    # Convert to and update other side
-                    other_item_new = convert_fun(item)
+                    # raise NotImplementedError("Conflict resolution required!")
+                    logger.warning("Conflict! Arbitrarily selecting [{}]"
+                                   .format(item_type))
 
-                    try:
-                        other_side.update_item(other_id, **other_item_new)
-                    except:
-                        logger.error(
-                            "Updating item \"{}\" failed.\nItem contents:"
-                            "\n\n{}\n\nException: {}\n"
-                            .format(_id, other_item_new, sys.exc_info()))
-                    else:
-                        # Update cached version
-                        pickle_dump(
-                            item, open(os.path.join(serdes_dir,
-                                                    _id), 'wb'))
-                        pickle_dump(
-                            other_item_new, open(os.path.join(other_serdes_dir,
-                                                              other_id), 'wb'))
+                logger.info("[{}] Updating conterpart item, id: {}..."
+                            .format(item_type, other_id))
+                # Convert to and update other side
+                other_item_new = convert_fun(item)
+
+                try:
+                    other_side.update_item(other_id, **other_item_new)
+                except KeyboardInterrupt:
+                    raise
+                except:
+                    logger.error(
+                        "Updating item \"{}\" failed.\nItem contents:"
+                        "\n\n{}\n\nException: {}\n"
+                        .format(_id, other_item_new, sys.exc_info()))
+                else:
+                    # Update cached version
+                    pickle_dump(
+                        item, open(os.path.join(serdes_dir,
+                                                _id), 'wb'))
+                    pickle_dump(
+                        other_item_new, open(os.path.join(other_serdes_dir,
+                                                          other_id), 'wb'))
 
     def _get_serdes_dirs(self, item_type: str) -> Tuple[str, str]:
         assert(item_type in ["tw", "gcal"])
@@ -294,6 +300,8 @@ class TWGCalAggregator():
                     "Item to delete [{}] is not present."
                     "\n\n{}\n\nException: {}\n"
                     .format(_id, other_item, sys.exc_info()))
+            except KeyboardInterrupt:
+                raise
             except:
                 logger.error(
                     "Deleting item \"{}\" failed.\nItem contents:"
