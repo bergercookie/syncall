@@ -72,6 +72,9 @@ class TaskWarriorSide(GenericSide):
         for i in unwanted_keys:
             t.pop(i, False)
 
+        # taskwarrior doesn't let you explicitly set the update time.
+        # even if you set it it will revert to the time  that you call
+        # `tw.task_update`
         d = dict(t)
         d.update(changes)
         self.tw.task_update(d)
@@ -109,3 +112,32 @@ class TaskWarriorSide(GenericSide):
     @overrides
     def delete_single_item(self, item_id) -> None:
         self.tw.task_delete(uuid=item_id)
+
+    @staticmethod
+    def items_are_identical(item1, item2, ignore_keys=[]) -> bool:
+
+        keys = [k for k in ['annotations', 'description', 'due', 'modified',
+                            'status', 'uuid']
+                if k not in ignore_keys]
+
+        # special care for the annotations key
+        if 'annotations' in item1 and 'annotations' in item2:
+            if item1['annotations'] != item2['annotations']:
+                return False
+            item1.pop('annotations')
+            item2.pop('annotations')
+        # one may contain empty list
+        elif 'annotations' in item1 and 'annotations' not in item2:
+            if item1['annotations'] != []:
+                return False
+            item1.pop('annotations')
+        # one may contain empty list
+        elif 'annotations' in item2 and 'annotations' not in item1:
+            if item2['annotations'] != []:
+                return False
+            item2.pop('annotations')
+        else:
+            pass
+
+        return GenericSide._items_are_identical(item1, item2, keys)
+

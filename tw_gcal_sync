@@ -33,11 +33,13 @@ def main(gcal_calendar, tw_tags):
 
         aggregator.start()
 
-        tw_items = aggregator.tw_side.get_all_items()
-        gcal_items = aggregator.gcal_side.get_all_items()
-
         # Check and potentially register items
+        # tw
+        tw_items = aggregator.tw_side.get_all_items()
         aggregator.register_items(tw_items, "tw")
+
+        # gcal
+        gcal_items = aggregator.gcal_side.get_all_items()
         aggregator.register_items(gcal_items, "gcal")
 
         # Synchronise deleted items

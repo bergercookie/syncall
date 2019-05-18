@@ -100,7 +100,17 @@ tw_gcal_sync -t remindme -c "TW Reminders"
 To achieve synchronization across the two services, we use a push-pull mechanism
 which is far easier and less troublesome than an automatic synchronization
 solution. In case the latter behavior is desired, users may just run the
-script periodically e.g., using a `cron`.
+script periodically e.g., using cron:
+
+```sh
+$ crontab -e
+...
+
+# Add the following to sync every 10' - modify Calendar and Tag name accordingly
+*/10 * * * * tw_gcal_sync -c "TW Reminders" -t "remindme" 1>&1 1>~/tw_reminders_latest.log
+
+```
+
 
 ## Troubleshooting
 

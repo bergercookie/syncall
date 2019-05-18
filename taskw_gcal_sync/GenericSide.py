@@ -1,8 +1,10 @@
 import abc
+import datetime
 import logging
-from taskw_gcal_sync.clogger import setup_logging
 from typing import Union
 
+from taskw_gcal_sync.clogger import setup_logging
+from taskw_gcal_sync.utils import is_same_datetime
 
 class GenericSide(abc.ABC):
     """Interface for interacting with the various services."""
@@ -66,3 +68,41 @@ class GenericSide(abc.ABC):
         :returns: The newly added event
         """
         raise NotImplementedError("Implement in derived")
+
+    @staticmethod
+    def items_are_identical(item1: dict, item2: dict, ignore_keys=[]) -> bool:
+        """Determine whether two items are identical.
+
+        .. returns:: True if items are identical, False otherwise.
+        """
+        raise NotImplementedError("Implement in derived")
+
+    @staticmethod
+    def _items_are_identical(item1: dict, item2: dict, keys: list) -> bool:
+        """Compare the provided keys of the two given items.
+
+        Take extra care of the datetime key.
+        """
+
+        for k in keys:
+            if k in item1 and k in item2:
+                if isinstance(item1[k], datetime.datetime) and \
+                        isinstance(item2[k], datetime.datetime):
+
+                    if is_same_datetime(item1[k], item2[k]):
+                        continue
+                    else:
+                        return False
+
+                else:
+                    if item1[k] == item2[k]:
+                        continue
+                    else:
+                        return False
+
+            elif k not in item1 and k not in item2:
+                continue
+            else:
+                return False
+
+        return True

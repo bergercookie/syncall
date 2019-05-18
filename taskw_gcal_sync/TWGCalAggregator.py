@@ -22,6 +22,47 @@ setup_logging(__name__)
 pickle_dump = partial(pickle.dump, protocol=0)
 
 
+class TypeStats():
+    """Container class for printing execution stats on exit - per type"""
+    def __init__(self, item_type: str):
+        self.item_type = item_type
+
+        self.created_new = 0
+        self.updated = 0
+        self.deleted = 0
+        self.errors = 0
+
+        self.sep = '-' * len(self.item_type)
+
+    def create_new(self):
+        self.created_new += 1
+
+    def update(self):
+        self.updated += 1
+
+    def delete(self):
+        self.deleted += 1
+
+    def error(self):
+        self.errors += 1
+
+    def __repr__(self) -> str:
+        s = ("{}\n"
+             "{}\n"
+             "\t* Tasks created: {}\n"
+             "\t* Tasks updated: {}\n"
+             "\t* Tasks deleted: {}\n"
+             "\t* Errors:        {}\n").format(self.item_type, self.sep,
+                                               self.created_new,
+                                               self.updated,
+                                               self.deleted,
+                                               self.errors)
+        return s
+
+    def __str(self) -> str:
+        return self.__repr__()
+
+
 class TWGCalAggregator():
     """Aggregator class: TaskWarrior <-> Google Calendar sides.
 
@@ -49,6 +90,12 @@ class TWGCalAggregator():
         self.config['gcal_serdes_dir'] = os.path.join(
             self.prefs_manager.prefs_dir_full,
             'pickle_gcal')
+        self.config["report_stats"] = True
+        self.config["tw_stats"] = TypeStats("TaskWarrior")
+        self.config["gcal_stats"] = TypeStats("Google Calendar")
+        # Timestamps that have a difference maximum to this will be considered
+        # equal - see TaskWarriorSide::update_item for details
+        self.config["timestamp_tolerance"] = timedelta(seconds=1)
         self.config.update(**kargs)  # Update
 
         # Sides config + Initialisation
@@ -58,7 +105,7 @@ class TWGCalAggregator():
 
         gcal_config_new = {
         }
-        gcal_config_new.update(tw_config)
+        gcal_config_new.update(gcal_config)
         self.gcal_side = GCalSide(**gcal_config_new)
 
         # Correspondences between the TW reminders and the GCal events
@@ -69,6 +116,7 @@ class TWGCalAggregator():
             self.prefs_manager["tw_gcal_ids"] = bidict()
         self.tw_gcal_ids = self.prefs_manager["tw_gcal_ids"]
 
+        self.cleaned_up = False
         atexit.register(self.cleanup)
 
     def __enter__(self):
@@ -88,7 +136,15 @@ class TWGCalAggregator():
     def cleanup(self):
         """Method to be called automatically on instance destruction.
         """
-        pass
+
+        if not self.cleaned_up:
+            if self.config["report_stats"]:
+                # print summary stats
+                s = "\n{}\n{}".format(str(self.config["tw_stats"]),
+                                    str(self.config["gcal_stats"]))
+                print(s)
+
+            self.cleaned_up = True
 
     def register_items(self, items: Tuple[Dict[str, Any]], item_type: str) \
             -> None:
@@ -112,6 +168,7 @@ class TWGCalAggregator():
         other_type = "gcal" if item_type == "tw" else "tw"
         type_key, other_type_key = self._get_type_keys(item_type)
         serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
+        stats, other_stats = self._get_stats(item_type)
 
         logger.info("[{}] Registering items...".format(item_type))
         for item in items:
@@ -133,6 +190,7 @@ class TWGCalAggregator():
                     logger.error("Adding item \"{}\" failed.\n"
                                  "Item contents:\n\n{}\n\nException: {}"
                                  .format(_id, item_converted, sys.exc_info()))
+                    other_stats.error()
                 else:
                     #  Add registry entry
                     registered_ids[_id] = \
@@ -144,6 +202,7 @@ class TWGCalAggregator():
                     pickle_dump(other_item_created,
                                 open(os.path.join(other_serdes_dir,
                                                   registered_ids[_id]), 'wb'))
+                    other_stats.create_new()
 
             else:
                 # already in registry
@@ -155,6 +214,10 @@ class TWGCalAggregator():
                     open(os.path.join(serdes_dir, _id), 'rb'))
 
                 # Unchanged item
+
+                # if self.item_has_update(prev_item, item, item_type):
+                #     import ipdb; ipdb.set_trace()
+
                 if not self.item_has_update(prev_item, item, item_type):
                     logger.info("[{}] Unchanged item, id: {}...".format(
                         item_type, _id))
@@ -180,7 +243,7 @@ class TWGCalAggregator():
                     logger.warning("Conflict! Arbitrarily selecting [{}]"
                                    .format(item_type))
 
-                logger.info("[{}] Updating conterpart item, id: {}..."
+                logger.info("[{}] Updating counterpart item, id: {}..."
                             .format(item_type, other_id))
                 # Convert to and update other side
                 other_item_new = convert_fun(item)
@@ -194,6 +257,7 @@ class TWGCalAggregator():
                         "Updating item \"{}\" failed.\nItem contents:"
                         "\n\n{}\n\nException: {}\n"
                         .format(_id, other_item_new, sys.exc_info()))
+                    other_stats.error()
                 else:
                     # Update cached version
                     pickle_dump(
@@ -202,6 +266,16 @@ class TWGCalAggregator():
                     pickle_dump(
                         other_item_new, open(os.path.join(other_serdes_dir,
                                                           other_id), 'wb'))
+                    other_stats.update()
+
+    def _get_stats(self, item_type: str) -> Tuple[TypeStats, TypeStats]:
+        assert(item_type in ["tw", "gcal"])
+        stats = self.config["{}_stats".format(
+            "tw" if item_type == "tw" else "gcal")]
+        other_stats = self.config["{}_stats".format(
+            "gcal" if item_type == "tw" else "tw")]
+
+        return stats, other_stats
 
     def _get_serdes_dirs(self, item_type: str) -> Tuple[str, str]:
         assert(item_type in ["tw", "gcal"])
@@ -253,6 +327,7 @@ class TWGCalAggregator():
         other_type = "gcal" if item_type == "tw" else "tw"
         type_key, other_type_key = self._get_type_keys(item_type)
         serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
+        stats, other_stats = self._get_stats(item_type)
 
         logger.info("[{}] Deleting items...".format(item_type))
 
@@ -289,17 +364,20 @@ class TWGCalAggregator():
                 for p in [os.path.join(serdes_dir, _id),
                           os.path.join(other_serdes_dir, other_id)]:
                     os.remove(p)
+                other_stats.delete()
             except FileNotFoundError:
                 logger.error(
                     "File not found on os.remove."
                     "This may indicate a bug, please report it at: {}\n\n"
                     .format("github.com/bergercookie/taskw_gcal_sync",
                             sys.exc_info()))
+                other_stats.error()
             except KeyError:
                 logger.error(
                     "Item to delete [{}] is not present."
                     "\n\n{}\n\nException: {}\n"
                     .format(_id, other_item, sys.exc_info()))
+                other_stats.error()
             except KeyboardInterrupt:
                 raise
             except:
@@ -307,6 +385,7 @@ class TWGCalAggregator():
                     "Deleting item \"{}\" failed.\nItem contents:"
                     "\n\n{}\n\nException: {}\n"
                     .format(_id, other_item, sys.exc_info()))
+                other_stats.error()
 
         # Remove ids (out of loop)
         for other_id in other_to_remove:
@@ -317,17 +396,10 @@ class TWGCalAggregator():
             -> bool:
         """Determine whether the item has been updated."""
         assert(item_type in ["tw", "gcal"])
-
-        mod_time_key = self.config["{}_modify_key".format(item_type)]
-        mod_time_prev = prev_item[mod_time_key]
-        mod_time_new = new_item[mod_time_key]
-
-        # Either in datetime form or in str form the `<` will still be valid
-        if isinstance(mod_time_prev, datetime):
-            return mod_time_prev.replace(tzinfo=None) < \
-                mod_time_new.replace(tzinfo=None)
-        else:
-            return mod_time_prev < mod_time_new
+        side, _ = self._get_side_instances(item_type)
+        return not side.items_are_identical(prev_item, new_item,
+                                            ignore_keys=['urgency', 'modified',
+                                                         'updated'])
 
     @staticmethod
     def compare_tw_gcal_items(tw_item: dict, gcal_item: dict) \
@@ -436,9 +508,7 @@ class TWGCalAggregator():
         # Description
         tw_item['description'] = gcal_item['summary']
 
-        # entry
-
-        tw_item['entry'] = GCalSide.get_event_time(gcal_item, t='start')
+        # don't meddle with the 'entry' field
         tw_item['due'] = GCalSide.get_event_time(gcal_item, t='end')
 
         # update time

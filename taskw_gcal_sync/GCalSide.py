@@ -296,3 +296,12 @@ class GCalSide(GenericSide):
 
         return GCalSide.format_datetime(dt_dt)
 
+    @staticmethod
+    def items_are_identical(item1, item2, ignore_keys=[]) -> bool:
+
+        keys = [k for k in ['created', 'creator', 'description', 'end', 'etag',
+                            'htmlLlink', 'iCalUID', 'kind', 'organizer',
+                            'start', 'summary', 'updated']
+                if k not in ignore_keys]
+
+        return GenericSide._items_are_identical(item1, item2, keys=keys)
