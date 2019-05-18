@@ -54,7 +54,6 @@ tw_item_w_date_expected:
   annotations: []
   description: gcal original event
   due: 2019-03-09 00:00:00
-  entry: 2019-03-08 00:00:00
   status: pending
   modified: 2019-03-16 16:01:32.486000
 gcal_item:
@@ -96,7 +95,6 @@ tw_item_expected:
   - kalinuxta kai kali vradia
   description: another summary goes here
   due: 2019-03-04 05:00:00
-  entry: 2019-03-04 04:00:00
   status: pending
   uuid: !!python/object:uuid.UUID
     int: 168941310994917300384925376981287779

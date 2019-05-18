@@ -55,7 +55,7 @@ class TestConversions(GenericTestCase):
             TWGCalAggregator.convert_tw_to_gcal(self.tw_item))
 
         self.assertSetEqual(set(self.tw_item) ^ set(tw_item_out),
-                            set({'due', 'id', 'tags', 'urgency'}))
+                            set({'entry', 'due', 'id', 'tags', 'urgency'}))
 
         intersection = set(self.tw_item) & set(tw_item_out)
         self.assertDictEqual({i: self.tw_item[i] for i in intersection},
@@ -82,7 +82,7 @@ class TestConversions(GenericTestCase):
             tw_item=self.tw_item,
             gcal_item=self.gcal_item_expected)
         self.assertTupleEqual(diffs,
-                              ({'urgency', 'due', 'id', 'tags'},
+                              ({'entry', 'urgency', 'due', 'id', 'tags'},
                                {}))
 
         diffs = TWGCalAggregator.compare_tw_gcal_items(
