@@ -9,12 +9,13 @@ from pathlib import Path
 
 
 class TestConversions(GenericTestCase):
+    """Test item conversions - TW <-> Google Calendar."""
     @classmethod
     def setUpClass(cls):
         pass
 
     def setUp(self):
-        self.maxDiff = None
+        super(TestConversions, self).setUp()
 
     def load_sample_items(self):
         with open(Path(GenericTestCase.DATA_FILES_PATH, 'sample_items.yaml'),
@@ -63,7 +64,7 @@ class TestConversions(GenericTestCase):
 
 
     def test_gcal_tw_n_back(self):
-        """ GCal -> TW -> GCal conversion"""
+        """ GCal -> TW -> GCal conversion."""
         self.load_sample_items()
         gcal_item_out = TWGCalAggregator.convert_tw_to_gcal(
             TWGCalAggregator.convert_gcal_to_tw(self.gcal_item))

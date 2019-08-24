@@ -91,6 +91,11 @@ class GCalSide(GenericSide):
         """
         # Get the ID of the calendar of interest
 
+        if kargs:
+            self.logger.warn(
+                'Extra arguments in get_all_items call are not supported yet, ignoring them: {}'
+                .format(kargs))
+
         events = []
         request = self.service.events().list(
             calendarId=self.config['calendar_id'])
