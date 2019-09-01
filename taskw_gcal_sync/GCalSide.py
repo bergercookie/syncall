@@ -206,7 +206,6 @@ class GCalSide(GenericSide):
         """
         Get key corresponding to date -> 'date' or 'dateTime'
         """
-        assert len(d) == 1, "Input dictionary contains more than 1 key"
         assert 'dateTime' in d.keys() or 'date' in d.keys(), \
             "None of the required keys is in the dictionary"
         return 'date' if d.get('date', None) else 'dateTime'
