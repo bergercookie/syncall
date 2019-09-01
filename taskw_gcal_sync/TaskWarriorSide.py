@@ -13,14 +13,15 @@ class TaskWarriorSide(GenericSide):
         # Tags are used to filter the tasks for both *push* and *pull*.
         self.config = {
             'tags': [],
-            'ignore_deleted': True,  # Account for deleted items?
+            'config_filename': "~/.taskrc",
         }
         self.config.update(**kargs)
         assert isinstance(self.config['tags'], list), \
             'Expected a list of tags'
 
         # TaskWarrior instance as a class memeber - initialize only once
-        self.tw = TaskWarrior(marshal=True)
+        self.tw = TaskWarrior(marshal=True,
+                              config_filename=self.config['config_filename'])
         # All TW tasks
         self.items: Dict[str, List[dict]] = []
         # Whether to refresh the cached list of items
@@ -41,8 +42,13 @@ class TaskWarriorSide(GenericSide):
     def get_all_items(self, **kargs):
         """Fetch the tasks off the local taskw db.
 
-        :param kargs: Extra options for the call
+        :param kargs: Extra options for the call.
+            * Use the `order_by` arg to specify the order by which to return the
+              items.
+            * Use the `use_ascending_order` boolean flag to specify ascending/descending
+              order
         :return: list of tasks that exist locally
+        :raises: ValueError in case the order_by key is invalid
 
         """
         self._load_all_items()
@@ -50,6 +56,19 @@ class TaskWarriorSide(GenericSide):
 
         tags = set(self.config['tags'])
         tasks = [t for t in tasks if tags.issubset(t.get('tags', []))]
+
+        if 'order_by' in kargs and kargs['order_by'] is not None:
+            if 'use_ascending_order' in kargs:
+                assert isinstance(kargs['use_ascending_order'], bool)
+                use_ascending_order = kargs['use_ascending_order']
+            else:
+                use_ascending_order = True
+            assert kargs['order_by'] in ['description', 'end', 'entry', 'id',
+                                         'modified', 'status', 'urgency'] and \
+                "Invalid 'order_by' value"
+            tasks.sort(key=lambda t: t[kargs['order_by']],
+                       reverse=not use_ascending_order)
+
         return tasks
 
     @overrides

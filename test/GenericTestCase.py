@@ -23,4 +23,4 @@ class GenericTestCase(unittest.TestCase):
         pass
 
     def setUp(self):
-        pass
+        self.maxDiff = None

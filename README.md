@@ -111,7 +111,7 @@ $ crontab -e
 ...
 
 # Add the following to sync every 10' - modify Calendar and Tag name accordingly
-*/10 * * * * tw_gcal_sync -c "TW Reminders" -t "remindme" 1>&1 1>~/tw_reminders_latest.log
+*/10 * * * * tw_gcal_sync -c "TW Reminders" -t "remindme" 2>&1 1>~/tw_reminders_latest.log
 
 ```
 
