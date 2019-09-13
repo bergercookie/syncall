@@ -100,7 +100,6 @@ class PrefsManager():
         return key in self.conts
 
     def __getitem__(self, key):
-        assert key in self.conts, "Key not found"
         self.latest_accessed = key
         return self.conts[key]
 
