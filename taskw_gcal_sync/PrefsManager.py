@@ -42,15 +42,15 @@ class PrefsManager():
 
         # Preferences top-level directory
         self.prefs_dir = os.path.basename(re.sub(r'\.py$', '', self.app_name))
-        if platform.system == 'Linux':
+        if platform.system() == 'Linux':
             self.prefs_dir_full = os.path.join(os.path.expanduser('~'), '.config',
                                                self.prefs_dir)
-        elif platform.system == 'Darwin':
+        elif platform.system() == 'Darwin':
             self.prefs_dir_full = os.path.join(os.path.expanduser('~'),
                                                'Application Support',
                                                self.prefs_dir)
         else:
-            assert False and "Invalid path"
+            raise RuntimeError("Invalid code path")
 
         self.logger.info("Initialising Preferences Manager -> {}"
                          .format(self.prefs_dir))
