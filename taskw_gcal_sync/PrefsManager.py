@@ -18,7 +18,7 @@ class PrefsManager():
                          configuration data is to be stored.
         :param config_file: Optional path to the configuration that is to be
                             used.  If that is not provided, configuration is
-                            stored in the standard os-dependent path. If
+                            stored in the standard OS-dependent path. If
                             provided, the given configuration file is considered
                             read-only.
 
@@ -32,16 +32,25 @@ class PrefsManager():
         self.logger = logging.getLogger(logger_name)
         self.logger.setLevel(logging.DEBUG)
 
-        if platform.system() != 'Linux':
-            raise NotImplementedError("PrefsManageris works only on Linux")
+        if platform.system() not in ['Linux', 'Darwin']:
+            raise NotImplementedError(
+                "PrefsManager does not support current OS [{}]"
+                .format(platform.system() or "UNKNOWN"))
 
         self.app_name = app_name
         self.cleaned_up = False
 
         # Preferences top-level directory
         self.prefs_dir = os.path.basename(re.sub(r'\.py$', '', self.app_name))
-        self.prefs_dir_full = os.path.join(os.path.expanduser('~'), '.config',
-                                           self.prefs_dir)
+        if platform.system() == 'Linux':
+            self.prefs_dir_full = os.path.join(os.path.expanduser('~'), '.config',
+                                               self.prefs_dir)
+        elif platform.system() == 'Darwin':
+            self.prefs_dir_full = os.path.join(os.path.expanduser('~'),
+                                               'Application Support',
+                                               self.prefs_dir)
+        else:
+            raise RuntimeError("Invalid code path")
 
         self.logger.info("Initialising Preferences Manager -> {}"
                          .format(self.prefs_dir))
@@ -91,7 +100,6 @@ class PrefsManager():
         return key in self.conts
 
     def __getitem__(self, key):
-        assert key in self.conts, "Key not found"
         self.latest_accessed = key
         return self.conts[key]
 

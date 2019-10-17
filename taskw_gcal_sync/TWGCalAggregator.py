@@ -14,7 +14,7 @@ import pickle
 import sys
 
 from uuid import UUID
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 setup_logging(__name__)

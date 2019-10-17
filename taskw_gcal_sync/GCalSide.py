@@ -1,15 +1,17 @@
 from taskw_gcal_sync import GenericSide
 
-from googleapiclient.http import HttpError
-from googleapiclient import discovery
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-import os
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient import discovery
+from googleapiclient.http import HttpError
 from overrides import overrides
-import datetime
+
 from typing import Any, Union
-import pkg_resources
+import datetime
+import operator
+import os
 import pickle
+import pkg_resources
 import re
 
 
@@ -229,14 +231,17 @@ class GCalSide(GenericSide):
     @staticmethod
     def format_datetime(dt: datetime.datetime) -> str:
         """
-        Format a datetime object to the ISO speicifications containing the 'T'
-        and 'Z' separators
+        Format a datetime object according to the ISO speicifications containing
+        the 'T' and 'Z' separators
+
+        Usage::
 
         >>> GCalSide.format_datetime(datetime.datetime(2019, 3, 5, 0, 3, 9, 1234))
         '2019-03-05T00:03:09.001234Z'
         >>> GCalSide.format_datetime(datetime.datetime(2019, 3, 5, 0, 3, 9, 123))
         '2019-03-05T00:03:09.000123Z'
         """
+
         assert isinstance(dt, datetime.datetime)
         dt_out = dt.strftime(GCalSide._datetime_format)
         return dt_out
@@ -246,6 +251,8 @@ class GCalSide(GenericSide):
         """
         Parse datetime given in the GCal format ('T', 'Z' separators).
 
+        Usage::
+
         >>> GCalSide.parse_datetime('2019-03-05T00:03:09Z')
         datetime.datetime(2019, 3, 5, 0, 3, 9)
         >>> GCalSide.parse_datetime('2019-03-05')
@@ -254,24 +261,60 @@ class GCalSide(GenericSide):
         datetime.datetime(2019, 3, 5, 0, 3, 1, 123400)
         >>> GCalSide.parse_datetime('2019-03-08T00:29:06.602Z')
         datetime.datetime(2019, 3, 8, 0, 29, 6, 602000)
+        >>> GCalSide.parse_datetime('2019-09-04T16:52:42+01:0.000000Z')
+        datetime.datetime(2019, 9, 4, 17, 52, 42)
         """
+
         assert isinstance(dt, str)
+        adjust_tz = False
+
         dt2 = dt
-        if 'T' in dt:
-            # Adjust for microseconds
-            g = re.match(".*:\d\d\.(\d*)Z$", dt)
-            if g is None or not g.groups():
-                dt2 = dt[:-1] + '.000000' + 'Z'
-            elif len(g.groups()[0]) <= 6:
-                dt2 = dt[:-1 - len(g.groups()[0])] \
-                    + g.groups()[0] \
-                    + '0' * (6 - len(g.groups()[0])) + 'Z'
+        tau_pos = dt.find('T')
+
+        if tau_pos != -1:
+            plus_pos = dt.find('+', tau_pos)
+            minus_pos = dt.find('-', tau_pos)
+            assert plus_pos == -1 or minus_pos == -1 and \
+                "Both '+' and '-' appear after 'T'"
+
+            sign_pos = plus_pos if plus_pos != -1 else minus_pos
+
+            if sign_pos != -1:
+                tz_op = operator.add if plus_pos else operator.sub
+                adjust_tz = True
+
+                # strip the timezone
+                # find first '.' after sign - strip until that
+                dot_pos = dt.find('.', sign_pos)
+                assert dot_pos != -1 and \
+                    "Invalid format - {}".format(dt)
+
+                dt2 = dt[:sign_pos] + dt[dot_pos:]
+
+                tz_str = dt[sign_pos+1:dot_pos]
+                tz_dt = datetime.datetime.strptime(tz_str, "%H:%M")
+                tz_timedelta = datetime.timedelta(hours=tz_dt.hour,
+                                                  minutes=tz_dt.minute)
+            else:
+                # same timezone - adjust for seconds
+                # Adjust for microseconds
+                g = re.match(".*:\d\d\.(\d*)Z$", dt)
+                if g is None or not g.groups():
+                    dt2 = dt[:-1] + '.000000' + 'Z'
+                elif len(g.groups()[0]) <= 6:
+                    dt2 = dt[:-1 - len(g.groups()[0])] \
+                        + g.groups()[0] \
+                        + '0' * (6 - len(g.groups()[0])) + 'Z'
 
             _format = GCalSide._datetime_format
         else:
             _format = GCalSide._date_format
 
         dt_out = datetime.datetime.strptime(dt2, _format)
+
+        if adjust_tz:
+            dt_out = tz_op(dt_out, tz_timedelta)
+
         return dt_out
 
     @staticmethod
@@ -298,7 +341,6 @@ class GCalSide(GenericSide):
 
         dt_dt = GCalSide.parse_datetime(dt)
         if dt_dt.hour == 0 and dt_dt.minute == 0 and dt_dt.second == 0:
-            # dt_dt += datetime.timedelta(days=1)
             dt_dt -= datetime.timedelta(minutes=1)
 
         return GCalSide.format_datetime(dt_dt)
