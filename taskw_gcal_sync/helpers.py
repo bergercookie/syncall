@@ -52,5 +52,5 @@ def get_valid_filename(s) -> str:
         - `https://stackoverflow.com/questions/295135/turn-a-string-into-a-valid-filename`_
 
     """
-    s = str(s).strip().replace(' ', '_')
-    return re.sub(r'(?u)[^-\w.]', '_', s)
+    s = str(s).strip().replace(" ", "_")
+    return re.sub(r"(?u)[^-\w.]", "_", s)

@@ -14,6 +14,7 @@ import os
 import sys
 import tempfile
 from .helpers import get_valid_filename
+
 try:
     import colorlog
 except ImportError:
@@ -39,7 +40,7 @@ def get_logging_filename(logger_name: str):
                  hierarchy) if that is not already there. To do that, see
                  create_logging_file method instead.
     """
-    fname = get_valid_filename(".".join([logger_name, 'log']))
+    fname = get_valid_filename(".".join([logger_name, "log"]))
     return os.path.join(LOGGING_DIR, fname)
 
 
@@ -51,16 +52,21 @@ def setup_logging(logger_name: str):
     """
     root = logging.getLogger(logger_name)
     root.setLevel(logging.DEBUG)
-    _format = '%(name)s: %(asctime)s - %(levelname)-8s - %(message)s'
-    date_format = '%Y-%m-%d %H:%M:%S'
-    if 'colorlog' in sys.modules and os.isatty(2):
-        cformat = '%(log_color)s' + _format
-        f = colorlog.ColoredFormatter(cformat, date_format,
-                                      log_colors={'DEBUG': 'cyan',
-                                                  'INFO': 'green',
-                                                  'WARNING': 'bold_yellow',
-                                                  'ERROR': 'bold_red',
-                                                  'CRITICAL': 'bold_red'})
+    _format = "%(name)s: %(asctime)s - %(levelname)-8s - %(message)s"
+    date_format = "%Y-%m-%d %H:%M:%S"
+    if "colorlog" in sys.modules and os.isatty(2):
+        cformat = "%(log_color)s" + _format
+        f = colorlog.ColoredFormatter(
+            cformat,
+            date_format,
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "bold_yellow",
+                "ERROR": "bold_red",
+                "CRITICAL": "bold_red",
+            },
+        )
     else:
         f = logging.Formatter(_format, date_format)
 
@@ -72,7 +78,7 @@ def setup_logging(logger_name: str):
     # dump to file
     create_logging_structure()
     logging_fname = get_logging_filename(logger_name)
-    if (os.path.isfile(logging_fname)):
+    if os.path.isfile(logging_fname):
         os.remove(logging_fname)
 
     fh = logging.FileHandler(logging_fname)

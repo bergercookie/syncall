@@ -6,8 +6,10 @@ from typing import Union
 from taskw_gcal_sync.clogger import setup_logging
 from taskw_gcal_sync.utils import is_same_datetime
 
+
 class GenericSide(abc.ABC):
     """Interface for interacting with the various services."""
+
     __metaclass__ = abc.ABCMeta
 
     def __init__(self):
@@ -86,8 +88,9 @@ class GenericSide(abc.ABC):
 
         for k in keys:
             if k in item1 and k in item2:
-                if isinstance(item1[k], datetime.datetime) and \
-                        isinstance(item2[k], datetime.datetime):
+                if isinstance(item1[k], datetime.datetime) and isinstance(
+                    item2[k], datetime.datetime
+                ):
 
                     if is_same_datetime(item1[k], item2[k]):
                         continue

@@ -3,8 +3,7 @@ import datetime
 import dateutil.tz
 
 
-def is_same_datetime(dt1: datetime.datetime,
-                     dt2: datetime.datetime) -> bool:
+def is_same_datetime(dt1: datetime.datetime, dt2: datetime.datetime) -> bool:
     """Compare two datetime.datetime objects.
 
     If the timezone is empty, assume local timezone
@@ -27,13 +26,13 @@ def is_same_datetime(dt1: datetime.datetime,
     return dt1_ == dt2_
 
 
-class ResolutionStrategy():
+class ResolutionStrategy:
     """Interface for Resolution strategies."""
+
     __metaclass__ = abc.ABCMeta
 
     def __init__(self):
         pass
-
 
     def resolve_conflicts(self, rems):
         """Method for resolving a bunch of reminders.
@@ -44,7 +43,7 @@ class ResolutionStrategy():
         """
 
         for rem in rems:
-            self.resolve_conflict(rem['tw'], rem['gcal'])
+            self.resolve_conflict(rem["tw"], rem["gcal"])
 
     @abc.abstractmethod
     def resolve_conflict(self, item1, item2):

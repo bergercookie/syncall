@@ -7,7 +7,7 @@ import sh
 import yaml
 
 
-class PrefsManager():
+class PrefsManager:
     """Manage application-related preferences."""
 
     def __init__(self, app_name: str, config_file: str = None):
@@ -32,33 +32,34 @@ class PrefsManager():
         self.logger = logging.getLogger(logger_name)
         self.logger.setLevel(logging.DEBUG)
 
-        if platform.system() not in ['Linux', 'Darwin']:
+        if platform.system() not in ["Linux", "Darwin"]:
             raise NotImplementedError(
-                "PrefsManager does not support current OS [{}]"
-                .format(platform.system() or "UNKNOWN"))
+                "PrefsManager does not support current OS [{}]".format(
+                    platform.system() or "UNKNOWN"
+                )
+            )
 
         self.app_name = app_name
         self.cleaned_up = False
 
         # Preferences top-level directory
-        self.prefs_dir = os.path.basename(re.sub(r'\.py$', '', self.app_name))
-        if platform.system() == 'Linux':
-            self.prefs_dir_full = os.path.join(os.path.expanduser('~'), '.config',
-                                               self.prefs_dir)
-        elif platform.system() == 'Darwin':
-            self.prefs_dir_full = os.path.join(os.path.expanduser('~'),
-                                               'Application Support',
-                                               self.prefs_dir)
+        self.prefs_dir = os.path.basename(re.sub(r"\.py$", "", self.app_name))
+        if platform.system() == "Linux":
+            self.prefs_dir_full = os.path.join(
+                os.path.expanduser("~"), ".config", self.prefs_dir
+            )
+        elif platform.system() == "Darwin":
+            self.prefs_dir_full = os.path.join(
+                os.path.expanduser("~"), "Application Support", self.prefs_dir
+            )
         else:
             raise RuntimeError("Invalid code path")
 
-        self.logger.info("Initialising Preferences Manager -> {}"
-                         .format(self.prefs_dir))
+        self.logger.info("Initialising Preferences Manager -> {}".format(self.prefs_dir))
 
         # static preferences file
         prefs_file_static = "cfg.yaml"
-        self.prefs_file_static_full = os.path.join(self.prefs_dir_full,
-                                                   prefs_file_static)
+        self.prefs_file_static_full = os.path.join(self.prefs_dir_full, prefs_file_static)
         self.prefs_file_is_ro = False
 
         # Overwrite latter settings if config_file is manually specified
@@ -83,7 +84,7 @@ class PrefsManager():
             sh.touch(self.prefs_file_static_full)
 
         # static preferences file
-        with open(self.prefs_file_static_full, 'r') as static_f:
+        with open(self.prefs_file_static_full, "r") as static_f:
             tmp = yaml.load(static_f, Loader=yaml.Loader)
             if tmp:
                 self.conts = tmp
@@ -109,8 +110,9 @@ class PrefsManager():
     def update_last(self, new_val):
         """Update the latest fetched setting."""
         if self.latest_accessed is None:
-            raise RuntimeError("update_last has been called even though no "
-                               "element has been accessed yet.")
+            raise RuntimeError(
+                "update_last has been called even though no " "element has been accessed yet."
+            )
         self.conts[self.latest_accessed] = new_val
 
     def cleanup(self):
@@ -122,7 +124,9 @@ class PrefsManager():
 
                 self.cleaned_up = True
             else:
-                self.logger.debug("Skipping updating preferences file - Running in read-only mode")
+                self.logger.debug(
+                    "Skipping updating preferences file - Running in read-only mode"
+                )
 
     def write_prefs(self, p):
         """Helper class for writing the current cached settings to a file.
@@ -131,7 +135,5 @@ class PrefsManager():
                   be overwritten
         :type p: str
         """
-        with open(p, 'w') as f:
+        with open(p, "w") as f:
             yaml.dump(self.conts, f, default_flow_style=False)
-
-

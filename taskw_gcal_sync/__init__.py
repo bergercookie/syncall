@@ -6,9 +6,4 @@ from taskw_gcal_sync.GCalSide import GCalSide
 from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
 
 
-__all__ = [
-    "GenericSide",
-    "TaskWarriorSide",
-    "GCalSide",
-    "TWGCalAggregator",
-]
+__all__ = ["GenericSide", "TaskWarriorSide", "GCalSide", "TWGCalAggregator"]

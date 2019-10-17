@@ -11,8 +11,8 @@ class GenericTestCase(unittest.TestCase):
 
     :ivar DATA_FILES_PATH: Path to the directory holding data files for testing.
     """
-    DATA_FILES_PATH = os.path.join(os.path.dirname(__file__),
-                                   "test_data")
+
+    DATA_FILES_PATH = os.path.join(os.path.dirname(__file__), "test_data")
 
     @classmethod
     def setUpClass(cls):
