@@ -13,7 +13,7 @@ def read(fname):
 
 
 setup(name=PKG_NAME,
-      version='0.3.1',
+      version='0.4.2',
       description='Taskwarrior <-> Google Calendar synchronisation tool',
       long_description=read('README.md'),
       long_description_content_type="text/markdown",

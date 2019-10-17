@@ -185,9 +185,12 @@ class GCalSide(GenericSide):
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'taskw_gcal_sync/res/gcal_client_secret.json',
-                    GCalSide.SCOPES)
+                client_secret = pkg_resources.resource_filename(
+                    __name__,
+                    os.path.join("res", "gcal_client_secret.json"))
+                print("client_secret: ", client_secret)
+                flow = InstalledAppFlow.from_client_secrets_file(client_secret,
+                                                                 GCalSide.SCOPES)
                 creds = flow.run_local_server()
             # Save the credentials for the next run
             with open(credentials_cache, 'wb') as token:
