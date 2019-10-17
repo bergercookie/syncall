@@ -23,6 +23,10 @@
 <img src="https://img.shields.io/pypi/pyversions/taskw_gcal_sync.svg" /></a>
 <a href="https://badge.fury.io/py/taskw-gcal-sync">
 <img src="https://badge.fury.io/py/taskw-gcal-sync.svg" alt="PyPI version" height="18"></a>
+<a href="https://pepy.tech/project/taskw-gcal-sync">
+<img alt="Downloads" src="https://pepy.tech/badge/taskw-gcal-sync"></a>
+<a href="https://github.com/psf/black">
+<img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
 ```
  _            _                                _
