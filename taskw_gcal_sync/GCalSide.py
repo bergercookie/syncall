@@ -197,7 +197,6 @@ class GCalSide(GenericSide):
                 client_secret = pkg_resources.resource_filename(
                     __name__, os.path.join("res", "gcal_client_secret.json")
                 )
-                print("client_secret: ", client_secret)
                 flow = InstalledAppFlow.from_client_secrets_file(
                     client_secret, GCalSide.SCOPES
                 )

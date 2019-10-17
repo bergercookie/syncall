@@ -24,13 +24,14 @@ before_install:
   - sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 6B05F25D762E3157
   - sudo apt-get update
   - sudo apt-get install taskwarrior || sudo apt-get install task
-  - pip install codacy-coverage coverage
+  - pip install codacy-coverage coverage black
 install:
   - pip install -r requirements.txt
 script:
   - python -m unittest
   - ./test/run_doctests.sh
   - ./scripts/do_coverage.sh
+  - ./scripts/check_style.sh
 # deploy:
 # Doesn't work.. - should be a travis issue..
 #   provider: pypi
