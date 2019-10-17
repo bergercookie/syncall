@@ -21,6 +21,8 @@
 <img src="https://img.shields.io/github/license/bergercookie/taskw_gcal_sync.svg" /></a>
 <a href="https://pypi.org/project/taskw-gcal-sync/" alt="pypi">
 <img src="https://img.shields.io/pypi/pyversions/taskw_gcal_sync.svg" /></a>
+<a href="https://badge.fury.io/py/taskw-gcal-sync">
+<img src="https://badge.fury.io/py/taskw-gcal-sync.svg" alt="PyPI version" height="18"></a>
 
 ```
  _            _                                _
