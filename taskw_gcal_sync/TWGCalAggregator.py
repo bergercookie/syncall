@@ -200,11 +200,14 @@ class TWGCalAggregator:
                     registered_ids[_id] = str(other_item_created[other_type_key])
 
                     # Cache both sides with pickle - f=_id
+                    logger.debug('Pickling item "{}"'.format(_id))
+                    logger.debug('Pickling item "{}"'.format(registered_ids[_id]))
                     pickle_dump(item, open(os.path.join(serdes_dir, _id), "wb"))
                     pickle_dump(
                         other_item_created,
                         open(os.path.join(other_serdes_dir, registered_ids[_id]), "wb"),
                     )
+
                     other_stats.create_new()
 
             else:

@@ -55,7 +55,7 @@ The aforementioned features should work bidirectional, meaning a reminder
 created, modified, or deleted from Google Calendar should also be created,
 modified, or deleted respectively in TaskWarrior and vice-versa
 
-## Demo - initial run - filling of a Google Calendar
+## Demo - first run - populating calendar in GCal
 
 ![demo_gif](https://github.com/bergercookie/taskw_gcal_sync/blob/master/misc/demo.gif)
 

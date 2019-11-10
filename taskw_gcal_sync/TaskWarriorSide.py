@@ -43,12 +43,15 @@ class TaskWarriorSide(GenericSide):
               items.
             * Use the `use_ascending_order` boolean flag to specify ascending/descending
               order
+            * `include_completed` to also include completed tasks [Default: True]
         :return: list of tasks that exist locally
         :raises: ValueError in case the order_by key is invalid
 
         """
         self._load_all_items()
-        tasks = self.items["completed"] + self.items["pending"]
+        tasks = self.items["pending"]
+        if kargs.get("include_completed", True):
+            tasks.extend(self.items["completed"])
 
         tags = set(self.config["tags"])
         tasks = [t for t in tasks if tags.issubset(t.get("tags", []))]
@@ -160,3 +163,8 @@ class TaskWarriorSide(GenericSide):
             pass
 
         return GenericSide._items_are_identical(item1, item2, keys)
+
+    @staticmethod
+    def get_task_id(item: dict) -> str:
+        """Get the ID of a task in string form"""
+        return str(item["uuid"])
