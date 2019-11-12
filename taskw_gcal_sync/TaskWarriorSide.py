@@ -49,9 +49,10 @@ class TaskWarriorSide(GenericSide):
 
         """
         self._load_all_items()
-        tasks = self.items["pending"]
+        tasks = []
         if kargs.get("include_completed", True):
             tasks.extend(self.items["completed"])
+        tasks.extend(self.items["pending"])
 
         tags = set(self.config["tags"])
         tasks = [t for t in tasks if tags.issubset(t.get("tags", []))]
@@ -114,7 +115,7 @@ class TaskWarriorSide(GenericSide):
         curr_status = item.get("status", None)
         if curr_status not in ["pending", "done"]:
             self.logger.info(
-                'Invalid status of task: "%s", setting it to pending' % item["status"]
+                'Invalid status of task: "%s", setting it to pending', item["status"]
             )
             item["status"] = "pending"
 
