@@ -12,7 +12,7 @@ class TaskWarriorSide(GenericSide):
         super(TaskWarriorSide, self).__init__()
 
         # Tags are used to filter the tasks for both *push* and *pull*.
-        self.config = {"tags": [], "config_filename": "~/.taskrc"}
+        self.config = {"tags": [], "config_filename": "~/.taskrc", "enable_caching": True}
         self.config.update(**kargs)
         assert isinstance(self.config["tags"], list), "Expected a list of tags"
 
@@ -29,6 +29,10 @@ class TaskWarriorSide(GenericSide):
         May return already loaded list of items, depending on the validity of
         the cache.
         """
+
+        if not self.config["enable_caching"]:
+            self.items = self.tw.load_tasks()
+            return
 
         if self.reload_items:
             self.items = self.tw.load_tasks()
