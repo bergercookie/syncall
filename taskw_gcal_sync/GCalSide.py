@@ -23,7 +23,7 @@ class GCalSide(GenericSide):
     OAuth2 user authentication workflow.
     """
 
-    SCOPES = "https://www.googleapis.com/auth/calendar"
+    SCOPES = ["https://www.googleapis.com/auth/calendar"]
     _datetime_format = "%Y-%m-%dT%H:%M:%S.%fZ"
     _date_format = "%Y-%m-%d"
 
