@@ -268,8 +268,6 @@ class GCalSide(GenericSide):
         datetime.datetime(2019, 3, 5, 0, 3, 1, 123400)
         >>> GCalSide.parse_datetime('2019-03-08T00:29:06.602Z')
         datetime.datetime(2019, 3, 8, 0, 29, 6, 602000)
-        >>> GCalSide.parse_datetime('2019-09-04T16:52:42+01:0.000000Z')
-        datetime.datetime(2019, 9, 4, 17, 52, 42)
         """
 
         assert isinstance(dt, str)
