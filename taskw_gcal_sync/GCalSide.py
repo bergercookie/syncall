@@ -8,6 +8,7 @@ from overrides import overrides
 
 from typing import Any, Union
 import datetime
+import dateutil
 import operator
 import os
 import pickle
@@ -79,7 +80,7 @@ class GCalSide(GenericSide):
         ]
 
         if matching_calendars:
-            assert len(matching_calendars) == 1 and "Too many calendars match!"
+            assert len(matching_calendars) == 1, "Too many calendars match!"
             ret = matching_calendars[0]
         else:
             ret = None
@@ -271,56 +272,7 @@ class GCalSide(GenericSide):
         """
 
         assert isinstance(dt, str)
-        adjust_tz = False
-
-        dt2 = dt
-        tau_pos = dt.find("T")
-
-        if tau_pos != -1:
-            plus_pos = dt.find("+", tau_pos)
-            minus_pos = dt.find("-", tau_pos)
-            assert plus_pos == -1 or minus_pos == -1 and "Both '+' and '-' appear after 'T'"
-
-            sign_pos = plus_pos if plus_pos != -1 else minus_pos
-
-            if sign_pos != -1:
-                tz_op = operator.add if plus_pos else operator.sub
-                adjust_tz = True
-
-                # strip the timezone
-                # find first '.' after sign - strip until that
-                dot_pos = dt.find(".", sign_pos)
-                assert dot_pos != -1 and "Invalid format - {}".format(dt)
-
-                dt2 = dt[:sign_pos] + dt[dot_pos:]
-
-                tz_str = dt[sign_pos + 1 : dot_pos]
-                tz_dt = datetime.datetime.strptime(tz_str, "%H:%M")
-                tz_timedelta = datetime.timedelta(hours=tz_dt.hour, minutes=tz_dt.minute)
-            else:
-                # same timezone - adjust for seconds
-                # Adjust for microseconds
-                g = re.match(".*:\d\d\.(\d*)Z$", dt)
-                if g is None or not g.groups():
-                    dt2 = dt[:-1] + ".000000" + "Z"
-                elif len(g.groups()[0]) <= 6:
-                    dt2 = (
-                        dt[: -1 - len(g.groups()[0])]
-                        + g.groups()[0]
-                        + "0" * (6 - len(g.groups()[0]))
-                        + "Z"
-                    )
-
-            _format = GCalSide._datetime_format
-        else:
-            _format = GCalSide._date_format
-
-        dt_out = datetime.datetime.strptime(dt2, _format)
-
-        if adjust_tz:
-            dt_out = tz_op(dt_out, tz_timedelta)
-
-        return dt_out
+        return dateutil.parser.parse(dt).replace(tzinfo=None)
 
     @staticmethod
     def _sanitize_all_datetimes(item: dict) -> None:
