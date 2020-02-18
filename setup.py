@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+
 from setuptools import setup
 
 PKG_NAME = "taskw_gcal_sync"
@@ -24,7 +25,6 @@ setup(
     maintainer_email=AUTHOR_EMAIL,
     license="BSD 3-clause",
     install_requires=(
-        "arrow",
         "bidict",
         "click",
         "colorlog",
@@ -38,6 +38,7 @@ setup(
         "sh",
         "taskw",
         "typing",
+        "python-dateutil",
     ),
     url="https://github.com/bergercookie/{}".format(PKG_NAME),
     download_url="https://github.com/bergercookie/{}".format(PKG_NAME),
