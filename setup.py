@@ -4,8 +4,8 @@ from setuptools import setup
 
 PKG_NAME = "taskw_gcal_sync"
 
-author = "Nikos Koukis"
-author_email = "nickkouk@gmail.com"
+AUTHOR = "Nikos Koukis"
+AUTHOR_EMAIL = "nickkouk@gmail.com"
 
 
 def read(fname):
@@ -14,14 +14,14 @@ def read(fname):
 
 setup(
     name=PKG_NAME,
-    version="0.4.2",
+    version="0.4.3",
     description="Taskwarrior <-> Google Calendar synchronisation tool",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
-    author=author,
-    author_email=author_email,
-    maintainer=author,
-    maintainer_email=author_email,
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    maintainer=AUTHOR,
+    maintainer_email=AUTHOR_EMAIL,
     license="BSD 3-clause",
     install_requires=(
         "arrow",
