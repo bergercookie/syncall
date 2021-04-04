@@ -134,8 +134,7 @@ class TWGCalAggregator:
         os.makedirs(self.config["gcal_serdes_dir"], exist_ok=True)
 
     def cleanup(self):
-        """Method to be called automatically on instance destruction.
-        """
+        """Method to be called automatically on instance destruction."""
 
         if not self.cleaned_up:
             if self.config["report_stats"]:
@@ -193,6 +192,7 @@ class TWGCalAggregator:
                             _id, item_converted, sys.exc_info()
                         )
                     )
+                    logger.error(traceback.format_exc())
                     other_stats.error()
                 else:
                     #  Add registry entry
@@ -258,6 +258,7 @@ class TWGCalAggregator:
                         'Updating item "{}" failed.\nItem contents:'
                         "\n\n{}\n\nException: {}\n".format(_id, other_item_new, sys.exc_info())
                     )
+                    logger.error(traceback.format_exc())
                     other_stats.error()
                 else:
                     # Update cached version
@@ -303,7 +304,7 @@ class TWGCalAggregator:
         return type_key, other_type_key
 
     def synchronise_deleted_items(self, item_type: str) -> None:
-        """ Synchronise a task deleted at the side of `item_type`.
+        """Synchronise a task deleted at the side of `item_type`.
 
         Deleted tasks are detected from cached entries in the items mapping that
         don't exist anymore in the side of `item_type`.
@@ -365,12 +366,14 @@ class TWGCalAggregator:
                         "github.com/bergercookie/taskw_gcal_sync", sys.exc_info()
                     )
                 )
+                logger.error(traceback.format_exc())
                 other_stats.error()
             except KeyError:
                 logger.error(
                     "Item to delete [{}] is not present."
                     "\n\n{}\n\nException: {}\n".format(_id, other_item, sys.exc_info())
                 )
+                logger.error(traceback.format_exc())
                 other_stats.error()
             except KeyboardInterrupt:
                 raise
@@ -379,6 +382,7 @@ class TWGCalAggregator:
                     'Deleting item "{}" failed.\nItem contents:'
                     "\n\n{}\n\nException: {}\n".format(_id, other_item, sys.exc_info())
                 )
+                logger.error(traceback.format_exc())
                 other_stats.error()
 
         # Remove ids (out of loop)
@@ -517,9 +521,7 @@ class TWGCalAggregator:
 
     @staticmethod
     def _parse_gcal_item_desc(gcal_item: dict) -> Tuple[List[str], str, Union[UUID, None]]:
-        """Parse and return the necessary TW fields off a Google Calendar Item.
-
-        """
+        """Parse and return the necessary TW fields off a Google Calendar Item."""
         annotations: List[str] = []
         status = "pending"
         uuid = None
@@ -558,5 +560,6 @@ class TWGCalAggregator:
                             "Invalid UUID %s provided during GCal "
                             "-> TW conversion, Using None..." % err
                         )
+                        logger.error(traceback.format_exc())
 
         return annotations, status, uuid

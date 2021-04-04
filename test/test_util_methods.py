@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
-
-from taskw_gcal_sync.TaskWarriorSide import TaskWarriorSide
-from .GenericTestCase import GenericTestCase
-
-from pathlib import Path
 import os
 import unittest
+from pathlib import Path
+
 import yaml
+
+from taskw_gcal_sync.TaskWarriorSide import TaskWarriorSide
+
+from .GenericTestCase import GenericTestCase
 
 
 class TestTW(GenericTestCase):
@@ -57,7 +57,3 @@ class TestGCal(GenericTestCase):
 
     def setUp(self):
         super(TestGCal, self).setUp()
-
-
-if __name__ == "__main__":
-    unittest.main()

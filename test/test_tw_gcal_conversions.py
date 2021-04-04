@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import unittest
 from pathlib import Path
 
@@ -108,7 +106,3 @@ class TestConversions(GenericTestCase):
             tw_item=self.tw_item_expected, gcal_item=self.gcal_item
         )
         self.assertTupleEqual(diffs, (set(), {}))
-
-
-if __name__ == "__main__":
-    unittest.main()

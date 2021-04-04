@@ -1,33 +1,32 @@
 language: python
 env:
   global:
-  - PKG_NAME: taskw_gcal_sync
+    - PKG_NAME: taskw_gcal_sync
 matrix:
   include:
-  - os: linux
-    python: 3.6
-    dist: trusty
-  - os: linux
-    python: 3.7
-    dist: xenial
-  - os: linux
-    python: 3.8-dev
-    dist: xenial
-  - os: linux
-    python: nightly
-    dist: xenial
+    - os: linux
+      python: 3.6
+      dist: trusty
+    - os: linux
+      python: 3.7
+      dist: xenial
+    - os: linux
+      python: 3.8-dev
+      dist: xenial
+    - os: linux
+      python: nightly
+      dist: xenial
 dist: xenial
 sudo: required
 cache:
-- pip
+  - pip
 before_install:
-- sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 6B05F25D762E3157
-- sudo apt-get update
-- sudo apt-get install taskwarrior || sudo apt-get install task
-- pip install black
+  - sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 6B05F25D762E3157
+  - sudo apt-get update
+  - sudo apt-get install taskwarrior || sudo apt-get install task
+  - pip install black pytest
 install:
-- pip install -r requirements.txt
+  - pip install -r requirements.txt
 script:
-- python -m unittest
-- "./test/run_doctests.sh"
-- "./scripts/check_style.sh"
+  - pytest --doctest-modules
+  - ./scripts/check_style.sh
