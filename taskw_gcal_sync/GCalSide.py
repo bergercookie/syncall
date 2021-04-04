@@ -1,19 +1,19 @@
-from taskw_gcal_sync import GenericSide
+import datetime
+import operator
+import os
+import pickle
+import re
+from typing import Any, Union
 
+import dateutil
+import pkg_resources
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient import discovery
 from googleapiclient.http import HttpError
 from overrides import overrides
 
-from typing import Any, Union
-import datetime
-import dateutil
-import operator
-import os
-import pickle
-import pkg_resources
-import re
+from taskw_gcal_sync import GenericSide
 
 
 class GCalSide(GenericSide):

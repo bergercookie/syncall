@@ -1,20 +1,19 @@
-from taskw_gcal_sync import GCalSide
-from taskw_gcal_sync import GenericSide
-from taskw_gcal_sync import TaskWarriorSide
-from taskw_gcal_sync.PrefsManager import PrefsManager
-from taskw_gcal_sync.clogger import setup_logging
-
-from bidict import bidict
-from typing import Any, Tuple, List, Dict, Union, Set
 import atexit
 import logging
 import os
-from functools import partial
 import pickle
 import sys
-
-from uuid import UUID
+import traceback
 from datetime import timedelta
+from functools import partial
+from typing import Any, Dict, List, Set, Tuple, Union
+from uuid import UUID
+
+from bidict import bidict
+
+from taskw_gcal_sync import GCalSide, GenericSide, TaskWarriorSide
+from taskw_gcal_sync.clogger import setup_logging
+from taskw_gcal_sync.PrefsManager import PrefsManager
 
 logger = logging.getLogger(__name__)
 setup_logging(__name__)

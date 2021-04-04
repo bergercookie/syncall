@@ -1,8 +1,10 @@
-from taskw_gcal_sync import GenericSide
-from taskw import TaskWarrior
-from overrides import overrides
-from uuid import UUID
 from typing import Dict, List, Union
+from uuid import UUID
+
+from overrides import overrides
+from taskw import TaskWarrior
+
+from taskw_gcal_sync import GenericSide
 
 
 class TaskWarriorSide(GenericSide):

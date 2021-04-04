@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
-from .GenericTestCase import GenericTestCase
-
 import unittest
-import yaml
 from pathlib import Path
+
+import yaml
+
+from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
+
+from .GenericTestCase import GenericTestCase
 
 
 class TestConversions(GenericTestCase):
