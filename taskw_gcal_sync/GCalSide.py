@@ -41,8 +41,6 @@ class GCalSide(GenericSide):
             "credentials_cache": os.path.join(
                 os.path.expanduser("~"), ".gcal_credentials.pickle"
             ),
-            # on calendarList.get() it also returns the cancelled/deleted items
-            "ignore_cancelled": True,
         }
         self.config.update(kargs)
 
@@ -54,9 +52,7 @@ class GCalSide(GenericSide):
         # connect
         self.logger.info("Connecting...")
         self.gain_access()
-        self.config["calendar_id"] = self._fetch_cal_id_from_summary(
-            self.config["calendar_summary"]
-        )
+        self.config["calendar_id"] = self._fetch_cal_id()
         # Create calendar if not there
         if not self.config["calendar_id"]:
             self.logger.info('Creating calendar "%s"' % self.config["calendar_summary"])
@@ -66,7 +62,7 @@ class GCalSide(GenericSide):
             self.config["calendar_id"] = ret["id"]
         self.logger.info("Connected.")
 
-    def _fetch_cal_id_from_summary(self, cal_summary: str):
+    def _fetch_cal_id(self):
         """Return the id of the Calendar based on the given Summary.
 
         :returns: id or None if that was not found
@@ -110,8 +106,7 @@ class GCalSide(GenericSide):
             response = request.execute()
             # Accessing the response like a dict object with an 'items' key
             # returns a list of item objects (events).
-            for event in response.get("items", []):
-                events.append(event)
+            events.extend([e for e in response.get("items", []) if e["status"] != "cancelled"])
 
             # Get the next request object by passing the previous request
             # object to the list_next method.

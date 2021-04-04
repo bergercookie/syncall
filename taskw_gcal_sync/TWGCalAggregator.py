@@ -218,10 +218,6 @@ class TWGCalAggregator:
                 prev_item = pickle.load(open(os.path.join(serdes_dir, _id), "rb"))
 
                 # Unchanged item
-
-                # if self.item_has_update(prev_item, item, item_type):
-                #     import ipdb; ipdb.set_trace()
-
                 if not self.item_has_update(prev_item, item, item_type):
                     logger.info("[{}] Unchanged item, id: {}...".format(item_type, _id))
                     continue
@@ -397,6 +393,7 @@ class TWGCalAggregator:
             prev_item, new_item, ignore_keys=["urgency", "modified", "updated"]
         )
 
+    # currently unused.
     @staticmethod
     def compare_tw_gcal_items(
         tw_item: dict, gcal_item: dict
