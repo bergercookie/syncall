@@ -1,9 +1,7 @@
 import abc
 import datetime
-import logging
 from typing import Union
 
-from taskw_gcal_sync.clogger import setup_logging
 from taskw_gcal_sync.utils import is_same_datetime
 
 
@@ -11,13 +9,6 @@ class GenericSide(abc.ABC):
     """Interface for interacting with the various services."""
 
     __metaclass__ = abc.ABCMeta
-
-    def __init__(self):
-        super(GenericSide, self).__init__()
-
-        logger_name = self.__class__.__name__
-        self.logger = logging.getLogger(logger_name)
-        setup_logging(logger_name)
 
     def start(self):
         """Initialisation steps.

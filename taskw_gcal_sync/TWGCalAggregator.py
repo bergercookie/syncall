@@ -1,5 +1,4 @@
 import atexit
-import logging
 import os
 import pickle
 import sys
@@ -12,11 +11,9 @@ from uuid import UUID
 from bidict import bidict
 
 from taskw_gcal_sync import GCalSide, GenericSide, TaskWarriorSide
-from taskw_gcal_sync.clogger import setup_logging
 from taskw_gcal_sync.PrefsManager import PrefsManager
 
-logger = logging.getLogger(__name__)
-setup_logging(__name__)
+from loguru import logger
 
 pickle_dump = partial(pickle.dump, protocol=0)
 
@@ -487,7 +484,7 @@ class TWGCalAggregator:
 
         # Status
         if status not in ["pending", "completed", "deleted", "waiting", "recurring"]:
-            logger.warn(
+            logger.warning(
                 "Invalid status %s in GCal->TW conversion of item. Skipping status:" % status
             )
         else:

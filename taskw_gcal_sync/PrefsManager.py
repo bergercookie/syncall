@@ -1,11 +1,12 @@
 import atexit
-import logging
 import os
 import platform
 import re
+from pathlib import Path
 
-import sh
 import yaml
+
+from taskw_gcal_sync.logger import logger
 
 
 class PrefsManager:
@@ -29,9 +30,6 @@ class PrefsManager:
                   directory structure creation
         """
         super(PrefsManager, self).__init__()
-        logger_name = "{}_{}".format(__name__, id(__name__))
-        self.logger = logging.getLogger(logger_name)
-        self.logger.setLevel(logging.DEBUG)
 
         if platform.system() not in ["Linux", "Darwin"]:
             raise NotImplementedError(
@@ -56,7 +54,7 @@ class PrefsManager:
         else:
             raise RuntimeError("Invalid code path")
 
-        self.logger.info("Initialising Preferences Manager -> {}".format(self.prefs_dir))
+        logger.info("Initialising Preferences Manager -> {}".format(self.prefs_dir))
 
         # static preferences file
         prefs_file_static = "cfg.yaml"
@@ -65,7 +63,7 @@ class PrefsManager:
 
         # Overwrite latter settings if config_file is manually specified
         if config_file:
-            self.logger.debug("Custom configuration file is specified.")
+            logger.debug("Custom configuration file is specified.")
             self.prefs_file_static_full = config_file
             self.prefs_file_is_ro = True
 
@@ -78,11 +76,11 @@ class PrefsManager:
         # If prefs_dir_full doesn't exist this along with all the files in it
         # should be created
         if os.path.isdir(self.prefs_dir_full):  # already there
-            self.logger.info("Loading preferences from cache...")
+            logger.info("Loading preferences from cache...")
         else:
-            self.logger.info("Creating preferences directory from scratch...")
+            logger.info("Creating preferences directory from scratch...")
             os.makedirs(self.prefs_dir_full)
-            sh.touch(self.prefs_file_static_full)
+            Path(self.prefs_file_static_full).touch()
 
         # static preferences file
         with open(self.prefs_file_static_full, "r") as static_f:
@@ -120,12 +118,12 @@ class PrefsManager:
         """Class destruction code."""
         if not self.cleaned_up:
             if not self.prefs_file_is_ro:
-                self.logger.info("Updating preferences cache...")
+                logger.info("Updating preferences cache...")
                 self.write_prefs(self.prefs_file_static_full)
 
                 self.cleaned_up = True
             else:
-                self.logger.debug(
+                logger.debug(
                     "Skipping updating preferences file - Running in read-only mode"
                 )
 

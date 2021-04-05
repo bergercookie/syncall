@@ -1,10 +1,7 @@
 import datetime
-import operator
 import os
 import pickle
-import re
-from typing import Any, Union
-
+from typing import Union
 import dateutil
 import pkg_resources
 from google.auth.transport.requests import Request
@@ -14,7 +11,7 @@ from googleapiclient.http import HttpError
 from overrides import overrides
 
 from taskw_gcal_sync import GenericSide
-
+from taskw_gcal_sync.logger import logger
 
 class GCalSide(GenericSide):
     """GCalSide interacts with the Google Calendar API.
@@ -50,24 +47,24 @@ class GCalSide(GenericSide):
     @overrides
     def start(self):
         # connect
-        self.logger.info("Connecting...")
+        logger.info("Connecting...")
         self.gain_access()
         self.config["calendar_id"] = self._fetch_cal_id()
         # Create calendar if not there
         if not self.config["calendar_id"]:
-            self.logger.info('Creating calendar "%s"' % self.config["calendar_summary"])
+            logger.info('Creating calendar "%s"' % self.config["calendar_summary"])
             new_cal = {"summary": self.config["calendar_summary"]}
-            ret = self.service.calendars().insert(body=new_cal).execute()
-            self.logger.info("Created, id: %s" % ret["id"])
+            ret = self.service.calendars().insert(body=new_cal).execute()  # type: ignore
+            logger.info("Created, id: %s" % ret["id"])
             self.config["calendar_id"] = ret["id"]
-        self.logger.info("Connected.")
+        logger.info("Connected.")
 
     def _fetch_cal_id(self):
         """Return the id of the Calendar based on the given Summary.
 
         :returns: id or None if that was not found
         """
-        res = self.service.calendarList().list().execute()
+        res = self.service.calendarList().list().execute()  # type: ignore
         calendars_list = res.get("items", None)  # list(dict)
         assert calendars_list and isinstance(calendars_list, list)
 
@@ -91,7 +88,7 @@ class GCalSide(GenericSide):
         # Get the ID of the calendar of interest
 
         if kargs:
-            self.logger.warn(
+            logger.warning(
                 "Extra arguments in get_all_items call are not supported yet, ignoring them: {}".format(
                     kargs
                 )
@@ -116,6 +113,7 @@ class GCalSide(GenericSide):
 
     @overrides
     def get_single_item(self, _id: str) -> Union[dict, None]:
+        ret = None
         try:
             ret = (
                 self.service.events()
@@ -125,7 +123,7 @@ class GCalSide(GenericSide):
             if ret["status"] == "cancelled":
                 ret = None
         except HttpError:
-            ret = None
+            pass
         finally:
             return ret
 
@@ -152,7 +150,7 @@ class GCalSide(GenericSide):
             .insert(calendarId=self.config["calendar_id"], body=item)
             .execute()
         )
-        self.logger.debug('Event created: "%s"' % event.get("htmlLink"))
+        logger.debug('Event created: "%s"' % event.get("htmlLink"))
 
         return event
 
@@ -186,7 +184,7 @@ class GCalSide(GenericSide):
                 creds = pickle.load(token)
 
         if not creds or not creds.valid:
-            self.logger.info("Invalid credentials. Fetching them...")
+            logger.info("Invalid credentials. Fetching them...")
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
@@ -201,7 +199,7 @@ class GCalSide(GenericSide):
             with open(credentials_cache, "wb") as token:
                 pickle.dump(creds, token)
         else:
-            self.logger.info("Using already cached credentials...")
+            logger.info("Using already cached credentials...")
 
         return creds
 
