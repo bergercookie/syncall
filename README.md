@@ -74,23 +74,21 @@ advantages:
 
 Requirements:
 
-- Taskwarrior - [Installation instructions](https://taskwarrior.org/download/)
+- Taskwarrior - [Installation instructions](https://taskwarrior.org/download/) - Tested with 2.5.1
 - Python version >= 3.6 (yeah kind of restrictive, but
   [mypy](http://mypy-lang.org/) rocks!)
-- Python package dependencies: `pip3 install --user --upgrade -r requirements.txt # from the repo root dir`
 
-Installation Choices:
+Installation Options:
 
-- Pypi: `pip3 install --user --upgrade taskw_gcal_sync`
-  - (will not contain latest version)
-- github: `pip3 install --user git+https://github.com/bergercookie/taskw_gcal_sync`
-- Download and install locally - bleeding edge
+- Pypi (will not contain latest version): `pip3 install --user --upgrade taskw_gcal_sync`
+- Github: `pip3 install --user git+https://github.com/bergercookie/taskw_gcal_sync`
+- Download and install devel branch locally - bleeding edge
 
   ```sh
   git clone https://github.com/bergercookie/taskw_gcal_sync
   cd taskw_gcal_sync
   git checkout devel
-  pip3 install --user --upgrade -r requirements.txt
+  pip3 install --user --upgrade .
   ```
 
 ## Usage instructions

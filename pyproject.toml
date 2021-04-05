@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "taskw_gcal_sync"
+version = "v0.5.0"
+description = "Taskwarrior <-> Google Calendar synchronisation tool"
+license = "MIT"
+authors = ["Nikos Koukis <nickkouk@gmail.com>", ]
+readme = "README.md"
+homepage = "https://github.com/bergercookie/taskw_gcal_sync"
+repository = "https://github.com/bergercookie/taskw_gcal_sync"
+classifiers = [ "Programming Language :: Python",
+                "Programming Language :: Python :: 3",
+                "Programming Language :: Python :: 3.6",
+                "Programming Language :: Python :: 3.7",
+                "Programming Language :: Python :: 3.8",
+                "Programming Language :: Python :: 3.9",
+                "Programming Language :: Python :: 3 :: Only",
+                "Intended Audience :: Developers",
+                "Natural Language :: English",
+                "License :: OSI Approved :: MIT License",
+                "Environment :: Console",
+                "Operating System :: Unix",
+                "Topic :: Utilities", ]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+# +isort
+
+
+[tool.poetry.scripts]
+tw_gcal_sync = "taskw_gcal_sync.scripts.tw_gcal_sync:main"
+
+[tool.isort]
+line_length = 95
+include_trailing_comma = true
+
+[tool.black]
+line-length = 95
+target-version = ['py36', 'py37', 'py38']
+include = '\.pyi?$'
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+

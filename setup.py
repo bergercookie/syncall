@@ -37,6 +37,7 @@ setup(
         "pytz",
         "pyyaml",
         "rfc3339",
+        "sh",
         "taskw",
         "typing",
     ),
