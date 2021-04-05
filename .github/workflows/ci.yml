@@ -25,3 +25,19 @@ jobs:
         run: pytest --doctest-modules
       - name: Check style
         run: ./scripts/check_style.sh
+  publish_package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - name: Create package
+        run: |
+          sudo apt install python3-testresources
+          pip install --user --upgrade setuptools wheel
+          python3 setup.py sdist bdist_wheel
+      - name: Publish package
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
