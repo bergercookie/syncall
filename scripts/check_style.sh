@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-black --line-length 95 -t py36 --check tw_gcal_sync/ test/
+black --line-length 95 -t py36 --check taskw_gcal_sync/ test/
+isort -w 95 -c $(find taskw_gcal_sync/ test -iname "*.py")
+# mypy

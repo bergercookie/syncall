@@ -2,8 +2,8 @@
 Test the basic conversions between Google Calendar and TaskWarrior items.
 """
 
-import unittest
 import os
+import unittest
 
 
 class GenericTestCase(unittest.TestCase):

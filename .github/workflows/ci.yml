@@ -1,0 +1,27 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: [3.6, 3.8, 3.9]
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Prerequisites
+        run: |
+          pip3 install --user --upgrade .
+          pip3 install --user pytest black isort
+          sudo ./scripts/install-taskwarrior.sh
+      - name: Run tests
+        run: pytest --doctest-modules
+      - name: Check style
+        run: ./scripts/check_style.sh

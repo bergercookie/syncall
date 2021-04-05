@@ -123,9 +123,7 @@ class PrefsManager:
 
                 self.cleaned_up = True
             else:
-                logger.debug(
-                    "Skipping updating preferences file - Running in read-only mode"
-                )
+                logger.debug("Skipping updating preferences file - Running in read-only mode")
 
     def write_prefs(self, p):
         """Helper class for writing the current cached settings to a file.

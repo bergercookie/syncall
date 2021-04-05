@@ -2,6 +2,7 @@ import datetime
 import os
 import pickle
 from typing import Union
+
 import dateutil
 import pkg_resources
 from google.auth.transport.requests import Request
@@ -10,8 +11,9 @@ from googleapiclient import discovery
 from googleapiclient.http import HttpError
 from overrides import overrides
 
-from taskw_gcal_sync import GenericSide
+from taskw_gcal_sync.GenericSide import GenericSide
 from taskw_gcal_sync.logger import logger
+
 
 class GCalSide(GenericSide):
     """GCalSide interacts with the Google Calendar API.

@@ -9,11 +9,10 @@ from typing import Any, Dict, List, Set, Tuple, Union
 from uuid import UUID
 
 from bidict import bidict
+from loguru import logger
 
 from taskw_gcal_sync import GCalSide, GenericSide, TaskWarriorSide
 from taskw_gcal_sync.PrefsManager import PrefsManager
-
-from loguru import logger
 
 pickle_dump = partial(pickle.dump, protocol=0)
 

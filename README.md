@@ -3,13 +3,13 @@
 <table>
   <td>master</td>
   <td>
-    <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="master">
-    <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=master" /></a>
+    <a href="https://github.com/bergercookie/taskw_gcal_sync/actions" alt="master">
+    <img src="https://github.com/bergercookie/taskw_gcal_sync/actions/workflows/ci.yml/badge.svg" /></a>
   </td>
   <td>devel</td>
   <td>
-    <a href="https://travis-ci.com/bergercookie/taskw_gcal_sync" alt="devel">
-    <img src="https://travis-ci.com/bergercookie/taskw_gcal_sync.svg?branch=devel" /></a>
+    <a href="https://github.com/bergercookie/taskw_gcal_sync/actions" alt="devel">
+    <img src="https://github.com/bergercookie/taskw_gcal_sync/actions/workflows/ci.yml/badge.svg?branch=devel" /></a>
   </td>
 </table>
 
