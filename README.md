@@ -41,8 +41,8 @@
 
 `taskw_gcal_sync` provides a solution for bidirectional synchronisation between
 [Taskwarrior](https://taskwarrior.org) and [Google
-Calendar](https://calendar.google.com). Given a *Calendar* name for Google
-Calendar and a *filter* for Taskwarrior (currently only a single tag is
+Calendar](https://calendar.google.com). Given a _Calendar_ name for Google
+Calendar and a _filter_ for Taskwarrior (currently only a single tag is
 supported and tested) synchronise all the events between them.
 
 Overall, it supports synchronisation on the following events:
@@ -77,21 +77,21 @@ Requirements:
 - Taskwarrior - [Installation instructions](https://taskwarrior.org/download/)
 - Python version >= 3.6 (yeah kind of restrictive, but
   [mypy](http://mypy-lang.org/) rocks!)
-- Python package dependencies:  `pip3 install --user --upgrade -r requirements.txt # from the repo root dir`
+- Python package dependencies: `pip3 install --user --upgrade -r requirements.txt # from the repo root dir`
 
 Installation Choices:
 
 - Pypi: `pip3 install --user --upgrade taskw_gcal_sync`
-  + (will not contain latest version)
+  - (will not contain latest version)
 - github: `pip3 install --user git+https://github.com/bergercookie/taskw_gcal_sync`
 - Download and install locally - bleeding edge
 
-    ```sh
-    git clone https://github.com/bergercookie/taskw_gcal_sync
-    cd taskw_gcal_sync
-    git checkout devel
-    pip3 install --user --upgrade -r requirements.txt
-    ```
+  ```sh
+  git clone https://github.com/bergercookie/taskw_gcal_sync
+  cd taskw_gcal_sync
+  git checkout devel
+  pip3 install --user --upgrade -r requirements.txt
+  ```
 
 ## Usage instructions
 
@@ -117,25 +117,27 @@ $ crontab -e
 ...
 
 # Add the following to sync every 10' - modify Calendar and Tag name accordingly
-*/10 * * * * tw_gcal_sync -c "TW Reminders" -t "remindme" 2>&1 1>~/tw_reminders_latest.log
+# See output and potential errors in your system logs (e.g., `/var/log/syslog`)
+*/10 * * * * tw_gcal_sync -c "TW Reminders" -t "remindme"
 
 ```
 
-
 ## Troubleshooting
 
-* Having trouble installing or using the tool? Take a look at either the
-    continuous-integration configuration or the unittsests for the installation
-    steps or the recommended way of using the python code respectively.
-* Something doesn't work? Does the script fail midway through?
-  * Record the problem and report it in the ISSUES page. Include as much
-      information as possible so that I can reproduce it.
-  * Clean the configuration file. By default that's going to be
-      `$HOME/.config/taskw_gcal_sync`
+- Having trouble installing or using the tool? Take a look at either the
+  continuous-integration configuration or the unittsests for the installation
+  steps or the recommended way of using the python code respectively.
+- Something doesn't work? Does the script fail midway through?
 
-      `rm -rf ~/.config/taskw_gcal_sync`
-  * Remove the corresponding Google Calendar
-  * Rerun synchronisation from scratch
+  - Record the problem and report it in the ISSUES page. Include as much
+    information as possible so that I can reproduce it.
+  - Clean the configuration file. By default that's going to be
+    `$HOME/.config/taskw_gcal_sync`
+
+    `rm -rf ~/.config/taskw_gcal_sync`
+
+  - Remove the corresponding Google Calendar
+  - Rerun synchronisation from scratch
 
 ## Self Promotion
 
