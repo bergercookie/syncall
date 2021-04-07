@@ -74,7 +74,8 @@ advantages:
 
 Requirements:
 
-- Taskwarrior - [Installation instructions](https://taskwarrior.org/download/) - Tested with 2.5.1
+- Taskwarrior - [Installation instructions](https://taskwarrior.org/download/) -
+  Tested with 2.5.1
 - Python version >= 3.6 (yeah kind of restrictive, but
   [mypy](http://mypy-lang.org/) rocks!)
 
@@ -89,6 +90,20 @@ Installation Options:
   cd taskw_gcal_sync
   git checkout devel
   pip3 install --user --upgrade .
+  ```
+
+- Setup using [poetry](https://python-poetry.org/) - handy for local
+  development:
+
+  ```sh
+  git clone https://github.com/bergercookie/taskw_gcal_sync
+  poetry install
+  # get an interactive shell
+  poetry shell
+
+  # now tw_gcal_sync is in your PATH in this shell and you can also edit and the
+  # changes will take instant effect
+  ...
   ```
 
 ## Usage instructions

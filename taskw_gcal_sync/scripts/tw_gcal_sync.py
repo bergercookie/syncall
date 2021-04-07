@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
-
 import click
 
-from taskw_gcal_sync import TWGCalAggregator
+from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
 from taskw_gcal_sync.logger import logger
 
 
