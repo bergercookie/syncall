@@ -4,7 +4,8 @@ from uuid import UUID
 from overrides import overrides
 from taskw import TaskWarrior
 
-from taskw_gcal_sync import GenericSide
+from taskw_gcal_sync.GenericSide import GenericSide
+from taskw_gcal_sync.logger import logger
 
 
 class TaskWarriorSide(GenericSide):
@@ -120,7 +121,7 @@ class TaskWarriorSide(GenericSide):
 
         curr_status = item.get("status", None)
         if curr_status not in ["pending", "done"]:
-            self.logger.info(
+            logger.info(
                 'Invalid status of task: "%s", setting it to pending', item["status"]
             )
             item["status"] = "pending"
@@ -131,7 +132,7 @@ class TaskWarriorSide(GenericSide):
         description = item.pop("description")
         new_item = self.tw.task_add(description=description, **item)
         len_print = min(20, len(description))
-        self.logger.info(
+        logger.info(
             'Task "{}" created - "{}"...'.format(new_item["id"], description[0:len_print])
         )
 
