@@ -1,8 +1,5 @@
 import os
-import unittest
 from pathlib import Path
-
-import yaml
 
 from taskw_gcal_sync.TaskWarriorSide import TaskWarriorSide
 
