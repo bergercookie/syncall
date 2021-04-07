@@ -1,7 +1,7 @@
 import click
 
-from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
 from taskw_gcal_sync.logger import logger
+from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
 
 
 @click.command()
