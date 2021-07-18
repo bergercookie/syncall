@@ -1,6 +1,6 @@
 import click
 
-from taskw_gcal_sync.logger import logger
+from taskw_gcal_sync.logger import logger, setup_logger
 from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
 
 
@@ -32,10 +32,12 @@ from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
     default=True,
     help="Specify ascending/descending order for the order-by option",
 )
-def main(gcal_calendar, tw_tags, order_by, ascending_order):
+@click.option("-v", "--verbose", count=True, default=0)
+def main(gcal_calendar, tw_tags, order_by, ascending_order, verbose):
     """Main."""
-
-    assert len(tw_tags) == 1, "Trying with multiple tags hasn't been tested yet. Exiting..."
+    setup_logger(verbosity=verbose)
+    if len(tw_tags) != 1:
+        raise RuntimeError("Trying with multiple tags hasn't been tested yet. Exiting...")
 
     logger.info("Initialising...")
     tw_config = {"tags": list(tw_tags)}

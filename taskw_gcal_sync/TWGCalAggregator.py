@@ -5,11 +5,12 @@ import sys
 import traceback
 from datetime import timedelta
 from functools import partial
-from typing import Any, Dict, List, Set, Tuple, Union
+from typing import Any, Dict, List, Sequence, Set, Tuple, Union
 from uuid import UUID
 
 from bidict import bidict
 from loguru import logger
+from tqdm import tqdm
 
 from taskw_gcal_sync import GCalSide, GenericSide, TaskWarriorSide
 from taskw_gcal_sync.PrefsManager import PrefsManager
@@ -18,7 +19,7 @@ pickle_dump = partial(pickle.dump, protocol=0)
 
 
 class TypeStats:
-    """Container class for printing execution stats on exit - per type"""
+    """Container class for printing execution stats on exit - per type."""
 
     def __init__(self, item_type: str):
         self.item_type = item_type
@@ -42,7 +43,7 @@ class TypeStats:
     def error(self):
         self.errors += 1
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         s = (
             "{}\n"
             "{}\n"
@@ -55,16 +56,12 @@ class TypeStats:
         )
         return s
 
-    def __str(self) -> str:
-        return self.__repr__()
-
 
 class TWGCalAggregator:
     """Aggregator class: TaskWarrior <-> Google Calendar sides.
 
     Having an aggregator is handy for managing push/pull/sync directives in a
     consistent manner.
-
     """
 
     def __init__(self, tw_config: dict, gcal_config: dict, **kargs):
@@ -95,7 +92,7 @@ class TWGCalAggregator:
         self.config["timestamp_tolerance"] = timedelta(seconds=1)
         self.config.update(**kargs)  # Update
 
-        # Sides config + Initialisation
+        # initialise both sides
         tw_config_new = {}
         tw_config_new.update(tw_config)
         self.tw_side = TaskWarriorSide(**tw_config_new)
@@ -105,9 +102,7 @@ class TWGCalAggregator:
         self.gcal_side = GCalSide(**gcal_config_new)
 
         # Correspondences between the TW reminders and the GCal events
-        # The following fields are used for finding matches:
-        # TaskWarrior: uuid
-        # GCal: id
+        # For finding the matches: [TW] uuid <-> [GCal] id
         if "tw_gcal_ids" not in self.prefs_manager:
             self.prefs_manager["tw_gcal_ids"] = bidict()
         self.tw_gcal_ids = self.prefs_manager["tw_gcal_ids"]
@@ -118,7 +113,7 @@ class TWGCalAggregator:
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, xc_type, exc_value, traceback):
         self.cleanup()
 
     def start(self):
@@ -138,11 +133,11 @@ class TWGCalAggregator:
                 s = "\n{}\n{}".format(
                     str(self.config["tw_stats"]), str(self.config["gcal_stats"])
                 )
-                print(s)
+                logger.warning(s)
 
             self.cleaned_up = True
 
-    def register_items(self, items: Tuple[Dict[str, Any]], item_type: str) -> None:
+    def register_items(self, items: Sequence[Dict[str, Any]], item_type: str) -> None:
         """Register a list of items coming from the side of `item_type`.
 
         - Register in the broker
@@ -166,8 +161,8 @@ class TWGCalAggregator:
         serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
         stats, other_stats = self._get_stats(item_type)
 
-        logger.info("[{}] Registering items...".format(item_type))
-        for item in items:
+        logger.info(f"[{item_type}] Registering items at {other_type}...")
+        for item in tqdm(items):
             _id = str(item[type_key])
 
             # Check if I have this item in the register
@@ -215,7 +210,7 @@ class TWGCalAggregator:
 
                 # Unchanged item
                 if not self.item_has_update(prev_item, item, item_type):
-                    logger.info("[{}] Unchanged item, id: {}...".format(item_type, _id))
+                    logger.debug("[{}] Unchanged item, id: {}...".format(item_type, _id))
                     continue
 
                 # Item has changed
@@ -224,7 +219,10 @@ class TWGCalAggregator:
                 other_item = other_side.get_single_item(other_id)
                 assert other_item, "{} not found on other side".format(other_id)
 
-                logger.info("[{}] Item has changed, id: {}...".format(item_type, _id))
+                logger.info(
+                    f"[{item_type}] Item has changed, id: {_id} | "
+                    f"updating counterpart at {other_type}, id: {other_id}"
+                )
 
                 # Make sure that counterpart has not changed
                 # otherwise deal with conflict
@@ -235,9 +233,6 @@ class TWGCalAggregator:
                     # raise NotImplementedError("Conflict resolution required!")
                     logger.warning("Conflict! Arbitrarily selecting [{}]".format(item_type))
 
-                logger.info(
-                    "[{}] Updating counterpart item, id: {}...".format(item_type, other_id)
-                )
                 # Convert to and update other side
                 other_item_new = convert_fun(item)
 
@@ -317,7 +312,7 @@ class TWGCalAggregator:
         serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
         stats, other_stats = self._get_stats(item_type)
 
-        logger.info("[{}] Deleting items...".format(item_type))
+        logger.info("[{}] Deleting items at {}...".format(item_type, other_type))
 
         other_to_remove: List[str] = []
         for _id, other_id in registered_ids.items():
@@ -353,9 +348,11 @@ class TWGCalAggregator:
                 other_stats.delete()
             except FileNotFoundError:
                 logger.error(
-                    "File not found on os.remove."
-                    "This may indicate a bug, please report it at: {}\n\n".format(
-                        "github.com/bergercookie/taskw_gcal_sync", sys.exc_info()
+                    (
+                        "File not found on os.remove."
+                        "This may indicate a bug, please report it at: {}\n\n".format(
+                            "github.com/bergercookie/taskw_gcal_sync", sys.exc_info()
+                        )
                     )
                 )
                 logger.error(traceback.format_exc())
