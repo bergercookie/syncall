@@ -91,9 +91,7 @@ class GCalSide(GenericSide):
 
         if kargs:
             logger.warning(
-                "Extra arguments in get_all_items call are not supported yet, ignoring them: {}".format(
-                    kargs
-                )
+                f"Extra arguments in get_all_items call are not supported yet, ignoring them: {kargs}"
             )
 
         events = []

@@ -4,7 +4,7 @@ import pickle
 import sys
 import traceback
 from datetime import timedelta
-from functools import partial
+from functools import cached_property, partial
 from typing import Any, Dict, List, Sequence, Set, Tuple, Union
 from uuid import UUID
 
@@ -17,6 +17,17 @@ from taskw_gcal_sync.PrefsManager import PrefsManager
 
 pickle_dump = partial(pickle.dump, protocol=0)
 
+
+class ItemType:
+    GCAL = "gcal"
+    TW = "tw"
+
+    @cached_property
+    def other(self):
+        if self == ItemType.GCAL:
+            return ItemType.TW
+        elif self == ItemType.TW:
+            return ItemType.GCAL
 
 class TypeStats:
     """Container class for printing execution stats on exit - per type."""
@@ -45,14 +56,12 @@ class TypeStats:
 
     def __str__(self) -> str:
         s = (
-            "{}\n"
-            "{}\n"
-            "\t* Tasks created: {}\n"
-            "\t* Tasks updated: {}\n"
-            "\t* Tasks deleted: {}\n"
-            "\t* Errors:        {}\n"
-        ).format(
-            self.item_type, self.sep, self.created_new, self.updated, self.deleted, self.errors
+            f"{self.item_type}\n"
+            f"{self.sep}\n"
+            f"\t* Tasks created: {self.created_new}\n"
+            f"\t* Tasks updated: {self.updated}\n"
+            f"\t* Tasks deleted: {self.deleted}\n"
+            f"\t* Errors:        {self.errors}\n"
         )
         return s
 
@@ -128,12 +137,9 @@ class TWGCalAggregator:
         """Method to be called automatically on instance destruction."""
 
         if not self.cleaned_up:
+            # print summary stats
             if self.config["report_stats"]:
-                # print summary stats
-                s = "\n{}\n{}".format(
-                    str(self.config["tw_stats"]), str(self.config["gcal_stats"])
-                )
-                logger.warning(s)
+                logger.warning(f'\n{self.config["tw_stats"]}\n{self.config["gcal_stats"]}')
 
             self.cleaned_up = True
 
@@ -168,7 +174,7 @@ class TWGCalAggregator:
             # Check if I have this item in the register
             if _id not in registered_ids.keys():
                 # Create the item
-                logger.info("[{}] Inserting item, id: {}...".format(item_type, _id))
+                logger.info(f"[{item_type}] Inserting item, new id: {_id}...")
 
                 # Add it to TW/GCal
                 item_converted = convert_fun(item)
@@ -178,20 +184,17 @@ class TWGCalAggregator:
                     raise
                 except:
                     logger.error(
-                        'Adding item "{}" failed.\n'
-                        "Item contents:\n\n{}\n\nException: {}".format(
-                            _id, item_converted, sys.exc_info()
-                        )
+                        f'Adding item "{_id}" failed.\n'
+                        f"Item contents:\n\n{item_converted}\n\nException: \n\n{traceback.format_exc()}"
                     )
-                    logger.error(traceback.format_exc())
                     other_stats.error()
                 else:
                     #  Add registry entry
                     registered_ids[_id] = str(other_item_created[other_type_key])
 
                     # Cache both sides with pickle - f=_id
-                    logger.debug('Pickling item "{}"'.format(_id))
-                    logger.debug('Pickling item "{}"'.format(registered_ids[_id]))
+                    logger.debug(f'Pickling item "{_id}"')
+                    logger.debug(f'Pickling item "{registered_ids[_id]}"')
                     pickle_dump(item, open(os.path.join(serdes_dir, _id), "wb"))
                     pickle_dump(
                         other_item_created,
@@ -210,14 +213,14 @@ class TWGCalAggregator:
 
                 # Unchanged item
                 if not self.item_has_update(prev_item, item, item_type):
-                    logger.debug("[{}] Unchanged item, id: {}...".format(item_type, _id))
+                    logger.debug(f"[{item_type}] Unchanged item, id: {_id}...")
                     continue
 
                 # Item has changed
 
                 other_id = registered_ids[_id]
                 other_item = other_side.get_single_item(other_id)
-                assert other_item, "{} not found on other side".format(other_id)
+                assert other_item, f"{other_id} not found on other side"
 
                 logger.info(
                     f"[{item_type}] Item has changed, id: {_id} | "
@@ -231,7 +234,7 @@ class TWGCalAggregator:
                 )
                 if self.item_has_update(prev_other_item, other_item, other_type):
                     # raise NotImplementedError("Conflict resolution required!")
-                    logger.warning("Conflict! Arbitrarily selecting [{}]".format(item_type))
+                    logger.warning(f"Conflict! Arbitrarily selecting [{item_type}]")
 
                 # Convert to and update other side
                 other_item_new = convert_fun(item)
@@ -242,10 +245,9 @@ class TWGCalAggregator:
                     raise
                 except:
                     logger.error(
-                        'Updating item "{}" failed.\nItem contents:'
-                        "\n\n{}\n\nException: {}\n".format(_id, other_item_new, sys.exc_info())
+                        f'Updating item "{_id}" failed.\nItem contents:'
+                        f"\n\n{other_item_new}\n\nException: \n\n{traceback.format_exc()}\n"
                     )
-                    logger.error(traceback.format_exc())
                     other_stats.error()
                 else:
                     # Update cached version
@@ -257,17 +259,17 @@ class TWGCalAggregator:
 
     def _get_stats(self, item_type: str) -> Tuple[TypeStats, TypeStats]:
         assert item_type in ["tw", "gcal"]
-        stats = self.config["{}_stats".format("tw" if item_type == "tw" else "gcal")]
-        other_stats = self.config["{}_stats".format("gcal" if item_type == "tw" else "tw")]
+        stats = self.config[f'{"tw" if item_type == "tw" else "gcal"}_stats']
+        other_stats = self.config[f'{"gcal" if item_type == "tw" else "tw"}_stats']
 
         return stats, other_stats
 
     def _get_serdes_dirs(self, item_type: str) -> Tuple[str, str]:
         assert item_type in ["tw", "gcal"]
 
-        serdes_dir = self.config["{}_serdes_dir".format("tw" if item_type == "tw" else "gcal")]
+        serdes_dir = self.config[f'{"tw" if item_type == "tw" else "gcal"}_serdes_dir']
         other_serdes_dir = self.config[
-            "{}_serdes_dir".format("gcal" if item_type == "tw" else "tw")
+            f'{"gcal" if item_type == "tw" else "tw"}_serdes_dir'
         ]
 
         return serdes_dir, other_serdes_dir
@@ -285,8 +287,8 @@ class TWGCalAggregator:
         assert item_type in ["tw", "gcal"]
 
         other_type = "gcal" if item_type == "tw" else "tw"
-        type_key = self.config["{}_id_key".format(item_type)]
-        other_type_key = self.config["{}_id_key".format(other_type)]
+        type_key = self.config[f"{item_type}_id_key"]
+        other_type_key = self.config[f"{other_type}_id_key"]
 
         return type_key, other_type_key
 
@@ -312,7 +314,7 @@ class TWGCalAggregator:
         serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
         stats, other_stats = self._get_stats(item_type)
 
-        logger.info("[{}] Deleting items at {}...".format(item_type, other_type))
+        logger.info(f"[{item_type}] Deleting items at {other_type}...")
 
         other_to_remove: List[str] = []
         for _id, other_id in registered_ids.items():
@@ -321,10 +323,11 @@ class TWGCalAggregator:
                 continue  # still there
 
             # item deleted
-            logger.info("[{}] Synchronising deleted item, id: {}...".format(item_type, _id))
+            logger.info(f"[{item_type}] Synchronising deleted item, id: {_id}...")
 
             other_item = other_side.get_single_item(other_id)
-            assert other_item, "{} not found on other side".format(other_id)
+            if not other_item:
+                raise RuntimeError(f"{other_id} not found on other side")
 
             # Make sure that counterpart has not changed
             # otherwise deal with conflict
@@ -348,30 +351,25 @@ class TWGCalAggregator:
                 other_stats.delete()
             except FileNotFoundError:
                 logger.error(
-                    (
-                        "File not found on os.remove."
-                        "This may indicate a bug, please report it at: {}\n\n".format(
-                            "github.com/bergercookie/taskw_gcal_sync", sys.exc_info()
-                        )
-                    )
+                    "File not found on os.remove."
+                    f"This may indicate a bug, please report it at: "
+                    f"github.com/bergercookie/taskw_gcal_sync\n\n{sys.exc_info()}"
                 )
                 logger.error(traceback.format_exc())
                 other_stats.error()
             except KeyError:
                 logger.error(
-                    "Item to delete [{}] is not present."
-                    "\n\n{}\n\nException: {}\n".format(_id, other_item, sys.exc_info())
+                    "Item to delete [{_id}] is not present."
+                    f"\n\n{other_item}\n\nException: {traceback.format_exc()}\n"
                 )
-                logger.error(traceback.format_exc())
                 other_stats.error()
             except KeyboardInterrupt:
                 raise
             except:
                 logger.error(
-                    'Deleting item "{}" failed.\nItem contents:'
-                    "\n\n{}\n\nException: {}\n".format(_id, other_item, sys.exc_info())
+                    'Deleting item "{_id}" failed.\nItem contents:'
+                    f"\n\n{other_item}\n\nException: {traceback.format_exc}\n"
                 )
-                logger.error(traceback.format_exc())
                 other_stats.error()
 
         # Remove ids (out of loop)
@@ -425,16 +423,14 @@ class TWGCalAggregator:
         gcal_item["summary"] = tw_item["description"]
 
         # description
-        gcal_item["description"] = "{meta_title}\n".format(
-            desc=tw_item["description"], meta_title="IMPORTED FROM TASKWARRIOR"
-        )
+        gcal_item["description"] = "IMPORTED FROM TASKWARRIOR\n"
         if "annotations" in tw_item.keys():
             for i, a in enumerate(tw_item["annotations"]):
-                gcal_item["description"] += "\n* Annotation {}: {}".format(i + 1, a)
+                gcal_item["description"] += f"\n* Annotation {i + 1}: {a}"
 
         gcal_item["description"] += "\n"
         for k in ["status", "uuid"]:
-            gcal_item["description"] += "\n* {}: {}".format(k, tw_item[k])
+            gcal_item["description"] += f"\n* {k}: {tw_item[k]}"
 
         # Handle dates:
         # - If given due date -> (start=due-1, end=due)
@@ -547,9 +543,8 @@ class TWGCalAggregator:
                         uuid = UUID(parts[1].strip())
                     except ValueError as err:
                         logger.error(
-                            "Invalid UUID %s provided during GCal "
-                            "-> TW conversion, Using None..." % err
+                            f'Invalid UUID "{err}" provided during GCal -> TW conversion, Using'
+                            f"None...\n\n{traceback.format_exc()}"
                         )
-                        logger.error(traceback.format_exc())
 
         return annotations, status, uuid

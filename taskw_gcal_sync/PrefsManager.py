@@ -33,9 +33,7 @@ class PrefsManager:
 
         if platform.system() not in ["Linux", "Darwin"]:
             raise NotImplementedError(
-                "PrefsManager does not support current OS [{}]".format(
-                    platform.system() or "UNKNOWN"
-                )
+                f'PrefsManager does not support current OS [{platform.system() or "UNKNOWN"}]'
             )
 
         self.app_name = app_name
@@ -54,7 +52,7 @@ class PrefsManager:
         else:
             raise RuntimeError("Invalid code path")
 
-        logger.info("Initialising Preferences Manager -> {}".format(self.prefs_dir))
+        logger.info(f"Initialising Preferences Manager -> {self.prefs_dir}")
 
         # static preferences file
         prefs_file_static = "cfg.yaml"
@@ -93,7 +91,7 @@ class PrefsManager:
     def __enter__(self):
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *_):
         self.cleanup()
 
     def __contains__(self, key):
