@@ -108,7 +108,7 @@ class PrefsManager:
         """Update the latest fetched setting."""
         if self.latest_accessed is None:
             raise RuntimeError(
-                "update_last has been called even though no " "element has been accessed yet."
+                "update_last has been called even though no element has been accessed yet."
             )
         self.conts[self.latest_accessed] = new_val
 

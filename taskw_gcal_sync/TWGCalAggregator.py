@@ -195,8 +195,9 @@ class TWGCalAggregator:
                     raise
                 except:
                     logger.error(
-                        f'Adding item "{id_}" failed.\n'
-                        f"Item contents:\n\n{item_converted}\n\nException: \n\n{traceback.format_exc()}"
+                        f'Adding item "{id_}" failed.\nItem'
+                        f" contents:\n\n{item_converted}\n\nException:"
+                        f"\n\n{traceback.format_exc()}"
                     )
                     other_stats.error()
                 else:
@@ -341,8 +342,8 @@ class TWGCalAggregator:
             except FileNotFoundError:
                 logger.error(
                     "File not found on os.remove."
-                    f"This may indicate a bug, please report it at: "
-                    f"github.com/bergercookie/taskw_gcal_sync\n\n{sys.exc_info()}"
+                    "This may indicate a bug, please report it at: "
+                    f"https://github.com/bergercookie/taskw_gcal_sync\n\n{sys.exc_info()}"
                 )
                 logger.error(traceback.format_exc())
                 other_stats.error()
@@ -531,8 +532,8 @@ class TWGCalAggregator:
                         uuid = UUID(parts[1].strip())
                     except ValueError as err:
                         logger.error(
-                            f'Invalid UUID "{err}" provided during GCal -> TW conversion, Using'
-                            f"None...\n\n{traceback.format_exc()}"
+                            f'Invalid UUID "{err}" provided during GCal -> TW conversion,'
+                            f" Using None...\n\n{traceback.format_exc()}"
                         )
 
         return annotations, status, uuid
