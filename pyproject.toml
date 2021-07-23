@@ -9,8 +9,6 @@ homepage = "https://github.com/bergercookie/taskw_gcal_sync"
 repository = "https://github.com/bergercookie/taskw_gcal_sync"
 classifiers = [ "Programming Language :: Python",
                 "Programming Language :: Python :: 3",
-                "Programming Language :: Python :: 3.6",
-                "Programming Language :: Python :: 3.7",
                 "Programming Language :: Python :: 3.8",
                 "Programming Language :: Python :: 3.9",
                 "Programming Language :: Python :: 3 :: Only",
@@ -45,7 +43,7 @@ tqdm = "^4.61.2"
 isort = ">=5.8.0"
 pytest = "^6.2.3"
 mypy = "^0.812"
-black = "20.8b1"
+black = "21.7b0"
 rope = "^0.19"
 pylint = ">=2.9"
 pdbpp = "^0.10.3"

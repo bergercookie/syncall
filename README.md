@@ -76,8 +76,7 @@ Requirements:
 
 - Taskwarrior - [Installation instructions](https://taskwarrior.org/download/) -
   Tested with 2.5.1
-- Python version >= 3.6 (yeah kind of restrictive, but
-  [mypy](http://mypy-lang.org/) rocks!)
+- Python version >= 3.8
 
 Installation Options:
 

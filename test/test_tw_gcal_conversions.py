@@ -49,7 +49,7 @@ class TestConversions(GenericTestCase):
         self.assertDictEqual(tw_item_out, self.tw_item_w_date_expected)
 
     def test_tw_gcal_n_back(self):
-        """ TW -> GCal -> TW conversion"""
+        """TW -> GCal -> TW conversion"""
         self.load_sample_items()
         tw_item_out = TWGCalAggregator.convert_gcal_to_tw(
             TWGCalAggregator.convert_tw_to_gcal(self.tw_item)
@@ -67,7 +67,7 @@ class TestConversions(GenericTestCase):
         )
 
     def test_gcal_tw_n_back(self):
-        """ GCal -> TW -> GCal conversion."""
+        """GCal -> TW -> GCal conversion."""
         self.load_sample_items()
         gcal_item_out = TWGCalAggregator.convert_tw_to_gcal(
             TWGCalAggregator.convert_gcal_to_tw(self.gcal_item)
