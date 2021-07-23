@@ -131,9 +131,7 @@ class TaskWarriorSide(GenericSide):
         new_item = self.tw.task_add(description=description, **item)
         new_id = new_item["id"]
         len_print = min(20, len(description))
-        logger.info(
-            f'Task "{new_id}" created - "{description[0:len_print]}"...'
-        )
+        logger.info(f'Task "{new_id}" created - "{description[0:len_print]}"...')
 
         return new_item
 

@@ -1,7 +1,7 @@
 import click
 
 from taskw_gcal_sync.logger import logger, setup_logger
-from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
+from taskw_gcal_sync.TWGCalAggregator import ItemType, TWGCalAggregator
 
 
 @click.command()
@@ -52,17 +52,17 @@ def main(gcal_calendar, tw_tags, order_by, ascending_order, verbose):
         tw_items = aggregator.tw_side.get_all_items(
             order_by=order_by, use_ascending_order=ascending_order
         )
-        aggregator.register_items(tw_items, "tw")
+        aggregator.register_items(tw_items, ItemType.TW)
 
         # gcal
         gcal_items = aggregator.gcal_side.get_all_items(
             order_by=order_by, use_ascending_order=ascending_order
         )
-        aggregator.register_items(gcal_items, "gcal")
+        aggregator.register_items(gcal_items, ItemType.GCAL)
 
         # Synchronise deleted items
-        aggregator.synchronise_deleted_items("tw")
-        aggregator.synchronise_deleted_items("gcal")
+        aggregator.synchronise_deleted_items(ItemType.TW)
+        aggregator.synchronise_deleted_items(ItemType.GCAL)
 
 
 if __name__ == "__main__":
