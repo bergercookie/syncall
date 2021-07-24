@@ -1,6 +1,6 @@
 import abc
 import datetime
-from typing import Union
+from typing import Optional
 
 from taskw_gcal_sync.utils import is_same_datetime
 
@@ -27,9 +27,11 @@ class GenericSide(abc.ABC):
         raise NotImplementedError("Implement in derived")
 
     @abc.abstractmethod
-    def get_item(self, item_id: str) -> Union[dict, None]:
+    def get_item(self, item_id: str, use_cached: bool = False) -> Optional[dict]:
         """Get a single item based on the given UUID.
 
+        :use_cached: False if you want to fetch the latest version of the item. True if a
+                     cached version would do.
         :returns: None if not found, the item in dict representation otherwise
         """
         raise NotImplementedError("Should be implemented in derived")

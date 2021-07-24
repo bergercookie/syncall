@@ -2,7 +2,7 @@ import datetime
 import os
 import pickle
 from pathlib import Path
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 
 import dateutil
 import pkg_resources
@@ -45,6 +45,7 @@ class GCalSide(GenericSide):
 
         self._oauth_port = oauth_port
         self._calendar_id = None
+        self._items_cache: Dict[str, dict] = {}
 
         # If you modify this, delete your previously saved credentials
         self.service = None
@@ -66,7 +67,7 @@ class GCalSide(GenericSide):
 
         logger.debug("Connected to Google Calendar.")
 
-    def _fetch_cal_id(self):
+    def _fetch_cal_id(self) -> Optional[str]:
         """Return the id of the Calendar based on the given Summary.
 
         :returns: id or None if that was not found
@@ -79,12 +80,14 @@ class GCalSide(GenericSide):
             c["id"] for c in calendars_list if c["summary"] == self.config["calendar_summary"]
         ]
 
-        if matching_calendars:
-            assert len(matching_calendars) == 1, "Too many calendars match!"
-            ret = matching_calendars[0]
+        if len(matching_calendars) == 0:
+            return None
+        elif len(matching_calendars) == 1:
+            return matching_calendars[0]
         else:
-            ret = None
-        return ret
+            raise RuntimeError(
+                'Multiple matching calendars for name -> "{self.config["calendar_summary"]}"'
+            )
 
     @overrides
     def get_all_items(self, **kargs):
@@ -108,17 +111,33 @@ class GCalSide(GenericSide):
             # object to the list_next method.
             request = self.service.events().list_next(request, response)
 
+        # cache them
+        for e in events:
+            self._items_cache[e["id"]] = e
+
         return events
 
     @overrides
-    def get_item(self, _id: str) -> Union[dict, None]:
+    def get_item(self, item_id: str, use_cached: bool = True) -> Optional[dict]:
+        item = self._items_cache.get(item_id)
+        if not use_cached or item is None:
+            item = self.get_item_refresh(item_id=item_id)
+
+        return item
+
+    def get_item_refresh(self, item_id: str) -> Optional[dict]:
         ret = None
         try:
             ret = (
-                self.service.events().get(calendarId=self._calendar_id, eventId=_id).execute()
+                self.service.events()
+                .get(calendarId=self._calendar_id, eventId=item_id)
+                .execute()
             )
             if ret["status"] == "cancelled":
                 ret = None
+                self._items_cache.pop(item_id)
+            else:
+                self._items_cache[item_id] = ret
         except HttpError:
             pass
         finally:

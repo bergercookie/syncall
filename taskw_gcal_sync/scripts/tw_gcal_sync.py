@@ -81,6 +81,8 @@ def main(gcal_calendar, gcal_secret, tw_tags, order_by, ascending_order, verbose
             # Synchronise deleted items
             aggregator.synchronise_deleted_items(ItemType.TW)
             aggregator.synchronise_deleted_items(ItemType.GCAL)
+    except KeyboardInterrupt:
+        logger.info("Exiting...")
     except:
         logger.info(traceback.format_exc())
         logger.error(

@@ -229,7 +229,6 @@ class TWGCalAggregator:
                     continue
 
                 # Item has changed
-
                 other_id = registered_ids[id_]
                 other_item = other_side.get_item(other_id)
                 assert other_item, f"{other_id} not found on other side"
@@ -254,7 +253,7 @@ class TWGCalAggregator:
                     raise
                 except:
                     logger.error(
-                        f'Updating item "{id_}" failed.\nItem contents:'
+                        f'Updating item "{other_id}" failed.\nItem contents:'
                         f"\n\n{other_item_new}\n\nException: \n\n{traceback.format_exc()}\n"
                     )
                     other_stats.error()
@@ -335,7 +334,7 @@ class TWGCalAggregator:
                 # remove serdes files
                 for p in [
                     serdes_dir / id_,
-                    other_serdes_dir / id_,
+                    other_serdes_dir / other_id,
                 ]:
                     p.unlink()
                 other_stats.delete()
