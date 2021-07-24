@@ -80,7 +80,7 @@ class TaskWarriorSide(GenericSide):
         return tasks
 
     @overrides
-    def get_single_item(self, item_id: str) -> Union[dict, None]:
+    def get_item(self, item_id: str) -> Union[dict, None]:
         t = self.tw.get_task(id=item_id)[-1] or None
         assert "status" in t.keys()  # type: ignore
         return t if t["status"] != "deleted" else None  # type: ignore

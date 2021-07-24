@@ -231,7 +231,7 @@ class TWGCalAggregator:
                 # Item has changed
 
                 other_id = registered_ids[id_]
-                other_item = other_side.get_single_item(other_id)
+                other_item = other_side.get_item(other_id)
                 assert other_item, f"{other_id} not found on other side"
 
                 logger.info(
@@ -308,14 +308,14 @@ class TWGCalAggregator:
 
         other_to_remove: List[str] = []
         for id_, other_id in registered_ids.items():
-            item_side = side.get_single_item(id_)
+            item_side = side.get_item(id_)
             if item_side is not None:
-                continue  # still there
+                continue  # item is still there
 
             # item deleted
             logger.info(f"[{item_type}] Synchronising deleted item, id: {id_}...")
 
-            other_item = other_side.get_single_item(other_id)
+            other_item = other_side.get_item(other_id)
             if not other_item:
                 raise RuntimeError(f"{other_id} not found on other side")
 

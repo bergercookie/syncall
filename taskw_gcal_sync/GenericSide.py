@@ -29,7 +29,7 @@ class GenericSide(abc.ABC):
         raise NotImplementedError("Implement in derived")
 
     @abc.abstractmethod
-    def get_single_item(self, item_id: str) -> Union[dict, None]:
+    def get_item(self, item_id: str) -> Union[dict, None]:
         """Get a single item based on the given UUID.
 
         :returns: None if not found, the item in dict representation otherwise

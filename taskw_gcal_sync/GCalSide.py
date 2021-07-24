@@ -1,7 +1,8 @@
 import datetime
 import os
 import pickle
-from typing import Union
+from pathlib import Path
+from typing import Union, Literal
 
 import dateutil
 import pkg_resources
@@ -37,9 +38,7 @@ class GCalSide(GenericSide):
             "client_secret_file": pkg_resources.resource_filename(
                 "taskw_gcal_sync", os.path.join("res", "gcal_client_secret.json")
             ),
-            "credentials_cache": os.path.join(
-                os.path.expanduser("~"), ".gcal_credentials.pickle"
-            ),
+            "credentials_cache": Path.home() / ".gcal_credentials.pickle",
         }
         self.config.update(kargs)
 
@@ -88,13 +87,6 @@ class GCalSide(GenericSide):
         :param kargs: Extra options for the call
         """
         # Get the ID of the calendar of interest
-
-        if kargs:
-            logger.warning(
-                "Extra arguments in get_all_items call are not supported yet, ignoring them:"
-                f" {kargs}"
-            )
-
         events = []
         request = self.service.events().list(calendarId=self.config["calendar_id"])
 
@@ -113,7 +105,7 @@ class GCalSide(GenericSide):
         return events
 
     @overrides
-    def get_single_item(self, _id: str) -> Union[dict, None]:
+    def get_item(self, _id: str) -> Union[dict, None]:
         ret = None
         try:
             ret = (
@@ -161,14 +153,6 @@ class GCalSide(GenericSide):
             calendarId=self.config["calendar_id"], eventId=item_id
         ).execute()
 
-    def _get_credentials_file(self):
-        """Return the path to the credentials file.
-
-        Useful method for running this script from an arbitrary dir.
-        """
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(script_dir, self.config["client_secret_file"])
-
     def _get_credentials(self):
         """Gets valid user credentials from storage.
 
@@ -180,8 +164,8 @@ class GCalSide(GenericSide):
 
         creds = None
         credentials_cache = self.config["credentials_cache"]
-        if os.path.isfile(credentials_cache):
-            with open(credentials_cache, "rb") as token:
+        if credentials_cache.is_file():
+            with credentials_cache.open("rb") as token:
                 creds = pickle.load(token)
 
         if not creds or not creds.valid:
@@ -197,7 +181,7 @@ class GCalSide(GenericSide):
                 )
                 creds = flow.run_local_server()
             # Save the credentials for the next run
-            with open(credentials_cache, "wb") as token:
+            with credentials_cache.open("wb") as token:
                 pickle.dump(creds, token)
         else:
             logger.info("Using already cached credentials...")
@@ -209,13 +193,11 @@ class GCalSide(GenericSide):
         self.service = discovery.build("calendar", "v3", credentials=creds)
 
     @staticmethod
-    def get_date_key(d: dict) -> str:
-        """
-        Get key corresponding to date -> 'date' or 'dateTime'
-        """
-        assert (
-            "dateTime" in d.keys() or "date" in d.keys()
-        ), "None of the required keys is in the dictionary"
+    def get_date_key(d: dict) -> Union[Literal["date"], Literal["dateTime"]]:
+        """Get key corresponding to the date field."""
+        if "dateTime" not in d.keys() and "date" not in d.keys():
+            raise RuntimeError("None of the required keys is in the dictionary")
+
         return "date" if d.get("date", None) else "dateTime"
 
     @staticmethod
