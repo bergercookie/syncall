@@ -24,7 +24,7 @@ jobs:
       - name: Run tests
         run: pytest --doctest-modules
       - name: Check style
-        run: ./scripts/check_style.sh
+        run: ./scripts/check_style.py --check-only
   publish_package:
     runs-on: ubuntu-latest
     steps:

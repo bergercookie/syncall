@@ -8,8 +8,6 @@ from taskw_gcal_sync.utils import is_same_datetime
 class GenericSide(abc.ABC):
     """Interface for interacting with the various services."""
 
-    __metaclass__ = abc.ABCMeta
-
     def start(self):
         """Initialisation steps.
 

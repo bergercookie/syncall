@@ -16,7 +16,7 @@ def setup_logger(verbosity: int):
         raise NotImplementedError
 
     _format_color = (
-        "<green>{time:HH:mm:ss}</green> | <level>{level}</level>\t | <level>{message}</level>"
+        "<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level>| <level>{message}</level>"
     )
     _format_nocolor = "[taskw_gcal_sync] | {level:8} | {message}"
 

@@ -185,7 +185,7 @@ class TWGCalAggregator:
             # Check if I have this item in the register
             if id_ not in registered_ids.keys():
                 # Create the item
-                logger.info(f"[{item_type}] Inserting item, new id: {id_}...")
+                logger.info(f"[{item_type}] Inserting item at {other_type}, new id: {id_}...")
 
                 # Add it to TW/GCal
                 item_converted = convert_fun(item)

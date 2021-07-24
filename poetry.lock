@@ -10,7 +10,7 @@ python-versions = "*"
 name = "astroid"
 version = "2.6.5"
 description = "An abstract syntax tree for Python with inference support."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "~=3.6"
 
@@ -106,11 +106,14 @@ unicode_backport = ["unicodedata2"]
 
 [[package]]
 name = "click"
-version = "7.1.2"
+version = "8.0.1"
 description = "Composable command line interface toolkit"
 category = "main"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = ">=3.6"
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "colorama"
@@ -119,6 +122,17 @@ description = "Cross-platform colored terminal text."
 category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
+name = "colored-traceback"
+version = "0.3.0"
+description = "Automatically color uncaught exception tracebacks"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pygments = "*"
 
 [[package]]
 name = "colorlog"
@@ -273,7 +287,7 @@ python-versions = "*"
 name = "isort"
 version = "5.9.2"
 description = "A Python utility / library to sort Python imports."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6.1,<4.0"
 
@@ -295,7 +309,7 @@ python-versions = "*"
 name = "lazy-object-proxy"
 version = "1.6.0"
 description = "A fast and thorough lazy object proxy."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
@@ -318,7 +332,7 @@ dev = ["codecov (>=2.0.15)", "colorama (>=0.3.4)", "flake8 (>=3.7.7)", "tox (>=3
 name = "mccabe"
 version = "0.6.1"
 description = "McCabe checker, plugin for flake8"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -456,7 +470,7 @@ pyasn1 = ">=0.4.6,<0.5.0"
 name = "pygments"
 version = "2.9.0"
 description = "Pygments is a syntax highlighting package written in Python."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -464,7 +478,7 @@ python-versions = ">=3.5"
 name = "pylint"
 version = "2.9.5"
 description = "python code static checker"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "~=3.6"
 
@@ -600,7 +614,7 @@ python-versions = "*"
 name = "rope"
 version = "0.19.0"
 description = "a python refactoring library..."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -641,7 +655,6 @@ description = "Python bindings for your taskwarrior database"
 category = "main"
 optional = false
 python-versions = "*"
-develop = false
 
 [package.dependencies]
 kitchen = "*"
@@ -649,17 +662,11 @@ python-dateutil = "*"
 pytz = "*"
 six = "*"
 
-[package.source]
-type = "git"
-url = "https://github.com/bergercookie/taskw.git"
-reference = "develop"
-resolved_reference = "8e1235d8f63a81064eb9fdad6995c94417ab48db"
-
 [[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -755,14 +762,14 @@ python-versions = "*"
 name = "wrapt"
 version = "1.12.1"
 description = "Module for decorators, wrappers and monkey patching."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "2b6f911a96fe92f1acb99048762b762c2427b84d813fba8d2a4d37b7b8e23c33"
+content-hash = "6f975095c87b6f9b64373b89423959bb4c7bb79d2695a311fa7fc96755eb875e"
 
 [metadata.files]
 appdirs = [
@@ -802,12 +809,16 @@ charset-normalizer = [
     {file = "charset_normalizer-2.0.3-py3-none-any.whl", hash = "sha256:88fce3fa5b1a84fdcb3f603d889f723d1dd89b26059d0123ca435570e848d5e1"},
 ]
 click = [
-    {file = "click-7.1.2-py2.py3-none-any.whl", hash = "sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc"},
-    {file = "click-7.1.2.tar.gz", hash = "sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a"},
+    {file = "click-8.0.1-py3-none-any.whl", hash = "sha256:fba402a4a47334742d782209a7c79bc448911afe1149d07bdabdf480b3e2f4b6"},
+    {file = "click-8.0.1.tar.gz", hash = "sha256:8c04c11192119b1ef78ea049e0a6f0463e4c48ef00a30160c704337586f3ad7a"},
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+]
+colored-traceback = [
+    {file = "colored-traceback-0.3.0.tar.gz", hash = "sha256:6da7ce2b1da869f6bb54c927b415b95727c4bb6d9a84c4615ea77d9872911b05"},
+    {file = "colored_traceback-0.3.0-py2-none-any.whl", hash = "sha256:f76c21a4b4c72e9e09763d4d1b234afc469c88693152a763ad6786467ef9e79f"},
 ]
 colorlog = [
     {file = "colorlog-4.8.0-py2.py3-none-any.whl", hash = "sha256:3dd15cb27e8119a24c1a7b5c93f9f3b455855e0f73993b1c25921b2f646f1dcd"},
@@ -1140,7 +1151,10 @@ six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
-taskw = []
+taskw = [
+    {file = "taskw-1.3.0-py3-none-any.whl", hash = "sha256:8467ee1e43035678a6a14ea6d71c6b1e0a19f6feeca7cacc604c246456bcc905"},
+    {file = "taskw-1.3.0.tar.gz", hash = "sha256:7673d80b3d5bace5b35eb71f5035e313a92daab6e437694128d8ce7dcdaf66fb"},
+]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
     {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},

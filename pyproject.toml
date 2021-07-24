@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "taskw_gcal_sync"
-version = "v0.6.0"
+version = "v0.7.0"
 description = "Taskwarrior <-> Google Calendar synchronisation tool"
 license = "MIT"
 authors = ["Nikos Koukis <nickkouk@gmail.com>", ]
@@ -21,8 +21,11 @@ classifiers = [ "Programming Language :: Python",
 
 [tool.poetry.dependencies]
 python = "^3.8"
-click = "^7.1.2"
+
+PyYAML = "^5.4.1"
 bidict = "^0.21.2"
+click = "^8.0"
+colored-traceback = "^0.3.0"
 colorlog = "^4.8.0"
 google-api-python-client = "^2.1.0"
 google-auth-oauthlib = "^0.4.4"
@@ -30,23 +33,21 @@ loguru = "^0.5.3"
 overrides = "^3.1.0"
 python-dateutil = "^2.8.1"
 pytz = "^2021.1"
-PyYAML = "^5.4.1"
 rfc3339 = "^6.2"
 sh = "^1.14.1"
-typing = "^3.7.4"
-taskw = { git="https://github.com/bergercookie/taskw.git", branch="develop" }
-rope = "^0.19"
-pylint = ">=2.9"
 tqdm = "^4.61.2"
+typing = "^3.7.4"
+taskw = "^1.3.0"
 
 [tool.poetry.dev-dependencies]
-isort = ">=5.8.0"
-pytest = "^6.2.3"
-mypy = "^0.812"
 black = "21.7b0"
-rope = "^0.19"
-pylint = ">=2.9"
+isort = ">=5.8.0"
+mypy = "^0.812"
 pdbpp = "^0.10.3"
+pylint = ">=2.9"
+pytest = "^6.2.3"
+rope = "^0.19"
+# taskw = { git="https://github.com/bergercookie/taskw.git", branch="develop" }
 
 [tool.poetry.scripts]
 tw_gcal_sync = "taskw_gcal_sync.scripts.tw_gcal_sync:main"
@@ -57,6 +58,7 @@ include_trailing_comma = true
 multi_line_output = 3
 
 [tool.black]
+experimental-string-processing = true
 line-length = 95
 target-version = ['py36', 'py37', 'py38']
 include = '\.pyi?$'

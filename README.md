@@ -57,7 +57,7 @@ modified, or deleted respectively in TaskWarrior and vice-versa
 
 ## Demo - first run - populating calendar in GCal
 
-![demo_gif](https://github.com/bergercookie/taskw_gcal_sync/blob/master/misc/demo.gif)
+![demo_gif](misc/demo.gif)
 
 ## Motivation
 
@@ -105,6 +105,43 @@ Installation Options:
   ...
   ```
 
+## Override Calendar API key
+
+Unfortunately I've yet to verify this app with Google so new users are
+currently blocked from using it. To bypass that you can register for your own
+developer account with the Google Calendar API with the following steps:
+
+Firstly, removed the `~/.gcal_credentials.pickle` file on your system since that
+will be reused if found by the app.
+
+For creating your own Google Developer App:
+
+- Go to the Google developer console
+- Make a new project
+- From the sidebar go to `API & Services` and once there click the `ENABLE APIS
+  AND SERVICES` button
+- Look for and Enable the `Calendar API`
+
+Your newly created app now has access to the Calendar API. We now have to create
+and download the credentials:
+
+- Again, from the sidebar under `API And Services` click `Credentials`
+- Enable the `Calendar API`
+- On the sidebar click `Credentials`, and once there click `CREATE CREDENTIALS`
+- Create a new `OAuth Client ID`. Set the type to `Desktop App` (app name is not
+  important).
+- Finally download the credentials in JSON form by clicking the download button
+  as shown below. This is the file you need to point to when running
+  `tw_gcal_sync`.
+
+  ![download-btn](misc/gcal-json-btn.png)
+
+To specify your custom credentials JSON file use the `--gcal-secret` flag as follows:
+
+```sh
+tw_gcal_sync -c "<calendar-name>" -t "<taskwarrior-tag>" --gcal-secret "<path/to/downloaded/json/file>"
+```
+
 ## Usage instructions
 
 Run the `tw_gcal_sync` to synchronise the Google calendar of your choice with
@@ -131,7 +168,6 @@ $ crontab -e
 # Add the following to sync every 10' - modify Calendar and Tag name accordingly
 # See output and potential errors in your system logs (e.g., `/var/log/syslog`)
 */10 * * * * tw_gcal_sync -c "TW Reminders" -t "remindme"
-
 ```
 
 ## Troubleshooting
