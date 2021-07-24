@@ -43,7 +43,7 @@ class TaskWarriorSide(GenericSide):
     @overrides
     def get_all_items(
         self,
-        skip_completed=True,
+        skip_completed=False,
         order_by: str = None,
         use_ascending_order: bool = True,
         **kargs,
@@ -97,7 +97,7 @@ class TaskWarriorSide(GenericSide):
         t = self.tw.get_task(uuid=UUID(item_id))[-1]
 
         # task CLI doesn't allow `imask`
-        unwanted_keys = ["imask", "recur", "rtype", "parent"]
+        unwanted_keys = ["imask", "recur", "rtype", "parent", "urgency"]
         for i in unwanted_keys:
             t.pop(i, False)
 

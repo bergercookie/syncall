@@ -53,35 +53,35 @@ class TypeStats:
     """Container class for printing execution stats on exit - per type."""
 
     def __init__(self, title: str):
-        self.title = title
+        self._title = title
 
-        self.created_new = 0
-        self.updated = 0
-        self.deleted = 0
-        self.errors = 0
+        self._created_new = 0
+        self._updated = 0
+        self._deleted = 0
+        self._errors = 0
 
-        self.sep = "-" * len(self.title)
+        self._sep = "-" * len(self._title)
 
     def create_new(self):
-        self.created_new += 1
+        self._created_new += 1
 
     def update(self):
-        self.updated += 1
+        self._updated += 1
 
     def delete(self):
-        self.deleted += 1
+        self._deleted += 1
 
     def error(self):
-        self.errors += 1
+        self._errors += 1
 
     def __str__(self) -> str:
         s = (
-            f"{self.title}\n"
-            f"{self.sep}\n"
-            f"\t* Tasks created: {self.created_new}\n"
-            f"\t* Tasks updated: {self.updated}\n"
-            f"\t* Tasks deleted: {self.deleted}\n"
-            f"\t* Errors:        {self.errors}\n"
+            f"{self._title}\n"
+            f"{self._sep}\n"
+            f"\t* Tasks created: {self._created_new}\n"
+            f"\t* Tasks updated: {self._updated}\n"
+            f"\t* Tasks deleted: {self._deleted}\n"
+            f"\t* Errors:        {self._errors}\n"
         )
         return s
 
@@ -107,13 +107,6 @@ class TWGCalAggregator:
         self.config["gcal_serdes_dir"] = (
             Path(self.prefs_manager.prefs_dir_full) / "pickle_gcal"
         )
-        self.config["report_stats"] = True
-        self.config["tw_stats"] = TypeStats("TaskWarrior")
-        self.config["gcal_stats"] = TypeStats("Google Calendar")
-
-        # Timestamps that have a difference maximum to this will be considered
-        # equal - see TaskWarriorSide::update_item for details
-        self.config["timestamp_tolerance"] = timedelta(seconds=1)
         self.config.update(**kargs)  # Update
 
         # initialise both sides
@@ -123,8 +116,13 @@ class TWGCalAggregator:
 
         gcal_config_new = {}
         gcal_config_new.update(gcal_config)
-        self.gcal_side = GCalSide(**gcal_config_new)
+        self.gcal_side = GCalSide(**gcal_config_new)  # type: ignore
 
+        self._report_stats = True
+        self._stats = {
+            ItemType.TW: TypeStats("TaskWarrior"),
+            ItemType.GCAL: TypeStats("Google Calendar"),
+        }
         # Correspondences between the TW reminders and the GCal events
         # For finding the matches: [TW] uuid <-> [GCal] id
         if "tw_gcal_ids" not in self.prefs_manager:
@@ -152,8 +150,8 @@ class TWGCalAggregator:
 
         if not self.cleaned_up:
             # print summary stats
-            if self.config["report_stats"]:
-                logger.warning(f'\n{self.config["tw_stats"]}\n{self.config["gcal_stats"]}')
+            if self._report_stats:
+                logger.warning(f"\n{self._stats[ItemType.TW]}\n{self._stats[ItemType.GCAL]}")
 
             self.cleaned_up = True
 
@@ -176,7 +174,7 @@ class TWGCalAggregator:
 
         other_type = item_type.other
         serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
-        _, other_stats = self._get_stats(item_type)
+        other_stats = self._stats[item_type.other]
 
         logger.info(f"[{item_type}] Registering items at {other_type}...")
         for item in tqdm(items):
@@ -185,7 +183,7 @@ class TWGCalAggregator:
             # Check if I have this item in the register
             if id_ not in registered_ids.keys():
                 # Create the item
-                logger.info(f"[{item_type}] Inserting item at {other_type}, new id: {id_}...")
+                logger.info(f"[{item_type}] Inserting item at {other_type}, new id: {id_} ...")
 
                 # Add it to TW/GCal
                 item_converted = convert_fun(item)
@@ -225,7 +223,7 @@ class TWGCalAggregator:
 
                 # Unchanged item
                 if not self.item_has_update(prev_item, item, item_type):
-                    logger.debug(f"[{item_type}] Unchanged item, id: {id_}...")
+                    logger.debug(f"[{item_type}] Unchanged item, id: {id_} ...")
                     continue
 
                 # Item has changed
@@ -235,7 +233,7 @@ class TWGCalAggregator:
 
                 logger.info(
                     f"[{item_type}] Item has changed, id: {id_} | "
-                    f"updating counterpart at {other_type}, id: {other_id}"
+                    f"updating counterpart at {other_type}, id: {other_id} ..."
                 )
 
                 # Make sure that counterpart has not changed
@@ -263,12 +261,6 @@ class TWGCalAggregator:
                     pickle_dump(other_item_new, (other_serdes_dir / other_id).open("wb"))
                     other_stats.update()
 
-    def _get_stats(self, item_type: ItemType) -> Tuple[TypeStats, TypeStats]:
-        stats = self.config[f"{item_type}_stats"]
-        other_stats = self.config[f"{item_type.other}_stats"]
-
-        return stats, other_stats
-
     def _get_serdes_dirs(self, item_type: ItemType) -> Tuple[Path, Path]:
         serdes_dir = self.config[f"{item_type}_serdes_dir"]
         other_serdes_dir = self.config[f"{item_type.other}_serdes_dir"]
@@ -280,6 +272,13 @@ class TWGCalAggregator:
         other_side = self.gcal_side if item_type is ItemType.TW else self.tw_side
 
         return side, other_side
+
+    def _remove_serdes_files(self, *paths):
+        for p in paths:
+            try:
+                p.unlink()
+            except FileNotFoundError:
+                logger.warning(f"File {p} doesn't seem to exist anymore...")
 
     def synchronise_deleted_items(self, item_type: ItemType):
         """Synchronise a task deleted at the side of `item_type`.
@@ -301,7 +300,7 @@ class TWGCalAggregator:
         side, other_side = self._get_side_instances(item_type)
         other_type = item_type.other
         serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
-        _, other_stats = self._get_stats(item_type)
+        other_stats = self._stats[item_type.other]
 
         logger.info(f"[{item_type}] Deleting items at {other_type}...")
 
@@ -312,19 +311,27 @@ class TWGCalAggregator:
                 continue  # item is still there
 
             # item deleted
-            logger.info(f"[{item_type}] Synchronising deleted item, id: {id_}...")
-
-            other_item = other_side.get_item(other_id)
-            if not other_item:
-                raise RuntimeError(f"{other_id} not found on other side")
-
-            # Make sure that counterpart has not changed
-            # otherwise deal with conflict
-            prev_other_item = pickle.load((other_serdes_dir / other_id).open("rb"))
-            if self.item_has_update(prev_other_item, other_item, other_type):
-                raise NotImplementedError("Conflict resolution required!")
+            logger.info(f"[{item_type}] Synchronising deleted item, id: {id_} ...")
 
             try:
+                other_item = other_side.get_item(other_id)
+                if not other_item:
+                    logger.warning(
+                        f"{other_id} not found at {item_type.other} side, maybe it was also"
+                        " deleted?"
+                    )
+                    other_to_remove.append(other_id)
+                    self._remove_serdes_files(serdes_dir / id_, other_serdes_dir / other_id)
+                    other_stats.delete()
+                    continue
+
+                prev_other_item = pickle.load((other_serdes_dir / other_id).open("rb"))
+                if self.item_has_update(prev_other_item, other_item, other_type):
+                    logger.warning(
+                        "Counterpart item, {other_id} has changed, proceeding with its"
+                        " deletion though..."
+                    )
+
                 # delete item
                 other_side.delete_single_item(other_id)
 
@@ -332,20 +339,8 @@ class TWGCalAggregator:
                 other_to_remove.append(other_id)
 
                 # remove serdes files
-                for p in [
-                    serdes_dir / id_,
-                    other_serdes_dir / other_id,
-                ]:
-                    p.unlink()
+                self._remove_serdes_files(serdes_dir / id_, other_serdes_dir / other_id)
                 other_stats.delete()
-            except FileNotFoundError:
-                logger.error(
-                    "File not found on os.remove."
-                    "This may indicate a bug, please report it at: "
-                    f"https://github.com/bergercookie/taskw_gcal_sync\n\n{sys.exc_info()}"
-                )
-                logger.error(traceback.format_exc())
-                other_stats.error()
             except KeyError:
                 logger.error(
                     "Item to delete [{id_}] is not present."
