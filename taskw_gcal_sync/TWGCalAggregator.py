@@ -1,25 +1,32 @@
 from __future__ import annotations
 
 import atexit
-import os
 import pickle
-import sys
 import traceback
 from datetime import timedelta
 from enum import Enum
-from functools import cached_property, partial
+from functools import cached_property
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Union
 from uuid import UUID
 
-from bidict import bidict
+from bidict import bidict  # type: ignore
 from loguru import logger
 from tqdm import tqdm
 
 from taskw_gcal_sync import GCalSide, GenericSide, TaskWarriorSide
 from taskw_gcal_sync.PrefsManager import PrefsManager
 
-pickle_dump = partial(pickle.dump, protocol=0)
+
+def pickle_dump(item: ItemDataType, path: Union[Path, str], *args, **kargs):
+    pickle.dump(item, Path(path).open("wb"), *args, **kargs, protocol=0)
+
+
+def pickle_load(path: Union[Path, str]):
+    return pickle.load(Path(path).open("rb"))
+
+
+ItemDataType = Dict[str, Any]
 
 
 class ItemType(Enum):
@@ -32,7 +39,7 @@ class ItemType(Enum):
 
     @cached_property
     def id_key(self) -> str:
-        return _item_type_to_id_key[self]
+        return str(_item_type_to_id_key[self])
 
     def __str__(self):
         return str(self.value)
@@ -101,7 +108,7 @@ class TWGCalAggregator:
         self.prefs_manager = PrefsManager("taskw_gcal_sync")
 
         # Own config
-        self.config: Dict[str, Any] = {}
+        self.config: ItemDataType = {}
 
         self.config["tw_serdes_dir"] = Path(self.prefs_manager.prefs_dir_full) / "pickle_tw"
         self.config["gcal_serdes_dir"] = (
@@ -155,16 +162,80 @@ class TWGCalAggregator:
 
             self.cleaned_up = True
 
-    def register_items(self, items: Sequence[Dict[str, Any]], item_type: ItemType):
+    def insert_new_item(self, item: ItemDataType, item_type: ItemType) -> Optional[str]:
+        """Insert a new item both in the other side and in the local registry."""
+        # Create the item
+        other_type = item_type.other
+        id_ = item[item_type.id_key]
+        _, other_side = self._get_side_instances(item_type)
+        serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
+        other_stats = self._stats[item_type.other]
+        convert_fun = self._get_convert_fun(item_type)
+        logger.info(
+            f"[{item_type}] Inserting item [{self.summary_of(item, item_type)[:10]:10}] at"
+            f" {other_type}, new id: {id_} ..."
+        )
+
+        # Add it to TW/GCal
+        item_converted = convert_fun(item)
+        try:
+            other_item_created = other_side.add_item(item_converted)
+        except KeyboardInterrupt:
+            raise
+        except:
+            logger.error(
+                f'Adding item "{id_}" failed.\nItem'
+                f" contents:\n\n{item_converted}\n\nException:"
+                f"\n\n{traceback.format_exc()}"
+            )
+            other_stats.error()
+
+            return
+
+        #  Add registry entry
+        other_registered_id = other_item_created[other_type.id_key]
+
+        # Cache both sides with pickle - f=id_
+        logger.debug(f'Pickling item "{id_}"')
+        logger.debug(f'Pickling item "{other_registered_id}"')
+        pickle_dump(item, serdes_dir / str(id_))
+        pickle_dump(
+            other_item_created,
+            other_serdes_dir / str(other_registered_id),
+        )
+
+        other_stats.create_new()
+        return other_registered_id
+
+    def resolve_item_not_found_on_other(self, item: ItemDataType, item_type: ItemType):
+        registered_ids = self.get_registered_ids(item_type=item_type)
+        id_ = item[item_type.id_key]
+        _, other_side = self._get_side_instances(item_type)
+        if item_type.other == ItemType.GCAL:
+            logger.warning(
+                f"Cannot find id ({id_}) of {item_type} item in {item_type.other} - Readding"
+                " it explititly..."
+            )
+            registered_ids[id_] = self.insert_new_item(item, item_type)
+        else:
+            logger.warning(
+                f"Cannot find id ({id_}) of {item_type} item in {item_type.other} - removing"
+                " the entry altogether"
+            )
+            other_id = registered_ids[id_]
+            other_side.delete_single_item(item_id=other_id)
+            registered_ids.pop(id_)
+
+    def get_registered_ids(self, item_type: ItemType):
+        return self.tw_gcal_ids if item_type is ItemType.TW else self.tw_gcal_ids.inverse
+
+    def register_items(self, items: Sequence[ItemDataType], item_type: ItemType):
         """Register a list of items coming from the side of `item_type`.
 
-        - Register in the broker
-        - Add the corresponding item in the other form (TW if registering GCal
-          event or the other way around)
+        This will include eitehr new items or items that contain modifications on one side that
+        also need to be applied to the other.
         """
-        registered_ids = (
-            self.tw_gcal_ids if item_type is ItemType.TW else self.tw_gcal_ids.inverse
-        )
+        registered_ids = self.get_registered_ids(item_type=item_type)
         _, other_side = self._get_side_instances(item_type)
         convert_fun = (
             TWGCalAggregator.convert_tw_to_gcal
@@ -176,50 +247,24 @@ class TWGCalAggregator:
         serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
         other_stats = self._stats[item_type.other]
 
+        # TODO Find all available items in each side, make sure our registry is up-to-date?
+
         logger.info(f"[{item_type}] Registering items at {other_type}...")
         for item in tqdm(items):
-            id_ = str(item[item_type.id_key])
+            id_ = item[item_type.id_key]
 
             # Check if I have this item in the register
             if id_ not in registered_ids.keys():
-                # Create the item
-                logger.info(f"[{item_type}] Inserting item at {other_type}, new id: {id_} ...")
-
-                # Add it to TW/GCal
-                item_converted = convert_fun(item)
-                try:
-                    other_item_created = other_side.add_item(item_converted)
-                except KeyboardInterrupt:
-                    raise
-                except:
-                    logger.error(
-                        f'Adding item "{id_}" failed.\nItem'
-                        f" contents:\n\n{item_converted}\n\nException:"
-                        f"\n\n{traceback.format_exc()}"
-                    )
-                    other_stats.error()
-                else:
-                    #  Add registry entry
-                    registered_ids[id_] = str(other_item_created[other_type.id_key])
-
-                    # Cache both sides with pickle - f=id_
-                    logger.debug(f'Pickling item "{id_}"')
-                    logger.debug(f'Pickling item "{registered_ids[id_]}"')
-                    pickle_dump(item, (serdes_dir / id_).open("wb"))
-                    pickle_dump(
-                        other_item_created,
-                        (other_serdes_dir / registered_ids[id_]).open("wb"),
-                    )
-
-                    other_stats.create_new()
-
+                print("id_: ", id_)
+                print("type(id_): ", type(id_))
+                registered_ids[id_] = self.insert_new_item(item=item, item_type=item_type)
             else:
                 # already in registry
 
                 # Update item
                 # TODO: if this fails might be because the user cleared only the pickle
                 # directories and not the cfg file
-                prev_item = pickle.load((serdes_dir / id_).open("rb"))
+                prev_item = pickle_load(serdes_dir / str(id_))
 
                 # Unchanged item
                 if not self.item_has_update(prev_item, item, item_type):
@@ -229,7 +274,8 @@ class TWGCalAggregator:
                 # Item has changed
                 other_id = registered_ids[id_]
                 other_item = other_side.get_item(other_id)
-                assert other_item, f"{other_id} not found on other side"
+                if other_item is None:
+                    self.resolve_item_not_found_on_other(item, item_type)
 
                 logger.info(
                     f"[{item_type}] Item has changed, id: {id_} | "
@@ -238,9 +284,11 @@ class TWGCalAggregator:
 
                 # Make sure that counterpart has not changed
                 # otherwise deal with conflict
-                prev_other_item = pickle.load((other_serdes_dir / other_id).open("rb"))
-                if self.item_has_update(prev_other_item, other_item, other_type):
-                    logger.warning(f"Conflict! Arbitrarily selecting [{item_type}]")
+                prev_other_item = pickle_load(other_serdes_dir / str(other_id))
+                if self.item_has_update(
+                    prev_item=prev_other_item, new_item=other_item, item_type=other_type
+                ):
+                    logger.warning(f"Conflict! Selecting [{item_type}]")
 
                 # Convert to and update other side
                 other_item_new = convert_fun(item)
@@ -257,8 +305,8 @@ class TWGCalAggregator:
                     other_stats.error()
                 else:
                     # Update cached version
-                    pickle_dump(item, (serdes_dir / id_).open("wb"))
-                    pickle_dump(other_item_new, (other_serdes_dir / other_id).open("wb"))
+                    pickle_dump(item, serdes_dir / str(id_))
+                    pickle_dump(other_item_new, other_serdes_dir / str(other_id))
                     other_stats.update()
 
     def _get_serdes_dirs(self, item_type: ItemType) -> Tuple[Path, Path]:
@@ -272,6 +320,13 @@ class TWGCalAggregator:
         other_side = self.gcal_side if item_type is ItemType.TW else self.tw_side
 
         return side, other_side
+
+    def _get_convert_fun(self, item_type: ItemType) -> Callable[[ItemDataType], ItemDataType]:
+        return (
+            TWGCalAggregator.convert_tw_to_gcal
+            if item_type is ItemType.TW
+            else TWGCalAggregator.convert_gcal_to_tw
+        )
 
     def _remove_serdes_files(self, *paths):
         for p in paths:
@@ -325,10 +380,12 @@ class TWGCalAggregator:
                     other_stats.delete()
                     continue
 
-                prev_other_item = pickle.load((other_serdes_dir / other_id).open("rb"))
-                if self.item_has_update(prev_other_item, other_item, other_type):
+                prev_other_item = pickle_load(other_serdes_dir / str(other_id))
+                if self.item_has_update(
+                    prev_item=prev_other_item, new_item=other_item, item_type=other_type
+                ):
                     logger.warning(
-                        "Counterpart item, {other_id} has changed, proceeding with its"
+                        f"Counterpart item, {other_id} has changed, proceeding with its"
                         " deletion though..."
                     )
 
@@ -343,7 +400,7 @@ class TWGCalAggregator:
                 other_stats.delete()
             except KeyError:
                 logger.error(
-                    "Item to delete [{id_}] is not present."
+                    f"Item to delete [{id_}] is not present."
                     f"\n\n{other_item}\n\nException: {traceback.format_exc()}\n"
                 )
                 other_stats.error()
@@ -360,7 +417,9 @@ class TWGCalAggregator:
         for other_id in other_to_remove:
             other_registered_ids.pop(other_id)
 
-    def item_has_update(self, prev_item: dict, new_item: dict, item_type: ItemType) -> bool:
+    def item_has_update(
+        self, prev_item: ItemDataType, new_item: ItemDataType, item_type: ItemType
+    ) -> bool:
         """Determine whether the item has been updated."""
         side, _ = self._get_side_instances(item_type)
         return not side.items_are_identical(
@@ -370,7 +429,7 @@ class TWGCalAggregator:
     # currently unused.
     @staticmethod
     def compare_tw_gcal_items(
-        tw_item: dict, gcal_item: dict
+        tw_item: ItemDataType, gcal_item: ItemDataType
     ) -> Tuple[Set[str], Dict[str, Tuple[Any, Any]]]:
         """Compare a TW and a GCal item and find any differences.
 
@@ -388,8 +447,16 @@ class TWGCalAggregator:
 
         return diff_keys, changes
 
+    def summary_of(self, item: ItemDataType, item_type: ItemType) -> str:
+        if item_type == ItemType.TW:
+            s = "description"
+        else:
+            s = "summary"
+
+        return item[s]
+
     @staticmethod
-    def convert_tw_to_gcal(tw_item: dict) -> dict:
+    def convert_tw_to_gcal(tw_item: ItemDataType) -> ItemDataType:
         """Convert a TW item to a Gcal event.
 
         .. note:: Do not convert the ID as that may change either manually or
@@ -440,7 +507,7 @@ class TWGCalAggregator:
         return gcal_item
 
     @staticmethod
-    def convert_gcal_to_tw(gcal_item: dict) -> dict:
+    def convert_gcal_to_tw(gcal_item: ItemDataType) -> ItemDataType:
         """Convert a GCal event to a TW item."""
 
         # Parse the description
@@ -449,7 +516,7 @@ class TWGCalAggregator:
         assert isinstance(status, str)
         assert isinstance(uuid, UUID) or uuid is None
 
-        tw_item: Dict[str, Any] = {}
+        tw_item: ItemDataType = {}
         # annotations
         tw_item["annotations"] = annotations
 
@@ -489,7 +556,9 @@ class TWGCalAggregator:
         return tw_item
 
     @staticmethod
-    def _parse_gcal_item_desc(gcal_item: dict) -> Tuple[List[str], str, Union[UUID, None]]:
+    def _parse_gcal_item_desc(
+        gcal_item: ItemDataType,
+    ) -> Tuple[List[str], str, Optional[UUID]]:
         """Parse and return the necessary TW fields off a Google Calendar Item."""
         annotations: List[str] = []
         status = "pending"
@@ -500,12 +569,12 @@ class TWGCalAggregator:
 
         gcal_desc = gcal_item["description"]
         # strip whitespaces, empty lines
-        lines = [l.strip() for l in gcal_desc.split("\n") if l][1:]
+        lines = [li.strip() for li in gcal_desc.split("\n") if li][1:]
 
         # annotations
         i = 0
-        for i, l in enumerate(lines):
-            parts = l.split(":", maxsplit=1)
+        for i, li in enumerate(lines):
+            parts = li.split(":", maxsplit=1)
             if len(parts) == 2 and parts[0].lower().startswith("* annotation"):
                 annotations.append(parts[1].strip())
             else:
@@ -515,8 +584,8 @@ class TWGCalAggregator:
             return annotations, status, uuid
 
         # Iterate through rest of lines, find only the status and uuid ones
-        for l in lines[i:]:
-            parts = l.split(":", maxsplit=1)
+        for li in lines[i:]:
+            parts = li.split(":", maxsplit=1)
             if len(parts) == 2:
                 start = parts[0].lower()
                 if start.startswith("* status"):

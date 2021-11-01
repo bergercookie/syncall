@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional
 from uuid import UUID
 
-from overrides import overrides
 from taskw import TaskWarrior
 
 from taskw_gcal_sync.GenericSide import GenericSide
@@ -40,7 +39,6 @@ class TaskWarriorSide(GenericSide):
         self._items_cache = {item["uuid"]: item for item in items}
         self.reload_items = False
 
-    @overrides
     def get_all_items(
         self,
         skip_completed=False,
@@ -63,6 +61,8 @@ class TaskWarriorSide(GenericSide):
 
         tags = set(self.config["tags"])
         tasks = [t for t in tasks if tags.issubset(t.get("tags", []))]
+        for task in tasks:
+            task["uuid"] = str(task["uuid"])
 
         if order_by is not None:
             if order_by not in [
@@ -79,15 +79,14 @@ class TaskWarriorSide(GenericSide):
 
         return tasks
 
-    @overrides
     def get_item(self, item_id: str, use_cached: bool = True) -> Optional[dict]:
         item = self._items_cache.get(UUID(item_id))
         if not use_cached or item is None:
             item = self.tw.get_task(id=item_id)[-1]
+        item["uuid"] = str(item["uuid"])
 
         return item if item["status"] != "deleted" else None
 
-    @overrides
     def update_item(self, item_id: str, **changes):
         """Update an already added item.
 
@@ -108,7 +107,6 @@ class TaskWarriorSide(GenericSide):
         d.update(changes)
         self.tw.task_update(d)
 
-    @overrides
     def add_item(self, item) -> dict:
         """Add a new Item as a TW task.
 
@@ -137,7 +135,6 @@ class TaskWarriorSide(GenericSide):
 
         return new_item
 
-    @overrides
     def delete_single_item(self, item_id) -> None:
         self.tw.task_delete(uuid=item_id)
 

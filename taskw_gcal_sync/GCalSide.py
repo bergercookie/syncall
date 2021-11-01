@@ -10,7 +10,6 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient import discovery
 from googleapiclient.http import HttpError
-from overrides import overrides
 
 from taskw_gcal_sync.GenericSide import GenericSide
 from taskw_gcal_sync.logger import logger
@@ -50,7 +49,6 @@ class GCalSide(GenericSide):
         # If you modify this, delete your previously saved credentials
         self.service = None
 
-    @overrides
     def start(self):
         logger.debug("Connecting to Google Calendar...")
         self.gain_access()
@@ -89,7 +87,6 @@ class GCalSide(GenericSide):
                 'Multiple matching calendars for name -> "{self.config["calendar_summary"]}"'
             )
 
-    @overrides
     def get_all_items(self, **kargs):
         """Get all the events for the calendar that we use.
 
@@ -117,7 +114,6 @@ class GCalSide(GenericSide):
 
         return events
 
-    @overrides
     def get_item(self, item_id: str, use_cached: bool = True) -> Optional[dict]:
         item = self._items_cache.get(item_id)
         if not use_cached or item is None:
@@ -143,7 +139,6 @@ class GCalSide(GenericSide):
         finally:
             return ret
 
-    @overrides
     def update_item(self, item_id, **changes):
         GCalSide._sanitize_all_datetimes(changes)
 
@@ -156,7 +151,6 @@ class GCalSide(GenericSide):
             calendarId=self._calendar_id, eventId=event["id"], body=event
         ).execute()
 
-    @overrides
     def add_item(self, item) -> dict:
         GCalSide._sanitize_all_datetimes(item)
         event = self.service.events().insert(calendarId=self._calendar_id, body=item).execute()
@@ -164,7 +158,6 @@ class GCalSide(GenericSide):
 
         return event
 
-    @overrides
     def delete_single_item(self, item_id) -> None:
         self.service.events().delete(calendarId=self._calendar_id, eventId=item_id).execute()
 

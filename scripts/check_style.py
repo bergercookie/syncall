@@ -24,11 +24,6 @@ def process(f):  # type: ignore
 def black(check: bool, verbose: bool = False) -> List[str]:
     args = [
         "black",
-        "--experimental-string-processing",
-        "--line-length",
-        "95",
-        "-t",
-        "py38",
         "taskw_gcal_sync",
         "test",
     ]
@@ -42,7 +37,11 @@ def black(check: bool, verbose: bool = False) -> List[str]:
 
 @process
 def isort(check: bool, verbose: bool = False) -> List[str]:
-    args = ["isort", "taskw_gcal_sync", "test"]
+    args = [
+        "isort",
+        "taskw_gcal_sync",
+        "test",
+    ]
     if check:
         args.append("--check")
     if verbose:
