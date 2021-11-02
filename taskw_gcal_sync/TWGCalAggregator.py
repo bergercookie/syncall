@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import atexit
 import pickle
 import traceback
 from datetime import timedelta
@@ -137,12 +136,12 @@ class TWGCalAggregator:
         self.tw_gcal_ids = self.prefs_manager["tw_gcal_ids"]
 
         self.cleaned_up = False
-        atexit.register(self.cleanup)
 
     def __enter__(self):
+        self.start()
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, _traceback):
         self.cleanup()
 
     def start(self):
@@ -172,7 +171,7 @@ class TWGCalAggregator:
         other_stats = self._stats[item_type.other]
         convert_fun = self._get_convert_fun(item_type)
         logger.info(
-            f"[{item_type}] Inserting item [{self.summary_of(item, item_type)[:10]:10}] at"
+            f"[{item_type}] Inserting item [{self._summary_of(item, item_type)[:10]:10}] at"
             f" {other_type}, new id: {id_} ..."
         )
 
@@ -207,8 +206,8 @@ class TWGCalAggregator:
         other_stats.create_new()
         return other_registered_id
 
-    def resolve_item_not_found_on_other(self, item: ItemDataType, item_type: ItemType):
-        registered_ids = self.get_registered_ids(item_type=item_type)
+    def _resolve_item_not_found_on_other(self, item: ItemDataType, item_type: ItemType):
+        registered_ids = self._get_registered_ids(item_type=item_type)
         id_ = item[item_type.id_key]
         _, other_side = self._get_side_instances(item_type)
         if item_type.other == ItemType.GCAL:
@@ -226,7 +225,7 @@ class TWGCalAggregator:
             other_side.delete_single_item(item_id=other_id)
             registered_ids.pop(id_)
 
-    def get_registered_ids(self, item_type: ItemType):
+    def _get_registered_ids(self, item_type: ItemType):
         return self.tw_gcal_ids if item_type is ItemType.TW else self.tw_gcal_ids.inverse
 
     def register_items(self, items: Sequence[ItemDataType], item_type: ItemType):
@@ -235,7 +234,7 @@ class TWGCalAggregator:
         This will include eitehr new items or items that contain modifications on one side that
         also need to be applied to the other.
         """
-        registered_ids = self.get_registered_ids(item_type=item_type)
+        registered_ids = self._get_registered_ids(item_type=item_type)
         _, other_side = self._get_side_instances(item_type)
         convert_fun = (
             TWGCalAggregator.convert_tw_to_gcal
@@ -255,8 +254,6 @@ class TWGCalAggregator:
 
             # Check if I have this item in the register
             if id_ not in registered_ids.keys():
-                print("id_: ", id_)
-                print("type(id_): ", type(id_))
                 registered_ids[id_] = self.insert_new_item(item=item, item_type=item_type)
             else:
                 # already in registry
@@ -275,7 +272,8 @@ class TWGCalAggregator:
                 other_id = registered_ids[id_]
                 other_item = other_side.get_item(other_id)
                 if other_item is None:
-                    self.resolve_item_not_found_on_other(item, item_type)
+                    self._resolve_item_not_found_on_other(item, item_type)
+                    continue
 
                 logger.info(
                     f"[{item_type}] Item has changed, id: {id_} | "
@@ -426,28 +424,8 @@ class TWGCalAggregator:
             prev_item, new_item, ignore_keys=["urgency", "modified", "updated"]
         )
 
-    # currently unused.
-    @staticmethod
-    def compare_tw_gcal_items(
-        tw_item: ItemDataType, gcal_item: ItemDataType
-    ) -> Tuple[Set[str], Dict[str, Tuple[Any, Any]]]:
-        """Compare a TW and a GCal item and find any differences.
-
-        :returns: list of different keys and Dictionary with the differences for
-                  same keys
-        """
-        # Compare in TW form
-        tw_item_out = TWGCalAggregator.convert_gcal_to_tw(gcal_item)
-        diff_keys = {k for k in set(tw_item) ^ set(tw_item_out)}
-        changes = {
-            k: (tw_item[k], tw_item_out[k])
-            for k in set(tw_item) & set(tw_item_out)
-            if tw_item[k] != tw_item_out[k]
-        }
-
-        return diff_keys, changes
-
-    def summary_of(self, item: ItemDataType, item_type: ItemType) -> str:
+    def _summary_of(self, item: ItemDataType, item_type: ItemType) -> str:
+        """Get the summary of the given item."""
         if item_type == ItemType.TW:
             s = "description"
         else:
@@ -475,8 +453,8 @@ class TWGCalAggregator:
         # description
         gcal_item["description"] = "IMPORTED FROM TASKWARRIOR\n"
         if "annotations" in tw_item.keys():
-            for i, a in enumerate(tw_item["annotations"]):
-                gcal_item["description"] += f"\n* Annotation {i + 1}: {a}"
+            for i, annotation in enumerate(tw_item["annotations"]):
+                gcal_item["description"] += f"\n* Annotation {i + 1}: {annotation}"
 
         gcal_item["description"] += "\n"
         for k in ["status", "uuid"]:

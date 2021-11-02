@@ -93,15 +93,3 @@ class TestConversions(GenericTestCase):
             ),
         )
         # can't really check the description field..
-
-    def test_compare_tw_gcal_items(self):
-        self.load_sample_items()
-        diffs = TWGCalAggregator.compare_tw_gcal_items(
-            tw_item=self.tw_item, gcal_item=self.gcal_item_expected
-        )
-        self.assertTupleEqual(diffs, ({"entry", "urgency", "due", "id", "tags"}, {}))
-
-        diffs = TWGCalAggregator.compare_tw_gcal_items(
-            tw_item=self.tw_item_expected, gcal_item=self.gcal_item
-        )
-        self.assertTupleEqual(diffs, (set(), {}))

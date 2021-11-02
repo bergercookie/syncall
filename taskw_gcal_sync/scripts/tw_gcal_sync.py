@@ -63,8 +63,6 @@ def main(gcal_calendar, gcal_secret, tw_tags, order_by, ascending_order, verbose
 
     try:
         with TWGCalAggregator(tw_config=tw_config, gcal_config=gcal_config) as aggregator:
-            aggregator.start()
-
             # Check and potentially register items
             # tw
             tw_items = aggregator.tw_side.get_all_items(
