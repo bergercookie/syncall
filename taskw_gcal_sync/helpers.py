@@ -1,7 +1,10 @@
 """Various helper methods."""
 
+import datetime
 import re
 from typing import Any
+
+import dateutil.tz
 
 
 def get_object_unique_name(obj: Any) -> str:
@@ -52,3 +55,26 @@ def get_valid_filename(s: str) -> str:
     """
     s = str(s).strip().replace(" ", "_")
     return re.sub(r"(?u)[^-\w.]", "_", s)
+
+
+def is_same_datetime(dt1: datetime.datetime, dt2: datetime.datetime) -> bool:
+    """Compare two datetime.datetime objects.
+
+    If the timezone is empty, assume local timezone
+    """
+
+    assert isinstance(dt1, datetime.datetime)
+    assert isinstance(dt2, datetime.datetime)
+
+    # if there is no timezone, assume local timezone
+    if dt1.tzinfo is None:
+        dt1_ = dt1.replace(tzinfo=dateutil.tz.tzlocal())
+    else:
+        dt1_ = dt1
+
+    if dt2.tzinfo is None:
+        dt2_ = dt2.replace(tzinfo=dateutil.tz.tzlocal())
+    else:
+        dt2_ = dt2
+
+    return dt1_ == dt2_

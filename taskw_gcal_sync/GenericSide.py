@@ -2,7 +2,9 @@ import abc
 import datetime
 from typing import Optional
 
-from taskw_gcal_sync.utils import is_same_datetime
+from loguru import logger
+
+from taskw_gcal_sync.helpers import is_same_datetime
 
 
 class GenericSide(abc.ABC):
@@ -78,25 +80,31 @@ class GenericSide(abc.ABC):
         """
 
         for k in keys:
-            if k in item1 and k in item2:
-                if isinstance(item1[k], datetime.datetime) and isinstance(
-                    item2[k], datetime.datetime
-                ):
-
-                    if is_same_datetime(item1[k], item2[k]):
-                        continue
-                    else:
-                        return False
-
-                else:
-                    if item1[k] == item2[k]:
-                        continue
-                    else:
-                        return False
-
-            elif k not in item1 and k not in item2:
+            if k not in item1 and k not in item2:
                 continue
-            else:
+
+            if (k in item1 and k not in item2) or (k not in item1 and k in item2):
                 return False
+
+            if isinstance(item1[k], datetime.datetime) and isinstance(
+                item2[k], datetime.datetime
+            ):
+                if is_same_datetime(item1[k], item2[k]):
+                    continue
+                else:
+                    logger.opt(lazy=True).trace(
+                        f"\n\nItems differ\n\nItem1\n\n{item1}\n\nItem2\n\n{item2}"
+                        f"\n\nKey [{k}] is different - [{repr(item1[k])}] | [{repr(item2[k])}]"
+                    )
+                    return False
+            else:
+                if item1[k] == item2[k]:
+                    continue
+                else:
+                    logger.opt(lazy=True).trace(
+                        f"\n\nItems differ\n\nItem1\n\n{item1}\n\nItem2\n\n{item2}"
+                        f"\n\nKey [{k}] is different - [{repr(item1[k])}] | [{repr(item2[k])}]"
+                    )
+                    return False
 
         return True

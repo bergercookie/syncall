@@ -3,7 +3,7 @@ import traceback
 import click
 
 from taskw_gcal_sync.logger import logger, setup_logger
-from taskw_gcal_sync.TWGCalAggregator import ItemType, TWGCalAggregator
+from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
 
 
 @click.command()
@@ -31,24 +31,13 @@ from taskw_gcal_sync.TWGCalAggregator import ItemType, TWGCalAggregator
     multiple=True,
 )
 @click.option(
-    "-o",
-    "--order-by",
-    type=click.Choice(["description", "end", "entry", "id", "modified", "status", "urgency"]),
-    help="Sort the tasks, based on this key and then register/modify/delete them",
-)
-@click.option(
-    "--ascending-order/--descending-order",
-    default=True,
-    help="Specify ascending/descending order for the order-by option",
-)
-@click.option(
     "--oauth-port",
     default=8081,
     type=int,
     help="Port to use for oAuth Authentication with Google Calendar",
 )
 @click.option("-v", "--verbose", count=True, default=0)
-def main(gcal_calendar, gcal_secret, tw_tags, order_by, ascending_order, verbose, oauth_port):
+def main(gcal_calendar, gcal_secret, tw_tags, verbose, oauth_port):
     """Main."""
     setup_logger(verbosity=verbose)
     if len(tw_tags) != 1:
@@ -63,28 +52,14 @@ def main(gcal_calendar, gcal_secret, tw_tags, order_by, ascending_order, verbose
 
     try:
         with TWGCalAggregator(tw_config=tw_config, gcal_config=gcal_config) as aggregator:
-            # Check and potentially register items
-            # tw
-            tw_items = aggregator.tw_side.get_all_items(
-                order_by=order_by, use_ascending_order=ascending_order
-            )
-            aggregator.register_items(tw_items, ItemType.TW)
+            aggregator.sync()
 
-            # gcal
-            gcal_items = aggregator.gcal_side.get_all_items(
-                order_by=order_by, use_ascending_order=ascending_order
-            )
-            aggregator.register_items(gcal_items, ItemType.GCAL)
-
-            # Synchronise deleted items
-            aggregator.synchronise_deleted_items(ItemType.TW)
-            aggregator.synchronise_deleted_items(ItemType.GCAL)
     except KeyboardInterrupt:
         logger.info("Exiting...")
     except:
         logger.info(traceback.format_exc())
         logger.error(
-            "Application failed, above you can find the error message, which you can use to"
+            "Application failed; above you can find the error message, which you can use to"
             " create an issue at https://github.com/bergercookie/taskw_gcal_sync/issues."
         )
 

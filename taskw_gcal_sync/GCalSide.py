@@ -2,10 +2,11 @@ import datetime
 import os
 import pickle
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Dict, Literal, Optional, Union
 
 import dateutil
 import pkg_resources
+import pytz
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient import discovery
@@ -46,6 +47,16 @@ class GCalSide(GenericSide):
         self._calendar_id = None
         self._items_cache: Dict[str, dict] = {}
 
+        self._identical_comparison_keys = [
+            "description",
+            "end",
+            "start",
+            "summary",
+            "updated",
+        ]
+
+        self._date_keys = ["end", "start", "updated"]
+
         # If you modify this, delete your previously saved credentials
         self.service = None
 
@@ -84,7 +95,7 @@ class GCalSide(GenericSide):
             return matching_calendars[0]
         else:
             raise RuntimeError(
-                'Multiple matching calendars for name -> "{self.config["calendar_summary"]}"'
+                f'Multiple matching calendars for name -> "{self.config["calendar_summary"]}"'
             )
 
     def get_all_items(self, **kargs):
@@ -140,8 +151,6 @@ class GCalSide(GenericSide):
             return ret
 
     def update_item(self, item_id, **changes):
-        GCalSide._sanitize_all_datetimes(changes)
-
         # Check if item is there
         event = (
             self.service.events().get(calendarId=self._calendar_id, eventId=item_id).execute()
@@ -152,9 +161,8 @@ class GCalSide(GenericSide):
         ).execute()
 
     def add_item(self, item) -> dict:
-        GCalSide._sanitize_all_datetimes(item)
         event = self.service.events().insert(calendarId=self._calendar_id, body=item).execute()
-        logger.debug('Event created: "%s"' % event.get("htmlLink"))
+        logger.debug(f'Event created -> {event.get("htmlLink")}')
 
         return event
 
@@ -246,7 +254,7 @@ class GCalSide(GenericSide):
         return dt_out
 
     @staticmethod
-    def parse_datetime(dt: str) -> datetime.datetime:
+    def parse_datetime(dt_str: Union[str, dict]) -> datetime.datetime:
         """
         Parse datetime given in the GCal format ('T', 'Z' separators).
 
@@ -260,10 +268,35 @@ class GCalSide(GenericSide):
         datetime.datetime(2019, 3, 5, 0, 3, 1, 123400)
         >>> GCalSide.parse_datetime('2019-03-08T00:29:06.602Z')
         datetime.datetime(2019, 3, 8, 0, 29, 6, 602000)
+
+        >>> a = GCalSide.parse_datetime({'dateTime': '2021-11-14T22:07:49Z', 'timeZone': 'UTC'})
+        >>> b = GCalSide.parse_datetime({'dateTime': '2021-11-14T22:07:49.000000Z'})
+        >>> b
+        datetime.datetime(2021, 11, 14, 22, 7, 49)
+        >>> from taskw_gcal_sync.helpers import is_same_datetime
+        >>> is_same_datetime(a, b)
+        True
+        >>> GCalSide.parse_datetime({'dateTime': '2021-11-14T22:07:49.123456'})
+        datetime.datetime(2021, 11, 14, 22, 7, 49, 123456)
         """
 
-        assert isinstance(dt, str)
-        return dateutil.parser.parse(dt).replace(tzinfo=None)
+        if isinstance(dt_str, str):
+            return dateutil.parser.parse(dt_str).replace(tzinfo=None)  # type: ignore
+        elif isinstance(dt_str, dict):
+            date_time = dt_str.get("dateTime")
+            if date_time is None:
+                raise RuntimeError(f"Invalid structure dict: {dt_str}")
+            dt = GCalSide.parse_datetime(date_time)
+            time_zone = dt_str.get("timeZone")
+            if time_zone is not None:
+                timezone = pytz.timezone(time_zone)
+                dt = timezone.localize(dt)
+
+            return dt
+        else:
+            print("dt_str: ", dt_str)
+            print("type(dt_str): ", type(dt_str))
+            raise NotImplementedError
 
     @staticmethod
     def _sanitize_all_datetimes(item: dict) -> None:
@@ -274,7 +307,7 @@ class GCalSide(GenericSide):
             item["end"]["dateTime"] = GCalSide.sanitize_datetime(item["end"]["dateTime"])
 
     @staticmethod
-    def sanitize_datetime(dt: str) -> str:
+    def sanitize_datetime(dt_str: str) -> str:
         """Given a date in str, make sure that the HH:MM:SS is not 00:00:00.
 
         >>> GCalSide.sanitize_datetime('2019-03-08T00:00:00.602Z')
@@ -285,32 +318,23 @@ class GCalSide(GenericSide):
         '2019-03-08T00:29:06.602000Z'
         """
 
-        dt_dt = GCalSide.parse_datetime(dt)
-        if dt_dt.hour == 0 and dt_dt.minute == 0 and dt_dt.second == 0:
-            dt_dt -= datetime.timedelta(minutes=1)
+        dt = GCalSide.parse_datetime(dt_str)
+        if dt.hour == 0 and dt.minute == 0 and dt.second == 0:
+            dt -= datetime.timedelta(minutes=1)
 
-        return GCalSide.format_datetime(dt_dt)
+        return GCalSide.format_datetime(dt)
 
-    @staticmethod
-    def items_are_identical(item1, item2, ignore_keys=[]) -> bool:
+    def items_are_identical(self, item1, item2, ignore_keys=None) -> bool:
+        ignore_keys_ = ignore_keys if ignore_keys is not None else []
+        for item in [item1, item2]:
+            for key in self._date_keys:
+                if key not in item:
+                    continue
 
-        keys = [
-            k
-            for k in [
-                "created",
-                "creator",
-                "description",
-                "end",
-                "etag",
-                "htmlLlink",
-                "iCalUID",
-                "kind",
-                "organizer",
-                "start",
-                "summary",
-                "updated",
-            ]
-            if k not in ignore_keys
-        ]
+                item[key] = self.parse_datetime(item[key])
 
-        return GenericSide._items_are_identical(item1, item2, keys=keys)
+        return GenericSide._items_are_identical(
+            item1,
+            item2,
+            keys=[k for k in self._identical_comparison_keys if k not in ignore_keys_],
+        )

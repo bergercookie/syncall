@@ -139,12 +139,13 @@ class TaskWarriorSide(GenericSide):
         self.tw.task_delete(uuid=item_id)
 
     @staticmethod
-    def items_are_identical(item1, item2, ignore_keys=[]) -> bool:
+    def items_are_identical(item1, item2, ignore_keys=None) -> bool:
+        ignore_keys_ = ignore_keys if ignore_keys is not None else []
 
         keys = [
             k
             for k in ["annotations", "description", "due", "modified", "status", "uuid"]
-            if k not in ignore_keys
+            if k not in ignore_keys_
         ]
 
         # special care for the annotations key
@@ -166,6 +167,10 @@ class TaskWarriorSide(GenericSide):
         else:
             pass
 
+        if "uuid" in item1:
+            item1["uuid"] = str(item1["uuid"])
+        if "uuid" in item2:
+            item2["uuid"] = str(item2["uuid"])
         return GenericSide._items_are_identical(item1, item2, keys)
 
     @staticmethod

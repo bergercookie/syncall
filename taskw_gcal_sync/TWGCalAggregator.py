@@ -4,20 +4,23 @@ import pickle
 import traceback
 from datetime import timedelta
 from enum import Enum
-from functools import cached_property
+from functools import cached_property, partial
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
 from bidict import bidict  # type: ignore
+from item_synchronizer import Synchronizer
+from item_synchronizer.helpers import SideChanges
+from item_synchronizer.resolution_strategy import AlwaysSecondRS
+from item_synchronizer.types import ID, Item
 from loguru import logger
-from tqdm import tqdm
 
 from taskw_gcal_sync import GCalSide, GenericSide, TaskWarriorSide
 from taskw_gcal_sync.PrefsManager import PrefsManager
 
 
-def pickle_dump(item: ItemDataType, path: Union[Path, str], *args, **kargs):
+def pickle_dump(item: Dict[str, Any], path: Union[Path, str], *args, **kargs):
     pickle.dump(item, Path(path).open("wb"), *args, **kargs, protocol=0)
 
 
@@ -25,15 +28,12 @@ def pickle_load(path: Union[Path, str]):
     return pickle.load(Path(path).open("rb"))
 
 
-ItemDataType = Dict[str, Any]
-
-
-class ItemType(Enum):
-    GCAL = "gcal"
-    TW = "tw"
+class ItemEnum(Enum):
+    GCAL = "GCAL"
+    TW = "TW"
 
     @cached_property
-    def other(self) -> ItemType:
+    def other(self) -> ItemEnum:
         return _item_type_to_other[self]
 
     @cached_property
@@ -45,13 +45,13 @@ class ItemType(Enum):
 
 
 _item_type_to_other = {
-    ItemType.TW: ItemType.GCAL,
-    ItemType.GCAL: ItemType.TW,
+    ItemEnum.TW: ItemEnum.GCAL,
+    ItemEnum.GCAL: ItemEnum.TW,
 }
 
 _item_type_to_id_key = {
-    ItemType.TW: "uuid",
-    ItemType.GCAL: "id",
+    ItemEnum.TW: "uuid",
+    ItemEnum.GCAL: "id",
 }
 
 
@@ -69,15 +69,19 @@ class TypeStats:
         self._sep = "-" * len(self._title)
 
     def create_new(self):
+        """Report an insertion event."""
         self._created_new += 1
 
     def update(self):
+        """Report an update event."""
         self._updated += 1
 
     def delete(self):
+        """Report a delete event."""
         self._deleted += 1
 
     def error(self):
+        """Report an error during an event operation."""
         self._errors += 1
 
     def __str__(self) -> str:
@@ -87,7 +91,6 @@ class TypeStats:
             f"\t* Tasks created: {self._created_new}\n"
             f"\t* Tasks updated: {self._updated}\n"
             f"\t* Tasks deleted: {self._deleted}\n"
-            f"\t* Errors:        {self._errors}\n"
         )
         return s
 
@@ -107,33 +110,68 @@ class TWGCalAggregator:
         self.prefs_manager = PrefsManager("taskw_gcal_sync")
 
         # Own config
-        self.config: ItemDataType = {}
+        self.config: Dict[str, Any] = {}
 
-        self.config["tw_serdes_dir"] = Path(self.prefs_manager.prefs_dir_full) / "pickle_tw"
-        self.config["gcal_serdes_dir"] = (
+        self.config[f"{ItemEnum.TW}_serdes_dir"] = (
+            Path(self.prefs_manager.prefs_dir_full) / "pickle_tw"
+        )
+        self.config[f"{ItemEnum.GCAL}_serdes_dir"] = (
             Path(self.prefs_manager.prefs_dir_full) / "pickle_gcal"
         )
         self.config.update(**kargs)  # Update
 
-        # initialise both sides
+        # initialise both sides ---------------------------------------------------------------
+        # taskwarrior
         tw_config_new = {}
         tw_config_new.update(tw_config)
-        self.tw_side = TaskWarriorSide(**tw_config_new)
+        self._tw_side = TaskWarriorSide(**tw_config_new)
 
+        # gcal
         gcal_config_new = {}
         gcal_config_new.update(gcal_config)
-        self.gcal_side = GCalSide(**gcal_config_new)  # type: ignore
+        self._gcal_side = GCalSide(**gcal_config_new)  # type: ignore
 
-        self._report_stats = True
+        # statistics --------------------------------------------------------------------------
         self._stats = {
-            ItemType.TW: TypeStats("TaskWarrior"),
-            ItemType.GCAL: TypeStats("Google Calendar"),
+            ItemEnum.TW: TypeStats("TaskWarrior"),
+            ItemEnum.GCAL: TypeStats("Google Calendar"),
         }
-        # Correspondences between the TW reminders and the GCal events
+
+        # Correspondences between the TW reminders and the GCal events ------------------------
         # For finding the matches: [TW] uuid <-> [GCal] id
         if "tw_gcal_ids" not in self.prefs_manager:
             self.prefs_manager["tw_gcal_ids"] = bidict()
-        self.tw_gcal_ids = self.prefs_manager["tw_gcal_ids"]
+        self._tw_gcal_ids: bidict = self.prefs_manager["tw_gcal_ids"]
+        self._resolution_strategy = AlwaysSecondRS()
+
+        # item synchronizer -------------------------------------------------------------------
+        # A = GCal
+        # B = TW
+
+        def taskw_fn(fn):
+            wrapped = partial(fn, item_enum=ItemEnum.TW)
+            wrapped.__doc__ = f"{ItemEnum.TW} {fn.__doc__}"
+            return wrapped
+
+        def gcal_fn(fn):
+            wrapped = partial(fn, item_enum=ItemEnum.GCAL)
+            wrapped.__doc__ = f"{ItemEnum.GCAL} {fn.__doc__}"
+            return wrapped
+
+        self._synchronizer = Synchronizer(
+            A_to_B=self._tw_gcal_ids.inverse,
+            inserter_to_A=gcal_fn(self.inserter_to),  # type: ignore
+            inserter_to_B=taskw_fn(self.inserter_to),  # type: ignore
+            updater_to_A=gcal_fn(self.updater_to),
+            updater_to_B=taskw_fn(self.updater_to),
+            deleter_to_A=gcal_fn(self.deleter_to),
+            deleter_to_B=taskw_fn(self.deleter_to),
+            converter_to_A=TWGCalAggregator.convert_tw_to_gcal,
+            converter_to_B=TWGCalAggregator.convert_gcal_to_tw,
+            item_getter_A=gcal_fn(self.item_getter_for),
+            item_getter_B=taskw_fn(self.item_getter_for),
+            resolution_strategy=self._resolution_strategy,
+        )
 
         self.cleaned_up = False
 
@@ -144,187 +182,161 @@ class TWGCalAggregator:
     def __exit__(self, exc_type, exc_value, _traceback):
         self.cleanup()
 
-    def start(self):
-        self.tw_side.start()
-        self.gcal_side.start()
+    def detect_changes(self, item_enum: ItemEnum, items: Dict[ID, Item]) -> SideChanges:
+        serdes_dir, _ = self._get_serdes_dirs(item_enum)
+        logger.info(f"Detecting changes from {item_enum}...")
+        item_ids = set(items.keys())
+        new = {
+            item_id
+            for item_id in item_ids
+            if item_id not in self._get_registered_ids(item_enum=item_enum)
+        }
+        deleted = {
+            registered_id
+            for registered_id in self._get_registered_ids(item_enum=item_enum)
+            if registered_id not in item_ids.difference(new)
+        }
 
-        self.config["tw_serdes_dir"].mkdir(exist_ok=True)
-        self.config["gcal_serdes_dir"].mkdir(exist_ok=True)
+        modified = set()
+        potentially_modified_ids = item_ids.difference(new.union(deleted))
+        for item_id in potentially_modified_ids:
+            item = items[item_id]
+            cached_item = pickle_load(serdes_dir / item_id)
+            if self._item_has_update(
+                prev_item=cached_item, new_item=item, item_enum=item_enum
+            ):
+                modified.add(item_id)
+
+        side_changes = SideChanges(new=new, modified=modified, deleted=deleted)
+        logger.debug(f"\n\n{side_changes}")
+
+        return side_changes
+
+    def sync(self):
+        """Entrypoint method."""
+        tw_items = {
+            str(item[ItemEnum.TW.id_key]): item for item in self._tw_side.get_all_items()
+        }
+        gcal_items = {
+            str(item[ItemEnum.GCAL.id_key]): item for item in self._gcal_side.get_all_items()
+        }
+
+        # find what's changed in each side
+        gcal_changes = self.detect_changes(ItemEnum.GCAL, gcal_items)
+        tw_changes = self.detect_changes(ItemEnum.TW, tw_items)
+
+        # pickle items that are new or updated
+        tw_serdes_dir, gcal_serdes_dir = self._get_serdes_dirs(ItemEnum.TW)
+        tw_side, gcal_side = self._get_side_instances(ItemEnum.TW)
+        for item_id in tw_changes.new.union(tw_changes.modified):
+            item = tw_side.get_item(item_id)
+            if item is None:
+                raise RuntimeError
+            pickle_dump(item, tw_serdes_dir / item_id)
+        for item_id in gcal_changes.new.union(gcal_changes.modified):
+            item = gcal_side.get_item(item_id)
+            if item is None:
+                raise RuntimeError
+            pickle_dump(item, gcal_serdes_dir / item_id)
+
+        # remove deleted pickled items
+        for item_id in tw_changes.deleted:
+            (tw_serdes_dir / item_id).unlink()
+        for item_id in gcal_changes.deleted:
+            (gcal_serdes_dir / item_id).unlink()
+
+        # synchronise
+        self._synchronizer.sync(changes_A=gcal_changes, changes_B=tw_changes)
+
+    def start(self):
+        self._tw_side.start()
+        self._gcal_side.start()
+
+        self.config[f"{ItemEnum.TW}_serdes_dir"].mkdir(exist_ok=True)
+        self.config[f"{ItemEnum.GCAL}_serdes_dir"].mkdir(exist_ok=True)
 
     def cleanup(self):
         """Method to be called automatically on instance destruction."""
-
         if not self.cleaned_up:
-            # print summary stats
-            if self._report_stats:
-                logger.warning(f"\n{self._stats[ItemType.TW]}\n{self._stats[ItemType.GCAL]}")
-
+            logger.warning(f"\n{self._stats[ItemEnum.TW]}\n{self._stats[ItemEnum.GCAL]}")
             self.cleaned_up = True
 
-    def insert_new_item(self, item: ItemDataType, item_type: ItemType) -> Optional[str]:
-        """Insert a new item both in the other side and in the local registry."""
-        # Create the item
-        other_type = item_type.other
-        id_ = item[item_type.id_key]
-        _, other_side = self._get_side_instances(item_type)
-        serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
-        other_stats = self._stats[item_type.other]
-        convert_fun = self._get_convert_fun(item_type)
+    # InserterFn = Callable[[Item], ID]
+    def inserter_to(self, item: Item, item_enum: ItemEnum) -> ID:
+        """Inserter.
+
+        Other side already has the item, and I'm also inserting it at this side."""
+        item_side, _ = self._get_side_instances(item_enum)
+        serdes_dir, _ = self._get_serdes_dirs(item_enum)
         logger.info(
-            f"[{item_type}] Inserting item [{self._summary_of(item, item_type)[:10]:10}] at"
-            f" {other_type}, new id: {id_} ..."
+            f"[{item_enum.other}] Inserting item [{self._summary_of(item, item_enum):10}] at"
+            f" {item_enum}..."
         )
 
-        # Add it to TW/GCal
-        item_converted = convert_fun(item)
-        try:
-            other_item_created = other_side.add_item(item_converted)
-        except KeyboardInterrupt:
-            raise
-        except:
-            logger.error(
-                f'Adding item "{id_}" failed.\nItem'
-                f" contents:\n\n{item_converted}\n\nException:"
-                f"\n\n{traceback.format_exc()}"
-            )
-            other_stats.error()
-
-            return
-
-        #  Add registry entry
-        other_registered_id = other_item_created[other_type.id_key]
+        item_created = item_side.add_item(item)
+        item_created_id = str(item_created[item_enum.id_key])
 
         # Cache both sides with pickle - f=id_
-        logger.debug(f'Pickling item "{id_}"')
-        logger.debug(f'Pickling item "{other_registered_id}"')
-        pickle_dump(item, serdes_dir / str(id_))
-        pickle_dump(
-            other_item_created,
-            other_serdes_dir / str(other_registered_id),
+        logger.debug(f'Pickling newly created {item_enum} item -> "{item_created_id}"')
+        pickle_dump(item, serdes_dir / item_created_id)
+        stats = self._stats[item_enum]
+        stats.create_new()
+
+        return item_created_id
+
+    def updater_to(self, item_id: ID, item: Item, item_enum: ItemEnum):
+        """Updater."""
+        logger.info(f"[{item_enum}] Updating item, id -> {item_id}...")
+        side, _ = self._get_side_instances(item_enum)
+        serdes_dir, _ = self._get_serdes_dirs(item_enum)
+        side.update_item(item_id, **item)
+
+        pickle_dump(item, serdes_dir / item_id)
+        stats = self._stats[item_enum]
+        stats.update()
+
+    def deleter_to(self, item_id: ID, item_enum: ItemEnum):
+        """Deleter."""
+        logger.info(f"[{item_enum}] Synchronising deleted item, id -> {item_id}...")
+        side, _ = self._get_side_instances(item_enum)
+        serdes_dir, _ = self._get_serdes_dirs(item_enum)
+        side.delete_single_item(item_id)
+
+        (serdes_dir / item_id).unlink()
+
+        stats = self._stats[item_enum]
+        stats.delete()
+
+        # TODO delete pickled item of other side?
+
+    def item_getter_for(self, item_id: ID, item_enum: ItemEnum) -> Item:
+        """Item Getter."""
+        logger.debug(f"Fetching {item_enum} item for id -> {item_id}")
+        side, _ = self._get_side_instances(item_enum)
+        item = side.get_item(item_id)
+        return item
+
+    def _item_has_update(self, prev_item: Item, new_item: Item, item_enum: ItemEnum) -> bool:
+        """Determine whether the item has been updated."""
+        side, _ = self._get_side_instances(item_enum)
+        return not side.items_are_identical(
+            prev_item, new_item, ignore_keys=["urgency", "modified", "updated"]
         )
 
-        other_stats.create_new()
-        return other_registered_id
+    def _get_registered_ids(self, item_enum: ItemEnum):
+        return self._tw_gcal_ids if item_enum is ItemEnum.TW else self._tw_gcal_ids.inverse
 
-    def _resolve_item_not_found_on_other(self, item: ItemDataType, item_type: ItemType):
-        registered_ids = self._get_registered_ids(item_type=item_type)
-        id_ = item[item_type.id_key]
-        _, other_side = self._get_side_instances(item_type)
-        if item_type.other == ItemType.GCAL:
-            logger.warning(
-                f"Cannot find id ({id_}) of {item_type} item in {item_type.other} - Readding"
-                " it explititly..."
-            )
-            registered_ids[id_] = self.insert_new_item(item, item_type)
-        else:
-            logger.warning(
-                f"Cannot find id ({id_}) of {item_type} item in {item_type.other} - removing"
-                " the entry altogether"
-            )
-            other_id = registered_ids[id_]
-            other_side.delete_single_item(item_id=other_id)
-            registered_ids.pop(id_)
-
-    def _get_registered_ids(self, item_type: ItemType):
-        return self.tw_gcal_ids if item_type is ItemType.TW else self.tw_gcal_ids.inverse
-
-    def register_items(self, items: Sequence[ItemDataType], item_type: ItemType):
-        """Register a list of items coming from the side of `item_type`.
-
-        This will include eitehr new items or items that contain modifications on one side that
-        also need to be applied to the other.
-        """
-        registered_ids = self._get_registered_ids(item_type=item_type)
-        _, other_side = self._get_side_instances(item_type)
-        convert_fun = (
-            TWGCalAggregator.convert_tw_to_gcal
-            if item_type is ItemType.TW
-            else TWGCalAggregator.convert_gcal_to_tw
-        )
-
-        other_type = item_type.other
-        serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
-        other_stats = self._stats[item_type.other]
-
-        # TODO Find all available items in each side, make sure our registry is up-to-date?
-
-        logger.info(f"[{item_type}] Registering items at {other_type}...")
-        for item in tqdm(items):
-            id_ = item[item_type.id_key]
-
-            # Check if I have this item in the register
-            if id_ not in registered_ids.keys():
-                registered_ids[id_] = self.insert_new_item(item=item, item_type=item_type)
-            else:
-                # already in registry
-
-                # Update item
-                # TODO: if this fails might be because the user cleared only the pickle
-                # directories and not the cfg file
-                prev_item = pickle_load(serdes_dir / str(id_))
-
-                # Unchanged item
-                if not self.item_has_update(prev_item, item, item_type):
-                    logger.debug(f"[{item_type}] Unchanged item, id: {id_} ...")
-                    continue
-
-                # Item has changed
-                other_id = registered_ids[id_]
-                other_item = other_side.get_item(other_id)
-                if other_item is None:
-                    self._resolve_item_not_found_on_other(item, item_type)
-                    continue
-
-                logger.info(
-                    f"[{item_type}] Item has changed, id: {id_} | "
-                    f"updating counterpart at {other_type}, id: {other_id} ..."
-                )
-
-                # Make sure that counterpart has not changed
-                # otherwise deal with conflict
-                prev_other_item = pickle_load(other_serdes_dir / str(other_id))
-                if self.item_has_update(
-                    prev_item=prev_other_item, new_item=other_item, item_type=other_type
-                ):
-                    logger.warning(f"Conflict! Selecting [{item_type}]")
-
-                # Convert to and update other side
-                other_item_new = convert_fun(item)
-
-                try:
-                    other_side.update_item(other_id, **other_item_new)
-                except KeyboardInterrupt:
-                    raise
-                except:
-                    logger.error(
-                        f'Updating item "{other_id}" failed.\nItem contents:'
-                        f"\n\n{other_item_new}\n\nException: \n\n{traceback.format_exc()}\n"
-                    )
-                    other_stats.error()
-                else:
-                    # Update cached version
-                    pickle_dump(item, serdes_dir / str(id_))
-                    pickle_dump(other_item_new, other_serdes_dir / str(other_id))
-                    other_stats.update()
-
-    def _get_serdes_dirs(self, item_type: ItemType) -> Tuple[Path, Path]:
-        serdes_dir = self.config[f"{item_type}_serdes_dir"]
-        other_serdes_dir = self.config[f"{item_type.other}_serdes_dir"]
+    def _get_serdes_dirs(self, item_enum: ItemEnum) -> Tuple[Path, Path]:
+        serdes_dir = self.config[f"{item_enum}_serdes_dir"]
+        other_serdes_dir = self.config[f"{item_enum.other}_serdes_dir"]
 
         return serdes_dir, other_serdes_dir
 
-    def _get_side_instances(self, item_type: ItemType) -> Tuple[GenericSide, GenericSide]:
-        side = self.tw_side if item_type is ItemType.TW else self.gcal_side
-        other_side = self.gcal_side if item_type is ItemType.TW else self.tw_side
+    def _get_side_instances(self, item_enum: ItemEnum) -> Tuple[GenericSide, GenericSide]:
+        side = self._tw_side if item_enum is ItemEnum.TW else self._gcal_side
+        other_side = self._gcal_side if item_enum is ItemEnum.TW else self._tw_side
 
         return side, other_side
-
-    def _get_convert_fun(self, item_type: ItemType) -> Callable[[ItemDataType], ItemDataType]:
-        return (
-            TWGCalAggregator.convert_tw_to_gcal
-            if item_type is ItemType.TW
-            else TWGCalAggregator.convert_gcal_to_tw
-        )
 
     def _remove_serdes_files(self, *paths):
         for p in paths:
@@ -333,116 +345,28 @@ class TWGCalAggregator:
             except FileNotFoundError:
                 logger.warning(f"File {p} doesn't seem to exist anymore...")
 
-    def synchronise_deleted_items(self, item_type: ItemType):
-        """Synchronise a task deleted at the side of `item_type`.
-
-        Deleted tasks are detected from cached entries in the items mapping that
-        don't exist anymore in the side of `item_type`.
-
-        :param item_type: "tw" / "gcal"
-        """
-
-        # iterate through all the cached mappings - verify that they exist in
-        # the side (TW/GCal)
-        registered_ids = (
-            self.tw_gcal_ids if item_type is ItemType.TW else self.tw_gcal_ids.inverse
-        )
-        other_registered_ids = (
-            self.tw_gcal_ids if item_type is ItemType.GCAL else self.tw_gcal_ids.inverse
-        )
-        side, other_side = self._get_side_instances(item_type)
-        other_type = item_type.other
-        serdes_dir, other_serdes_dir = self._get_serdes_dirs(item_type)
-        other_stats = self._stats[item_type.other]
-
-        logger.info(f"[{item_type}] Deleting items at {other_type}...")
-
-        other_to_remove: List[str] = []
-        for id_, other_id in registered_ids.items():
-            item_side = side.get_item(id_)
-            if item_side is not None:
-                continue  # item is still there
-
-            # item deleted
-            logger.info(f"[{item_type}] Synchronising deleted item, id: {id_} ...")
-
-            try:
-                other_item = other_side.get_item(other_id)
-                if not other_item:
-                    logger.warning(
-                        f"{other_id} not found at {item_type.other} side, maybe it was also"
-                        " deleted?"
-                    )
-                    other_to_remove.append(other_id)
-                    self._remove_serdes_files(serdes_dir / id_, other_serdes_dir / other_id)
-                    other_stats.delete()
-                    continue
-
-                prev_other_item = pickle_load(other_serdes_dir / str(other_id))
-                if self.item_has_update(
-                    prev_item=prev_other_item, new_item=other_item, item_type=other_type
-                ):
-                    logger.warning(
-                        f"Counterpart item, {other_id} has changed, proceeding with its"
-                        " deletion though..."
-                    )
-
-                # delete item
-                other_side.delete_single_item(other_id)
-
-                # delete mapping
-                other_to_remove.append(other_id)
-
-                # remove serdes files
-                self._remove_serdes_files(serdes_dir / id_, other_serdes_dir / other_id)
-                other_stats.delete()
-            except KeyError:
-                logger.error(
-                    f"Item to delete [{id_}] is not present."
-                    f"\n\n{other_item}\n\nException: {traceback.format_exc()}\n"
-                )
-                other_stats.error()
-            except KeyboardInterrupt:
-                raise
-            except:
-                logger.error(
-                    'Deleting item "{id_}" failed.\nItem contents:'
-                    f"\n\n{other_item}\n\nException: {traceback.format_exc}\n"
-                )
-                other_stats.error()
-
-        # Remove ids (out of loop)
-        for other_id in other_to_remove:
-            other_registered_ids.pop(other_id)
-
-    def item_has_update(
-        self, prev_item: ItemDataType, new_item: ItemDataType, item_type: ItemType
-    ) -> bool:
-        """Determine whether the item has been updated."""
-        side, _ = self._get_side_instances(item_type)
-        return not side.items_are_identical(
-            prev_item, new_item, ignore_keys=["urgency", "modified", "updated"]
-        )
-
-    def _summary_of(self, item: ItemDataType, item_type: ItemType) -> str:
+    def _summary_of(self, item: Item, item_enum: ItemEnum, short=True) -> str:
         """Get the summary of the given item."""
-        if item_type == ItemType.TW:
-            s = "description"
+        if item_enum == ItemEnum.TW:
+            key = "description"
         else:
-            s = "summary"
+            key = "summary"
 
-        return item[s]
+        ret = item[key]
+        if short:
+            return ret[:10]
+
+        return ret
 
     @staticmethod
-    def convert_tw_to_gcal(tw_item: ItemDataType) -> ItemDataType:
-        """Convert a TW item to a Gcal event.
+    def convert_tw_to_gcal(tw_item: Item) -> Item:
+        """TW -> GCal Converter.
 
         .. note:: Do not convert the ID as that may change either manually or
                   after marking the task as "DONE"
         """
-
         assert all(
-            [i in tw_item.keys() for i in ["description", "status", "uuid"]]
+            i in tw_item.keys() for i in ("description", "status", "uuid")
         ), "Missing keys in tw_item"
 
         gcal_item = {}
@@ -485,8 +409,8 @@ class TWGCalAggregator:
         return gcal_item
 
     @staticmethod
-    def convert_gcal_to_tw(gcal_item: ItemDataType) -> ItemDataType:
-        """Convert a GCal event to a TW item."""
+    def convert_gcal_to_tw(gcal_item: Item) -> Item:
+        """GCal -> TW Converter."""
 
         # Parse the description
         annotations, status, uuid = TWGCalAggregator._parse_gcal_item_desc(gcal_item)
@@ -494,7 +418,7 @@ class TWGCalAggregator:
         assert isinstance(status, str)
         assert isinstance(uuid, UUID) or uuid is None
 
-        tw_item: ItemDataType = {}
+        tw_item: Item = {}
         # annotations
         tw_item["annotations"] = annotations
 
@@ -505,7 +429,7 @@ class TWGCalAggregator:
         # Status
         if status not in ["pending", "completed", "deleted", "waiting", "recurring"]:
             logger.warning(
-                "Invalid status %s in GCal->TW conversion of item. Skipping status:" % status
+                "Invalid status {status} in GCal->TW conversion of item. Skipping status:"
             )
         else:
             tw_item["status"] = status
@@ -525,17 +449,17 @@ class TWGCalAggregator:
             tw_item["modified"] = GCalSide.parse_datetime(gcal_item["updated"])
 
         # Note:
-        # Don't add extra fields of GCal as TW annotations 'cause then, if
-        # converted backwards, these annotations are going in the description of
-        # the Gcal event and then these are going into the event description and
-        # this happens on every conversion. Add them as new TW UDAs if needed
+        # Don't add extra fields of GCal as TW annotations because then, if converted
+        # backwards, these annotations are going in the description of the Gcal event and then
+        # these are going into the event description and this happens on every conversion. Add
+        # them as new TW UDAs if needed
 
-        # add annotation
+        # TODO add annotation
         return tw_item
 
     @staticmethod
     def _parse_gcal_item_desc(
-        gcal_item: ItemDataType,
+        gcal_item: Item,
     ) -> Tuple[List[str], str, Optional[UUID]]:
         """Parse and return the necessary TW fields off a Google Calendar Item."""
         annotations: List[str] = []
@@ -547,12 +471,12 @@ class TWGCalAggregator:
 
         gcal_desc = gcal_item["description"]
         # strip whitespaces, empty lines
-        lines = [li.strip() for li in gcal_desc.split("\n") if li][1:]
+        lines = [line.strip() for line in gcal_desc.split("\n") if line][1:]
 
         # annotations
         i = 0
-        for i, li in enumerate(lines):
-            parts = li.split(":", maxsplit=1)
+        for i, line in enumerate(lines):
+            parts = line.split(":", maxsplit=1)
             if len(parts) == 2 and parts[0].lower().startswith("* annotation"):
                 annotations.append(parts[1].strip())
             else:
@@ -562,8 +486,8 @@ class TWGCalAggregator:
             return annotations, status, uuid
 
         # Iterate through rest of lines, find only the status and uuid ones
-        for li in lines[i:]:
-            parts = li.split(":", maxsplit=1)
+        for line in lines[i:]:
+            parts = line.split(":", maxsplit=1)
             if len(parts) == 2:
                 start = parts[0].lower()
                 if start.startswith("* status"):
