@@ -298,32 +298,6 @@ class GCalSide(GenericSide):
             print("type(dt_str): ", type(dt_str))
             raise NotImplementedError
 
-    @staticmethod
-    def _sanitize_all_datetimes(item: dict) -> None:
-        item["updated"] = GCalSide.sanitize_datetime(item["updated"])
-        if "dateTime" in item["start"]:
-            item["start"]["dateTime"] = GCalSide.sanitize_datetime(item["start"]["dateTime"])
-        if "dateTime" in item["end"]:
-            item["end"]["dateTime"] = GCalSide.sanitize_datetime(item["end"]["dateTime"])
-
-    @staticmethod
-    def sanitize_datetime(dt_str: str) -> str:
-        """Given a date in str, make sure that the HH:MM:SS is not 00:00:00.
-
-        >>> GCalSide.sanitize_datetime('2019-03-08T00:00:00.602Z')
-        '2019-03-07T23:59:00.602000Z'
-        >>> GCalSide.sanitize_datetime('2019-03-08T00:00:00.0000Z')
-        '2019-03-07T23:59:00.000000Z'
-        >>> GCalSide.sanitize_datetime('2019-03-08T00:29:06.602Z')
-        '2019-03-08T00:29:06.602000Z'
-        """
-
-        dt = GCalSide.parse_datetime(dt_str)
-        if dt.hour == 0 and dt.minute == 0 and dt.second == 0:
-            dt -= datetime.timedelta(minutes=1)
-
-        return GCalSide.format_datetime(dt)
-
     def items_are_identical(self, item1, item2, ignore_keys=None) -> bool:
         ignore_keys_ = ignore_keys if ignore_keys is not None else []
         for item in [item1, item2]:
