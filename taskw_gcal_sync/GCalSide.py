@@ -254,9 +254,12 @@ class GCalSide(GenericSide):
         return dt_out
 
     @staticmethod
-    def parse_datetime(dt_str: Union[str, dict]) -> datetime.datetime:
+    def parse_datetime(dt: Union[str, dict, datetime.datetime]) -> datetime.datetime:
         """
-        Parse datetime given in the GCal format ('T', 'Z' separators).
+        Parse datetime given in the GCal format(s):
+        - string with ('T', 'Z' separators).
+        - (dateTime, dateZone) dictionary
+        - datetime object
 
         Usage::
 
@@ -278,25 +281,30 @@ class GCalSide(GenericSide):
         True
         >>> GCalSide.parse_datetime({'dateTime': '2021-11-14T22:07:49.123456'})
         datetime.datetime(2021, 11, 14, 22, 7, 49, 123456)
+        >>> a = GCalSide.parse_datetime({'dateTime': '2021-11-14T22:07:49Z', 'timeZone': 'UTC'})
+        >>> GCalSide.parse_datetime(a).isoformat() == a.isoformat()
+        True
         """
 
-        if isinstance(dt_str, str):
-            return dateutil.parser.parse(dt_str).replace(tzinfo=None)  # type: ignore
-        elif isinstance(dt_str, dict):
-            date_time = dt_str.get("dateTime")
+        if isinstance(dt, str):
+            return dateutil.parser.parse(dt).replace(tzinfo=None)  # type: ignore
+        elif isinstance(dt, dict):
+            date_time = dt.get("dateTime")
             if date_time is None:
-                raise RuntimeError(f"Invalid structure dict: {dt_str}")
-            dt = GCalSide.parse_datetime(date_time)
-            time_zone = dt_str.get("timeZone")
+                raise RuntimeError(f"Invalid structure dict: {dt}")
+            dt_dt = GCalSide.parse_datetime(date_time)
+            time_zone = dt.get("timeZone")
             if time_zone is not None:
                 timezone = pytz.timezone(time_zone)
-                dt = timezone.localize(dt)
+                dt_dt = timezone.localize(dt_dt)
 
+            return dt_dt
+        elif isinstance(dt, datetime.datetime):
             return dt
         else:
-            print("dt_str: ", dt_str)
-            print("type(dt_str): ", type(dt_str))
-            raise NotImplementedError
+            raise RuntimeError(
+                f"Unexpected type of a given date item, type: {type(dt)}, contents: {dt}"
+            )
 
     def items_are_identical(self, item1, item2, ignore_keys=None) -> bool:
         ignore_keys_ = ignore_keys if ignore_keys is not None else []

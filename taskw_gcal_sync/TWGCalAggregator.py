@@ -55,46 +55,6 @@ _item_type_to_id_key = {
 }
 
 
-class TypeStats:
-    """Container class for printing execution stats on exit - per type."""
-
-    def __init__(self, title: str):
-        self._title = title
-
-        self._created_new = 0
-        self._updated = 0
-        self._deleted = 0
-        self._errors = 0
-
-        self._sep = "-" * len(self._title)
-
-    def create_new(self):
-        """Report an insertion event."""
-        self._created_new += 1
-
-    def update(self):
-        """Report an update event."""
-        self._updated += 1
-
-    def delete(self):
-        """Report a delete event."""
-        self._deleted += 1
-
-    def error(self):
-        """Report an error during an event operation."""
-        self._errors += 1
-
-    def __str__(self) -> str:
-        s = (
-            f"{self._title}\n"
-            f"{self._sep}\n"
-            f"\t* Tasks created: {self._created_new}\n"
-            f"\t* Tasks updated: {self._updated}\n"
-            f"\t* Tasks deleted: {self._deleted}\n"
-        )
-        return s
-
-
 class TWGCalAggregator:
     """Aggregator class: TaskWarrior <-> Google Calendar sides.
 
@@ -131,12 +91,6 @@ class TWGCalAggregator:
         gcal_config_new.update(gcal_config)
         self._gcal_side = GCalSide(**gcal_config_new)  # type: ignore
 
-        # statistics --------------------------------------------------------------------------
-        self._stats = {
-            ItemEnum.TW: TypeStats("TaskWarrior"),
-            ItemEnum.GCAL: TypeStats("Google Calendar"),
-        }
-
         # Correspondences between the TW reminders and the GCal events ------------------------
         # For finding the matches: [TW] uuid <-> [GCal] id
         if "tw_gcal_ids" not in self.prefs_manager:
@@ -171,6 +125,7 @@ class TWGCalAggregator:
             item_getter_A=gcal_fn(self.item_getter_for),
             item_getter_B=taskw_fn(self.item_getter_for),
             resolution_strategy=self._resolution_strategy,
+            side_names=("Google Calendar", "Taskwarrior"),
         )
 
         self.cleaned_up = False
@@ -180,7 +135,7 @@ class TWGCalAggregator:
         return self
 
     def __exit__(self, exc_type, exc_value, _traceback):
-        self.cleanup()
+        pass
 
     def detect_changes(self, item_enum: ItemEnum, items: Dict[ID, Item]) -> SideChanges:
         serdes_dir, _ = self._get_serdes_dirs(item_enum)
@@ -255,12 +210,6 @@ class TWGCalAggregator:
         self.config[f"{ItemEnum.TW}_serdes_dir"].mkdir(exist_ok=True)
         self.config[f"{ItemEnum.GCAL}_serdes_dir"].mkdir(exist_ok=True)
 
-    def cleanup(self):
-        """Method to be called automatically on instance destruction."""
-        if not self.cleaned_up:
-            logger.warning(f"\n{self._stats[ItemEnum.TW]}\n{self._stats[ItemEnum.GCAL]}")
-            self.cleaned_up = True
-
     # InserterFn = Callable[[Item], ID]
     def inserter_to(self, item: Item, item_enum: ItemEnum) -> ID:
         """Inserter.
@@ -279,8 +228,6 @@ class TWGCalAggregator:
         # Cache both sides with pickle - f=id_
         logger.debug(f'Pickling newly created {item_enum} item -> "{item_created_id}"')
         pickle_dump(item, serdes_dir / item_created_id)
-        stats = self._stats[item_enum]
-        stats.create_new()
 
         return item_created_id
 
@@ -292,8 +239,6 @@ class TWGCalAggregator:
         side.update_item(item_id, **item)
 
         pickle_dump(item, serdes_dir / item_id)
-        stats = self._stats[item_enum]
-        stats.update()
 
     def deleter_to(self, item_id: ID, item_enum: ItemEnum):
         """Deleter."""
@@ -303,11 +248,6 @@ class TWGCalAggregator:
         side.delete_single_item(item_id)
 
         (serdes_dir / item_id).unlink()
-
-        stats = self._stats[item_enum]
-        stats.delete()
-
-        # TODO delete pickled item of other side?
 
     def item_getter_for(self, item_id: ID, item_enum: ItemEnum) -> Item:
         """Item Getter."""
