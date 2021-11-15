@@ -29,7 +29,7 @@ class GCalSide(GenericSide):
     _date_format = "%Y-%m-%d"
 
     def __init__(self, *, oauth_port: int, **kargs):
-        super(GCalSide, self).__init__()
+        super().__init__()
 
         # set the default properties
         self.config = {
@@ -97,6 +97,12 @@ class GCalSide(GenericSide):
             raise RuntimeError(
                 f'Multiple matching calendars for name -> "{self.config["calendar_summary"]}"'
             )
+
+    def _clear_all_calendar_entries(self):
+        """Clear all events from the current calendar."""
+        # TODO Currently not functional - returning "400 Bad Request"
+        logger.warning(f"Clearing all events from calendar {self._calendar_id}")
+        self.service.calendars().clear(calendarId=self._calendar_id).execute()
 
     def get_all_items(self, **kargs):
         """Get all the events for the calendar that we use.
@@ -232,6 +238,7 @@ class GCalSide(GenericSide):
         """
         assert t in ["start", "end"]
         assert t in item.keys(), "'end' key not found in item"
+
         dt = GCalSide.parse_datetime(item[t][GCalSide.get_date_key(item[t])])
         return dt
 

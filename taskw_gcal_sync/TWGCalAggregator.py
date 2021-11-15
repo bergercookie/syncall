@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pickle
 import traceback
-from datetime import timedelta
+from datetime import timedelta, datetime
 from enum import Enum
 from functools import cached_property, partial
 from pathlib import Path
@@ -233,11 +233,14 @@ class TWGCalAggregator:
 
     def updater_to(self, item_id: ID, item: Item, item_enum: ItemEnum):
         """Updater."""
-        logger.info(f"[{item_enum}] Updating item, id -> {item_id}...")
         side, _ = self._get_side_instances(item_enum)
         serdes_dir, _ = self._get_serdes_dirs(item_enum)
-        side.update_item(item_id, **item)
+        logger.info(
+            f"[{item_enum.other}] Updating item [{self._summary_of(item, item_enum):10}] at"
+            f" {item_enum}..."
+        )
 
+        side.update_item(item_id, **item)
         pickle_dump(item, serdes_dir / item_id)
 
     def deleter_to(self, item_id: ID, item_enum: ItemEnum):
@@ -382,7 +385,10 @@ class TWGCalAggregator:
         tw_item["description"] = gcal_item["summary"]
 
         # don't meddle with the 'entry' field
-        tw_item["due"] = GCalSide.get_event_time(gcal_item, t="end")
+        if isinstance(gcal_item["end"], datetime):
+            tw_item["due"] = gcal_item["end"]
+        else:
+            tw_item["due"] = GCalSide.get_event_time(gcal_item, t="end")
 
         # update time
         if "updated" in gcal_item.keys():
