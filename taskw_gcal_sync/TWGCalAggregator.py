@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pickle
 import traceback
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from functools import cached_property, partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from uuid import UUID
 
 from bidict import bidict  # type: ignore
@@ -195,10 +195,8 @@ class TWGCalAggregator:
             pickle_dump(item, gcal_serdes_dir / item_id)
 
         # remove deleted pickled items
-        for item_id in tw_changes.deleted:
-            (tw_serdes_dir / item_id).unlink()
-        for item_id in gcal_changes.deleted:
-            (gcal_serdes_dir / item_id).unlink()
+        self._remove_serdes_files(item_enum=ItemEnum.TW, ids=tw_changes.deleted)
+        self._remove_serdes_files(item_enum=ItemEnum.GCAL, ids=gcal_changes.deleted)
 
         # synchronise
         self._synchronizer.sync(changes_A=gcal_changes, changes_B=tw_changes)
@@ -250,7 +248,7 @@ class TWGCalAggregator:
         serdes_dir, _ = self._get_serdes_dirs(item_enum)
         side.delete_single_item(item_id)
 
-        (serdes_dir / item_id).unlink()
+        self._remove_serdes_files(item_enum=item_enum, ids=(item_id,))
 
     def item_getter_for(self, item_id: ID, item_enum: ItemEnum) -> Item:
         """Item Getter."""
@@ -281,12 +279,21 @@ class TWGCalAggregator:
 
         return side, other_side
 
-    def _remove_serdes_files(self, *paths):
-        for p in paths:
+    def _remove_serdes_files(self, item_enum: ItemEnum, *, ids: Iterable[ID]):
+        serdes_dir, _ = self._get_serdes_dirs(item_enum)
+
+        def full_path(id_: ID) -> Path:
+            return serdes_dir / str(id_)
+
+        for id_ in ids:
+            p = full_path(id_)
             try:
                 p.unlink()
             except FileNotFoundError:
-                logger.warning(f"File {p} doesn't seem to exist anymore...")
+                logger.warning(f"File doesn't exist, this may indicate an error -> {p}")
+                logger.opt(exception=True).debug(
+                    f"File doesn't exist, this may indicate an error -> {p}"
+                )
 
     def _summary_of(self, item: Item, item_enum: ItemEnum, short=True) -> str:
         """Get the summary of the given item."""
