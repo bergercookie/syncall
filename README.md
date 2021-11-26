@@ -80,9 +80,9 @@ Requirements:
 
 Installation Options:
 
-- Pypi (will not contain latest version): `pip3 install --user --upgrade taskw_gcal_sync`
+- Pypi (may not contain latest version): `pip3 install --user --upgrade taskw_gcal_sync`
 - Github: `pip3 install --user git+https://github.com/bergercookie/taskw_gcal_sync`
-- Download and install devel branch locally - bleeding edge
+- Download and install `devel` branch locally - bleeding edge
 
   ```sh
   git clone https://github.com/bergercookie/taskw_gcal_sync
@@ -180,12 +180,13 @@ $ crontab -e
   - Record the problem and report it in the ISSUES page. Include as much
     information as possible so that I can reproduce it.
   - Clean the configuration file. By default that's going to be
-    `$HOME/.config/taskw_gcal_sync`
+    `$HOME/.config/taskw_gcal_sync`:
 
     `rm -rf ~/.config/taskw_gcal_sync`
 
   - Remove the corresponding Google Calendar
-  - Rerun synchronisation from scratch
+  - Rerun synchronisation from scratch to populate Google Calendar with all the
+      events from your selected taskwarrior filter.
 
 ## Self Promotion
 
