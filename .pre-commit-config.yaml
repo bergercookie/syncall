@@ -1,0 +1,71 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v3.2.0"
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+        exclude: ^test/test_data/sample_items.yaml
+      - id: debug-statements
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+      # - id: check-symlinks
+      # - id: pretty-format-json
+      # - id: sort-simple-yaml
+  - repo: https://github.com/markdownlint/markdownlint
+    rev: "v0.11.0"
+    hooks:
+      - id: markdownlint
+        entry: mdl -r ~MD033,~MD013
+  - repo: local
+    hooks:
+      - id: black
+        name: Black formatter
+        description: "Black: The uncompromising Python code formatter"
+        entry: black
+        language: system
+        minimum_pre_commit_version: 2.9.2
+        require_serial: true
+        types_or: [python, pyi]
+      # - id: mypy
+      #   name: Mypy check
+      #   entry: mypy
+      #   language: system
+      #   pass_filenames: true
+      #   types_or: [python, pyi]
+      # - id: pyright
+      #   name: Pyright check
+      #   entry: pyright
+      #   language: system
+      #   pass_filenames: true
+      #   types_or: [python, pyi]
+      # - id: Pylint check
+      #   name: pylint
+      #   entry: pylint
+      #   language: system
+      #   pass_filenames: true
+      #   types: [python]
+      #   exclude: ^tests/
+      - id: isort
+        name: Isort check
+        entry: isort
+        language: system
+        pass_filenames: true
+        types: [python]
+      - id: check-poetry
+        name: Poetry check
+        description: Validates the structure of the pyproject.toml file
+        entry: poetry check
+        language: system
+        pass_filenames: false
+        files: pyproject.toml
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes

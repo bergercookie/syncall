@@ -1,13 +1,13 @@
 import os
 from pathlib import Path
 
-from taskw_gcal_sync.TaskWarriorSide import TaskWarriorSide
+from taskwarrior_syncall.taskwarrior_side import TaskWarriorSide
 
-from .GenericTestCase import GenericTestCase
+from .generic_test_case import GenericTestCase
 
 
 class TestTW(GenericTestCase):
-    """Test TaskWarriorSide methods"""
+    """Test TaskWarriorSide methods."""
 
     @classmethod
     def setUpClass(cls):
@@ -18,7 +18,7 @@ class TestTW(GenericTestCase):
 
         # Make sure we're in the test directory for these tests
         os.chdir(str(Path(__file__).parent))
-        self.tw_side = TaskWarriorSide(config_filename="test.taskrc")
+        self.tw_side = TaskWarriorSide(config_file=Path("test.taskrc"))
 
     def test_get_items(self):
         items = self.tw_side.get_all_items()
@@ -29,6 +29,6 @@ class TestTW(GenericTestCase):
         )
 
         # must be sorted by ID by default
-        ids = [i["id"] for i in items]
+        ids = [i["id"] for i in items]  # type: ignore
         self.assertListEqual(ids, sorted(ids))
         del items, ids

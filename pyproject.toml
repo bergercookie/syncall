@@ -1,32 +1,47 @@
 [tool.poetry]
-name = "taskw_gcal_sync"
-version = "v1.0.0"
-description = "Taskwarrior <-> Google Calendar synchronisation tool"
+name = "taskwarrior_syncall"
+version = "1.1.0"
+description = "Taskwarrior <-> * bi-directional synchronization tool"
 license = "MIT"
-authors = ["Nikos Koukis <nickkouk@gmail.com>", ]
+authors = ["Nikos Koukis <nickkouk@gmail.com>"]
 readme = "README.md"
-homepage = "https://github.com/bergercookie/taskw_gcal_sync"
-repository = "https://github.com/bergercookie/taskw_gcal_sync"
-classifiers = [ "Programming Language :: Python",
-                "Programming Language :: Python :: 3",
-                "Programming Language :: Python :: 3.8",
-                "Programming Language :: Python :: 3.9",
-                "Programming Language :: Python :: 3 :: Only",
-                "Intended Audience :: Developers",
-                "Natural Language :: English",
-                "License :: OSI Approved :: MIT License",
-                "Environment :: Console",
-                "Operating System :: Unix",
-                "Topic :: Utilities", ]
+homepage = "https://github.com/bergercookie/taskwarrior_syncall"
+repository = "https://github.com/bergercookie/taskwarrior_syncall"
+include = ["taskwarrior_syncall/py.typed"]
+classifiers = [
+  "Framework :: Pytest",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3 :: Only",
+  "Intended Audience :: End Users/Desktop",
+  "Natural Language :: English",
+  "License :: OSI Approved :: MIT License",
+  "Environment :: Console",
+  "Operating System :: Unix",
+  "Topic :: Utilities",
+]
+keywords = ["taskwarrior", "synchronization", "google", "calendar", "notion"]
 
+[tool.poetry.scripts]
+tw_gcal_sync = "taskwarrior_syncall.scripts.tw_gcal_sync:main"
+tw_notion_sync = "taskwarrior_syncall.scripts.tw_notion_sync:main"
+
+# end-user dependencies --------------------------------------------------------
 [tool.poetry.dependencies]
 python = "^3.8"
 
-PyYAML = "^5.4.1"
+PyYAML = "^6.0"
 bidict = "^0.21.2"
 click = "^8.0"
-google-api-python-client = "^2.1.0"
-google-auth-oauthlib = "^0.4.4"
+
+google-api-python-client = { version = "^2.1.0", optional = true }
+google-auth-oauthlib = { version = "^0.4.4", optional = true }
+notion-client = { version = "^0.7.1", optional = true }
+# pyclickup = { version = "^0.1.4", optional = true }
+
 loguru = "^0.5.3"
 python-dateutil = "^2.8.1"
 pytz = "^2021.1"
@@ -34,35 +49,103 @@ rfc3339 = "^6.2"
 sh = "^1.14.1"
 tqdm = "^4.61.2"
 typing = "^3.7.4"
-taskw = "^1.3.0"
-item-synchronizer = "1.1.1"
+taskw = "^1.3.1"
+item-synchronizer = "1.1.2"
+bubop = "0.1.4"
 
+# dev dependencies -------------------------------------------------------------
 [tool.poetry.dev-dependencies]
-black = "21.7b0"
-isort = "*"
+black = { version = "21.11b1", allow-prereleases = true }
+identify = "^2.4.0"
+isort = "^5.10.1"
+mock = "*"
 mypy = "*"
-pdbpp = "*"
-pylint = "*"
+pdbpp = "^0.10.3"
+pre-commit = "^2.16.0"
+pyfakefs = "^4.5.3"
+pylint = "^2.12.2"
+pyright = "*"
 pytest = "*"
-rope = "*"
-# taskw = { path = "/home/berger/src/taskw/", develop = true }
-# item_synchronizer = { path = "/home/berger/src/item_synchronizer/", develop = true }
+types-PyYAML = "^6.0.1"
+types-python-dateutil = "^2.8.3"
+types-pytz = "^2021.3.2"
+types-setuptools = "^57.4.4"
+google-api-python-client-stubs = "^1.9.0"
 
-[tool.poetry.scripts]
-tw_gcal_sync = "taskw_gcal_sync.scripts.tw_gcal_sync:main"
+[tool.poetry.extras]
+gcal = ["google-api-python-client", "google-auth-oauthlib"]
+notion = ["notion-client"]
 
+# isort ------------------------------------------------------------------------
 [tool.isort]
-line_length = 95
 include_trailing_comma = true
+line_length = 95
 multi_line_output = 3
+profile = "black"
 
+# black ------------------------------------------------------------------------
 [tool.black]
 experimental-string-processing = true
 line-length = 95
-target-version = ['py36', 'py37', 'py38']
+target-version = ['py38', 'py39']
 include = '\.pyi?$'
 
+# mypy -------------------------------------------------------------------------
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = [
+  "tqdm",
+  "pytest",
+  "pexpect",
+  "notion_client",
+  "taskw",
+  "taskw.warrior",
+  "google.auth.transport.requests",
+  "google_auth_oauthlib.flow",
+]
+ignore_missing_imports = true
+
+# pylint -----------------------------------------------------------------------
+[tool.pylint]
+[tool.pylint.master]
+persistent = "yes"
+suggestion-mode = "yes"
+unsafe-load-any-extension = "no"
+ignore = "VCS"
+
+[tool.pylint.messages_control]
+disable = "C0330,C0326,C0103,W0613,R0201,R1720,R1705,W0104,C0301"
+
+[tool.pylint.refactoring]
+max-nested-blocks = 5
+never-returning-functions = "sys.exit,argparse.parse_error"
+
+[tool.pylint.similarities]
+ignore-comments = "yes"
+ignore-docstrings = "no"
+ignore-imports = "yes"
+# ignore-signatures=no
+min-similarity-lines = 4
+
+[tool.pylint.format]
+max-line-length = 95
+ignore-invalid-name = true
+max-module-lines = 500
+
+[tool.pylint.string]
+check-quote-consistency = "yes"
+
+# pyright ----------------------------------------------------------------------
+[tool.pyright]
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.8"
+pythonPlatform = "Linux"
+
+# build-system -----------------------------------------------------------------
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
-

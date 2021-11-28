@@ -2,9 +2,9 @@ from pathlib import Path
 
 import yaml
 
-from taskw_gcal_sync.TWGCalAggregator import TWGCalAggregator
+from taskwarrior_syncall import convert_gcal_to_tw, convert_tw_to_gcal
 
-from .GenericTestCase import GenericTestCase
+from .generic_test_case import GenericTestCase
 
 
 class TestConversions(GenericTestCase):
@@ -33,27 +33,25 @@ class TestConversions(GenericTestCase):
     def test_tw_gcal_basic_convert(self):
         """Basic TW -> GCal conversion."""
         self.load_sample_items()
-        gcal_item_out = TWGCalAggregator.convert_tw_to_gcal(self.tw_item)
+        gcal_item_out = convert_tw_to_gcal(self.tw_item)
         self.assertDictEqual(gcal_item_out, self.gcal_item_expected)
 
     def test_gcal_tw_basic_convert(self):
         """Basic GCal -> TW conversion."""
         self.load_sample_items()
-        tw_item_out = TWGCalAggregator.convert_gcal_to_tw(self.gcal_item)
+        tw_item_out = convert_gcal_to_tw(self.gcal_item)
         self.assertDictEqual(tw_item_out, self.tw_item_expected)
 
     def test_gcal_tw_date_convert(self):
         """GCal (with 'date' subfield) -> TW conversion."""
         self.load_sample_items()
-        tw_item_out = TWGCalAggregator.convert_gcal_to_tw(self.gcal_item_w_date)
+        tw_item_out = convert_gcal_to_tw(self.gcal_item_w_date)
         self.assertDictEqual(tw_item_out, self.tw_item_w_date_expected)
 
     def test_tw_gcal_n_back(self):
         """TW -> GCal -> TW conversion"""
         self.load_sample_items()
-        tw_item_out = TWGCalAggregator.convert_gcal_to_tw(
-            TWGCalAggregator.convert_tw_to_gcal(self.tw_item)
-        )
+        tw_item_out = convert_gcal_to_tw(convert_tw_to_gcal(self.tw_item))
 
         self.assertSetEqual(
             set(self.tw_item) ^ set(tw_item_out),
@@ -69,9 +67,7 @@ class TestConversions(GenericTestCase):
     def test_gcal_tw_n_back(self):
         """GCal -> TW -> GCal conversion."""
         self.load_sample_items()
-        gcal_item_out = TWGCalAggregator.convert_tw_to_gcal(
-            TWGCalAggregator.convert_gcal_to_tw(self.gcal_item)
-        )
+        gcal_item_out = convert_tw_to_gcal(convert_gcal_to_tw(self.gcal_item))
 
         self.assertSetEqual(
             set(self.gcal_item) ^ set(gcal_item_out),
