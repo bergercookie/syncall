@@ -1,7 +1,7 @@
 # taskwarrior-syncall
 
 <p align="center">
-  <img src="misc/meme.png"/>
+  <img src="https://github.com/bergercookie/taskwarrior-syncall/blob/devel/misc/meme.png"/>
 </p>
 
 <table>
@@ -44,9 +44,9 @@ particular service and taskwarrior.
 At the moment the list of services supported is a bit limited but keeps growing
 by the day:
 
-- [[readme-gcal](./readme-gcal.md)]     Taskwarrior ⬄ [Google Calendar](https://calendar.google.com/) Synchronization, via `tw_gcal_sync`
-- [[readme-notion](./readme-notion.md)] Taskwarrior ⬄ [Notion](https://notion.so) Synchronization, via `tw_notion_sync`
-- [ONGOING] [[readme-clickup](./readme-clickup.md)] Taskwarrior ⬄ [ClickUp](https://clickup.com) Synchronization, via `tw_clickup_sync`
+- [[readme-gcal](https://github.com/bergercookie/taskwarrior-syncall/blob/devel/readme-gcal.md)] Taskwarrior ⬄ [Google Calendar](https://calendar.google.com/) Synchronization, via `tw_gcal_sync`
+- [[readme-notion](https://github.com/bergercookie/taskwarrior-syncall/blob/devel/readme-notion.md)] Taskwarrior ⬄ [Notion](https://notion.so) Synchronization, via `tw_notion_sync`
+- [ONGOING] [[readme-clickup](https://github.com/bergercookie/taskwarrior-syncall/blob/devel/readme-clickup.md)] Taskwarrior ⬄ [ClickUp](https://clickup.com) Synchronization, via `tw_clickup_sync`
 
 Overall, each of the above should support _bi-directional_ synchronization between
 Taskwarrior and the service of your preference. This means that on an
