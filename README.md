@@ -1,5 +1,9 @@
 # Taskwarrior - Google Calendar synchroniser
 
+### This project has now migrated to [taskwarrior-syncall](https://pypi.org/project/taskwarrior-syncall/). Please use that instead.
+
+---------
+
 <table>
   <td>master</td>
   <td>
