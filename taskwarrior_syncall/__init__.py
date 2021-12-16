@@ -2,15 +2,53 @@
 
 
 from taskwarrior_syncall.aggregator import Aggregator
+from taskwarrior_syncall.app_utils import (
+    cache_or_reuse_cached_combination,
+    fetch_app_configuration,
+    get_config_name_for_args,
+    inform_about_combination_name_usage,
+    list_named_configs,
+    name_to_resolution_strategy,
+    report_toplevel_exception,
+)
+from taskwarrior_syncall.cli import (
+    opt_combination,
+    opt_custom_combination_savename,
+    opt_gcal_calendar,
+    opt_gcal_oauth_port,
+    opt_gcal_secret_override,
+    opt_list_configs,
+    opt_notion_page_id,
+    opt_notion_token_pass_path,
+    opt_resolution_strategy,
+    opt_tw_project,
+    opt_tw_tags,
+)
 from taskwarrior_syncall.sync_side import SyncSide
 from taskwarrior_syncall.taskwarrior_side import TaskWarriorSide
-from taskwarrior_syncall.utils import name_to_resolution_strategy
 
 __all__ = [
     "Aggregator",
     "SyncSide",
     "TaskWarriorSide",
+    "cache_or_reuse_cached_combination",
+    "fetch_app_configuration",
+    "get_config_name_for_args",
+    "inform_about_combination_name_usage",
+    "list_named_configs",
     "name_to_resolution_strategy",
+    "opt_combination",
+    "opt_custom_combination_savename",
+    "opt_gcal_calendar",
+    "opt_gcal_oauth_port",
+    "opt_gcal_secret_override",
+    "opt_list_configs",
+    "opt_notion_page_id",
+    "opt_notion_token_pass_path",
+    "opt_resolution_strategy",
+    "opt_tw_project",
+    "opt_tw_tags",
+    "report_toplevel_exception",
 ]
 
 try:

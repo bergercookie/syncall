@@ -17,12 +17,10 @@
   </td>
 </table>
 
+<a href='https://coveralls.io/github/bergercookie/taskwarrior-syncall?branch=master'>
+<img src='https://coveralls.io/repos/github/bergercookie/taskwarrior-syncall/badge.svg?branch=master' alt='Coverage Status' /></a>
 <a href="https://github.com/pre-commit/pre-commit">
 <img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white" alt="pre-commit"></a>
-<a href="https://www.codacy.com/app/bergercookie/taskwarrior-syncall" alt="Quality - devel">
-<img src="https://api.codacy.com/project/badge/Grade/57206a822c41420bb5792b2cb70f06b5"/></a>
-<a href="https://www.codacy.com/app/bergercookie/taskwarrior-syncall">
-<img src="https://api.codacy.com/project/badge/Coverage/57206a822c41420bb5792b2cb70f06b5"/></a>
 <a href="https://github.com/bergercookie/taskwarrior-syncall/blob/master/LICENSE" alt="LICENSE">
 <img src="https://img.shields.io/github/license/bergercookie/taskwarrior-syncall.svg" /></a>
 <a href="https://pypi.org/project/takwarrior-syncall" alt="pypi">

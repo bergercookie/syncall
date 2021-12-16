@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Iterable, Tuple
+from typing import Any, Dict, Iterable, Optional, Tuple
 
 from bidict import bidict  # type: ignore
 from bubop import PrefsManager, logger, pickle_dump, pickle_load
@@ -24,19 +24,30 @@ class Aggregator:
 
     def __init__(
         self,
+        *,
         side_A: SyncSide,
         side_B: SyncSide,
         converter_B_to_A: ConverterFn,
         converter_A_to_B: ConverterFn,
         resolution_strategy: ResolutionStrategy = AlwaysSecondRS(),
+        config_fname: Optional[str] = None,
     ):
         # Preferences manager
-        # Sample config path: ~/.config/taskwarrior_syncall/taskw_gcal_sync
-        # These are shared by more than one apps
+        # Sample config path: ~/.config/taskwarrior_syncall/taskwarrior_gcal_sync.yaml
+        #                     ~/.config/taskwarrior_syncall/taskwarrior_notion_sync.yaml
+        #
+        # The stem of the filename can be overriden by the user if they provide `config_fname`.
+        #
+        # Serdes dirs are shared across multiple different syncrhonizers
         # Sample serdes dirs: ~/.config/taskwarrior_syncall/serdes/gcal/
         #                     ~/.config/taskwarrior_syncall/serdes/tw/
+        if config_fname is None:
+            config_fname = f"{side_B.name}_{side_A.name}_sync".lower()
+        else:
+            logger.debug(f"Using a custom configuration file ... -> {config_fname}")
+
         self.prefs_manager = PrefsManager(
-            app_name="taskwarrior_syncall", config_fname=f"{side_B}_{side_A}_sync".lower()
+            app_name="taskwarrior_syncall", config_fname=config_fname
         )
 
         # Own config
@@ -64,7 +75,7 @@ class Aggregator:
         # Correspondences between the two sides -----------------------------------------------
         # For finding the matches between IDs of the two sides
         # for Taskwarrior <-> Gcal: tw_gcal_ids
-        correspondences_prefs_key = f"{self._helper_B}_{self._helper_A}_ids"
+        correspondences_prefs_key = f"{self._side_B.name}_{self._side_A.name}_ids"
         if correspondences_prefs_key not in self.prefs_manager:
             self.prefs_manager[correspondences_prefs_key] = bidict()
         self._B_to_A_map: bidict = self.prefs_manager[correspondences_prefs_key]
