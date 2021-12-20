@@ -103,18 +103,14 @@ version = "0.1.5"
 description = "Bergercookie's Useful Bits Of Python"
 category = "main"
 optional = false
-python-versions = "^3.8"
-develop = true
+python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
-loguru = "^0.5.3"
-python-dateutil = "^2.8.2"
-PyYAML = "^6.0"
-tqdm = "^4.62.3"
-
-[package.source]
-type = "directory"
-url = "../bubop"
+click = ">=8.0.3,<9.0.0"
+loguru = ">=0.5.3,<0.6.0"
+python-dateutil = ">=2.8.2,<3.0.0"
+PyYAML = ">=6.0,<7.0"
+tqdm = ">=4.62.3,<5.0.0"
 
 [[package]]
 name = "cachetools"
@@ -177,6 +173,9 @@ description = "Code coverage measurement for Python"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
+
+[package.dependencies]
+tomli = {version = "*", optional = true, markers = "extra == \"toml\""}
 
 [package.extras]
 toml = ["tomli"]
@@ -1063,7 +1062,7 @@ notion = ["notion-client"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "f849d8a75f51e3b82a089626c61e4dcae2042ebe657d019ec6203403e3f36e07"
+content-hash = "4c5416a7fdd4c9875ed5d025c90eaad4340b87f919ff308b310f16e6e7dd3ae0"
 
 [metadata.files]
 anyio = [
@@ -1094,7 +1093,10 @@ black = [
     {file = "black-21.11b1-py3-none-any.whl", hash = "sha256:802c6c30b637b28645b7fde282ed2569c0cd777dbe493a41b6a03c1d903f99ac"},
     {file = "black-21.11b1.tar.gz", hash = "sha256:a042adbb18b3262faad5aff4e834ff186bb893f95ba3a8013f09de1e5569def2"},
 ]
-bubop = []
+bubop = [
+    {file = "bubop-0.1.5-py3-none-any.whl", hash = "sha256:0c41a751b10418ccb20c41f9f91fd26c218a5f737b472776fd1aca26a207027b"},
+    {file = "bubop-0.1.5.tar.gz", hash = "sha256:4f014d31c7696749d26edb19c3f4b465cec60929be391a18e3db3d2cc6a66207"},
+]
 cachetools = [
     {file = "cachetools-4.2.4-py3-none-any.whl", hash = "sha256:92971d3cb7d2a97efff7c7bb1657f21a8f5fb309a37530537c71b1774189f2d1"},
     {file = "cachetools-4.2.4.tar.gz", hash = "sha256:89ea6f1b638d5a73a4f9226be57ac5e4f399d22770b92355f92dcb0f7f001693"},
