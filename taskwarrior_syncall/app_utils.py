@@ -62,7 +62,7 @@ def get_config_name_for_args(*args) -> str:
 
 
 def list_named_configs(config_fname: str) -> None:
-    """List the named configurations currently available for the given configuratioration name.
+    """List the named configurations currently available for the given configuration name.
 
     Mainly used by the top-level synchronization apps.
     """
@@ -84,7 +84,8 @@ def fetch_app_configuration(config_fname: str, combination: str) -> Mapping[str,
 
     This function is useful for parsing a previously cached configuration of a synchronization
     app. The configuration file is managed by a bubop.PrefsManager instance and the
-    configuration of this particular combination is contained under the specified `combination`.
+    configuration of this particular combination is contained under the specified
+    `combination`.
 
     It will check whether the configuration file at hand exist and will also give meaningful
     errors to the user if the configuration file does not contain the said combination.
@@ -122,7 +123,7 @@ def cache_or_reuse_cached_combination(
     else:
         config_name = custom_combination_savename
 
-    # see if this combination corresonds to an already existing configuration -------------
+    # see if this combination corresonds to an already existing configuration -----------------
     with PrefsManager(
         app_name="taskwarrior_syncall", config_fname=config_fname
     ) as prefs_manager:
@@ -131,7 +132,7 @@ def cache_or_reuse_cached_combination(
     if config_exists:
         logger.debug(f"Loading cached configuration - {config_name}")
     else:
-        # does not correspond to an existing configuration --------------------------------
+        # does not correspond to an existing configuration ------------------------------------
         # assemble and cache it.
         with PrefsManager(
             app_name="taskwarrior_syncall", config_fname=config_fname
