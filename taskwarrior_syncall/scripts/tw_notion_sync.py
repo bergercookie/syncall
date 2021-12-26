@@ -197,6 +197,7 @@ def main(
             converter_A_to_B=convert_notion_to_tw,
             resolution_strategy=name_to_resolution_strategy[resolution_strategy],
             config_fname=combination_name,
+            ignore_keys=(tuple(), ("due", "end", "entry", "modified", "urgency")),
         ) as aggregator:
             aggregator.sync()
     except KeyboardInterrupt:

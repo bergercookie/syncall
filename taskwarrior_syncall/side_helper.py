@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Sequence
 
 from taskwarrior_syncall.sync_side import SyncSide
 
@@ -14,6 +14,7 @@ class SideHelper:
     summary_key: str
     # Handy way to refer to the counterpart side
     other: Optional["SideHelper"] = None
+    ignore_keys: Sequence[str] = tuple()
 
     def __str__(self):
         return str(self.name)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Tuple
+from typing import Any, Dict, Iterable, Optional, Sequence, Tuple
 
 from bidict import bidict  # type: ignore
 from bubop import PrefsManager, logger, pickle_dump, pickle_load
@@ -31,6 +31,7 @@ class Aggregator:
         converter_A_to_B: ConverterFn,
         resolution_strategy: ResolutionStrategy = AlwaysSecondRS(),
         config_fname: Optional[str] = None,
+        ignore_keys: Tuple[Sequence[str], Sequence[str]] = tuple(),
     ):
         # Preferences manager
         # Sample config path: ~/.config/taskwarrior_syncall/taskwarrior_gcal_sync.yaml
@@ -62,7 +63,12 @@ class Aggregator:
         self._helper_A.other = self._helper_B
         self._helper_B.other = self._helper_A
 
-        # serdes directories for storing cached versions of itesms for each side --------------
+        # ignore keys
+        if ignore_keys:
+            self._helper_A.ignore_keys = ignore_keys[0]
+            self._helper_B.ignore_keys = ignore_keys[1]
+
+        # serdes directories for storing cached versions of items for each side ---------------
         self.serdes_dirs = self.prefs_manager.config_directory / "serdes"
         serdes_A = self.serdes_dirs / self._side_A.name.lower()
         serdes_B = self.serdes_dirs / self._side_B.name.lower()
@@ -74,7 +80,7 @@ class Aggregator:
 
         # Correspondences between the two sides -----------------------------------------------
         # For finding the matches between IDs of the two sides
-        # for Taskwarrior <-> Gcal: tw_gcal_ids
+        # e.g., for Taskwarrior <-> Gcal: tw_gcal_ids
         correspondences_prefs_key = f"{self._side_B.name}_{self._side_A.name}_ids"
         if correspondences_prefs_key not in self.prefs_manager:
             self.prefs_manager[correspondences_prefs_key] = bidict()
@@ -250,7 +256,9 @@ class Aggregator:
         """Determine whether the item has been updated."""
         side, _ = self._get_side_instances(helper)
 
-        return not side.items_are_identical(prev_item, new_item, ignore_keys=[helper.id_key])
+        return not side.items_are_identical(
+            prev_item, new_item, ignore_keys=[helper.id_key, *helper.ignore_keys]
+        )
 
     def _get_ids_map(self, helper: SideHelper):
         return self._B_to_A_map if helper is self._helper_B else self._B_to_A_map.inverse

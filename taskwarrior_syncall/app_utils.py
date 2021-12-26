@@ -72,7 +72,7 @@ def list_named_configs(config_fname: str) -> None:
     ) as prefs_manager:
         logger.success(
             format_list(
-                header="\n\nNamed configurations currently available: ",
+                header="\n\nNamed configurations currently available",
                 items=prefs_manager.keys(),
             )
         )

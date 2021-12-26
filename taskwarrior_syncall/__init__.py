@@ -29,6 +29,7 @@ from taskwarrior_syncall.taskwarrior_side import TaskWarriorSide
 
 __all__ = [
     "Aggregator",
+    "ItemType",
     "SyncSide",
     "TaskWarriorSide",
     "cache_or_reuse_cached_combination",

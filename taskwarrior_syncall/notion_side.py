@@ -33,7 +33,7 @@ class NotionSide(SyncSide):
         return "plaintext"
 
     def start(self):
-        logger.info(f"Intiializing {self.fullname}...")
+        logger.info(f"Initializing {self.fullname}...")
         self._page_contents = self._client.blocks.children.list(block_id=self._page_id)
 
     def _get_todo_blocks(self) -> Dict[NotionID, NotionTodoBlock]:

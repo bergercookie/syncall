@@ -39,9 +39,14 @@ class NotionTodoBlock(Mapping):
                 if not is_same_datetime(
                     self[key], other[key], tol=datetime.timedelta(minutes=10)
                 ):
+                    logger.opt(lazy=True).trace(
+                        f"\n\nItems differ\n\nItem1\n\n{self}\n\nItem2\n\n{other}\n\nKey"
+                        f" [{key}] is different - [{repr(self[key])}] | [{repr(other[key])}]"
+                    )
                     return False
             else:
                 if self[key] != other[key]:
+                    logger.opt(lazy=True).trace(f"Items differ [{key}]\n\n{self}\n\n{other}")
                     return False
 
         return True
