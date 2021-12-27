@@ -1,7 +1,9 @@
 """Top-level application utility functions."""
+import logging
+import os
 from collections.abc import Iterable
 from datetime import datetime
-from typing import Any, Dict, Mapping, Optional, cast
+from typing import Any, Dict, Mapping, Optional, Sequence, cast
 
 from bubop import PrefsManager, format_list, logger
 from item_synchronizer.resolution_strategy import (
@@ -28,6 +30,17 @@ name_to_resolution_strategy: Dict[str, ResolutionStrategy] = {
     AlwaysFirstRS.name: AlwaysFirstRS(),  # type: ignore
     AlwaysSecondRS.name: AlwaysSecondRS(),  # type: ignore
 }
+
+
+def app_name():
+    """
+    Return the name of the application which defines the config, cache, and share directories
+    of this app.
+    """
+    if "TASKWARRIOR_SYNCALL_TESTENV" in os.environ:
+        return "test_taskwarrior_syncall"
+    else:
+        return "taskwarrior_syncall"
 
 
 def get_config_name_for_args(*args) -> str:
@@ -61,21 +74,27 @@ def get_config_name_for_args(*args) -> str:
     return "__".join(map(format_, args))
 
 
-def list_named_configs(config_fname: str) -> None:
+def get_named_combinations(config_fname: str) -> Sequence[str]:
+    """Return the named configurations currently available for the given configuration name."""
+    dummy_logger = logging.getLogger("dummy")
+    dummy_logger.setLevel(logging.CRITICAL + 1)
+    with PrefsManager(
+        app_name=app_name(), config_fname=config_fname, logger=dummy_logger
+    ) as prefs_manager:
+        return list(prefs_manager.keys())
+
+
+def list_named_combinations(config_fname: str) -> None:
     """List the named configurations currently available for the given configuration name.
 
     Mainly used by the top-level synchronization apps.
     """
-    with PrefsManager(
-        app_name="taskwarrior_syncall",
-        config_fname=config_fname,
-    ) as prefs_manager:
-        logger.success(
-            format_list(
-                header="\n\nNamed configurations currently available",
-                items=prefs_manager.keys(),
-            )
+    logger.success(
+        format_list(
+            header="\n\nNamed configurations currently available",
+            items=get_named_combinations(config_fname=config_fname),
         )
+    )
 
 
 def fetch_app_configuration(config_fname: str, combination: str) -> Mapping[str, Any]:
@@ -90,9 +109,7 @@ def fetch_app_configuration(config_fname: str, combination: str) -> Mapping[str,
     It will check whether the configuration file at hand exist and will also give meaningful
     errors to the user if the configuration file does not contain the said combination.
     """
-    with PrefsManager(
-        app_name="taskwarrior_syncall", config_fname=config_fname
-    ) as prefs_manager:
+    with PrefsManager(app_name=app_name(), config_fname=config_fname) as prefs_manager:
         if combination not in prefs_manager:
             # config not found ----------------------------------------------------------------
             existing_keys = prefs_manager.keys()
@@ -124,9 +141,7 @@ def cache_or_reuse_cached_combination(
         config_name = custom_combination_savename
 
     # see if this combination corresonds to an already existing configuration -----------------
-    with PrefsManager(
-        app_name="taskwarrior_syncall", config_fname=config_fname
-    ) as prefs_manager:
+    with PrefsManager(app_name=app_name(), config_fname=config_fname) as prefs_manager:
         config_exists = config_name in prefs_manager
 
     if config_exists:
@@ -134,9 +149,7 @@ def cache_or_reuse_cached_combination(
     else:
         # does not correspond to an existing configuration ------------------------------------
         # assemble and cache it.
-        with PrefsManager(
-            app_name="taskwarrior_syncall", config_fname=config_fname
-        ) as prefs_manager:
+        with PrefsManager(app_name=app_name(), config_fname=config_fname) as prefs_manager:
             logger.info(f"Caching this configuration under the name - {config_name}...")
             prefs_manager[config_name] = {**config_args}
 

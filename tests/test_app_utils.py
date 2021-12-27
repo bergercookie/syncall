@@ -6,17 +6,17 @@ from taskwarrior_syncall import (
     cache_or_reuse_cached_combination,
     fetch_app_configuration,
     inform_about_combination_name_usage,
-    list_named_configs,
+    list_named_combinations,
     report_toplevel_exception,
 )
 
 
-def test_list_named_configs(fs, caplog, mock_prefs_manager):
+def test_list_named_combinations(fs, caplog, mock_prefs_manager):
     with patch(
         "taskwarrior_syncall.app_utils.PrefsManager",
         return_value=mock_prefs_manager,
     ):
-        list_named_configs("doesnt matter")
+        list_named_combinations("doesnt matter")
         captured = caplog.text
         assert all(
             expected_config in captured

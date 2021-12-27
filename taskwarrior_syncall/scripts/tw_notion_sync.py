@@ -36,7 +36,7 @@ from taskwarrior_syncall import (
     convert_tw_to_notion,
     fetch_app_configuration,
     inform_about_combination_name_usage,
-    list_named_configs,
+    list_named_combinations,
     name_to_resolution_strategy,
     opt_combination,
     opt_custom_combination_savename,
@@ -88,7 +88,7 @@ def main(
     exec_name = Path(sys.argv[0]).stem
 
     if do_list_configs:
-        list_named_configs(config_fname="tw_notion_configs")
+        list_named_combinations(config_fname="tw_notion_configs")
         return 0
 
     # cli validation --------------------------------------------------------------------------
@@ -197,7 +197,10 @@ def main(
             converter_A_to_B=convert_notion_to_tw,
             resolution_strategy=name_to_resolution_strategy[resolution_strategy],
             config_fname=combination_name,
-            ignore_keys=(tuple(), ("due", "end", "entry", "modified", "urgency")),
+            ignore_keys=(
+                ("last_modified_date",),
+                ("due", "end", "entry", "modified", "urgency"),
+            ),
         ) as aggregator:
             aggregator.sync()
     except KeyboardInterrupt:

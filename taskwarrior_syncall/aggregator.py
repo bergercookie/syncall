@@ -11,6 +11,7 @@ from item_synchronizer.helpers import SideChanges
 from item_synchronizer.resolution_strategy import AlwaysSecondRS, ResolutionStrategy
 from item_synchronizer.types import ID, ConverterFn, Item
 
+from taskwarrior_syncall.app_utils import app_name
 from taskwarrior_syncall.side_helper import SideHelper
 from taskwarrior_syncall.sync_side import SyncSide
 
@@ -47,9 +48,7 @@ class Aggregator:
         else:
             logger.debug(f"Using a custom configuration file ... -> {config_fname}")
 
-        self.prefs_manager = PrefsManager(
-            app_name="taskwarrior_syncall", config_fname=config_fname
-        )
+        self.prefs_manager = PrefsManager(app_name=app_name(), config_fname=config_fname)
 
         # Own config
         self.config: Dict[str, Any] = {}

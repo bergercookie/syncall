@@ -3,11 +3,12 @@
 
 from taskwarrior_syncall.aggregator import Aggregator
 from taskwarrior_syncall.app_utils import (
+    app_name,
     cache_or_reuse_cached_combination,
     fetch_app_configuration,
     get_config_name_for_args,
     inform_about_combination_name_usage,
-    list_named_configs,
+    list_named_combinations,
     name_to_resolution_strategy,
     report_toplevel_exception,
 )
@@ -24,7 +25,7 @@ from taskwarrior_syncall.cli import (
     opt_tw_project,
     opt_tw_tags,
 )
-from taskwarrior_syncall.sync_side import SyncSide
+from taskwarrior_syncall.sync_side import ItemType, SyncSide
 from taskwarrior_syncall.taskwarrior_side import TaskWarriorSide
 
 __all__ = [
@@ -32,11 +33,12 @@ __all__ = [
     "ItemType",
     "SyncSide",
     "TaskWarriorSide",
+    "app_name",
     "cache_or_reuse_cached_combination",
     "fetch_app_configuration",
     "get_config_name_for_args",
     "inform_about_combination_name_usage",
-    "list_named_configs",
+    "list_named_combinations",
     "name_to_resolution_strategy",
     "opt_combination",
     "opt_custom_combination_savename",

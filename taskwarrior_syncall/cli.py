@@ -3,13 +3,21 @@ import click
 
 from taskwarrior_syncall.app_utils import name_to_resolution_strategy
 
+# def opt_run_all_combinations(name_A: str, name_B: str):
+#     return click.option(
+#         "--all",
+#         "run_all_combinations",
+#         is_flag=True,
+#         help=f"Execute synchronization for all the known {name_A}<->{name_B} combinations",
+#     )
+
 
 def opt_list_configs(name_A: str, name_B: str):
     return click.option(
         "--list-configs",
         "do_list_configs",
         is_flag=True,
-        help=f"List the available named configurations {name_A}<->{name_B} combinations",
+        help=f"List the available named {name_A}<->{name_B} combinations",
     )
 
 

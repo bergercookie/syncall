@@ -26,7 +26,7 @@ from taskwarrior_syncall import (
     convert_tw_to_gcal,
     fetch_app_configuration,
     inform_about_combination_name_usage,
-    list_named_configs,
+    list_named_combinations,
     name_to_resolution_strategy,
     opt_combination,
     opt_custom_combination_savename,
@@ -81,11 +81,11 @@ def main(
     exec_name = Path(sys.argv[0]).stem
 
     if do_list_configs:
-        list_named_configs(config_fname="tw_gcal_configs")
+        list_named_combinations(config_fname="tw_gcal_configs")
         return 0
 
     # cli validation --------------------------------------------------------------------------
-    check_optional_mutually_exclusive(combination_name, custom_combination_savename)
+    check_required_mutually_exclusive(combination_name, custom_combination_savename)
     combination_of_tw_project_tags_and_gcal_calendar = any(
         [
             tw_project,
@@ -93,7 +93,7 @@ def main(
             gcal_calendar,
         ]
     )
-    check_required_mutually_exclusive(
+    check_optional_mutually_exclusive(
         combination_name, combination_of_tw_project_tags_and_gcal_calendar
     )
 
@@ -155,6 +155,11 @@ def main(
             converter_B_to_A=convert_tw_to_gcal,
             converter_A_to_B=convert_gcal_to_tw,
             resolution_strategy=name_to_resolution_strategy[resolution_strategy],
+            config_fname=combination_name,
+            ignore_keys=(
+                (),
+                ("due", "end", "entry", "modified", "urgency"),
+            ),
         ) as aggregator:
             aggregator.sync()
     except KeyboardInterrupt:

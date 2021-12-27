@@ -159,7 +159,7 @@ class TaskWarriorSide(SyncSide):
 
         curr_status = item.get("status", None)
         if curr_status not in ["pending", "done"]:
-            logger.info('Invalid status of task: "%s", setting it to pending', item["status"])
+            logger.info(f'Invalid status of task [{item["status"]}], setting it to pending')  # type: ignore
             item["status"] = "pending"
 
         if self._tags:
