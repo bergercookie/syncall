@@ -6,7 +6,7 @@ from uuid import UUID
 from bubop import logger
 from item_synchronizer.types import Item
 
-from taskwarrior_syncall.gcal_side import GCalSide
+from taskwarrior_syncall.google.gcal_side import GCalSide
 
 _prefix_title_done_str = "✅"
 

@@ -16,8 +16,9 @@ from taskwarrior_syncall.cli import (
     opt_combination,
     opt_custom_combination_savename,
     opt_gcal_calendar,
-    opt_gcal_oauth_port,
-    opt_gcal_secret_override,
+    opt_gkeep_note,
+    opt_google_oauth_port,
+    opt_google_secret_override,
     opt_list_configs,
     opt_notion_page_id,
     opt_notion_token_pass_path,
@@ -43,8 +44,9 @@ __all__ = [
     "opt_combination",
     "opt_custom_combination_savename",
     "opt_gcal_calendar",
-    "opt_gcal_oauth_port",
-    "opt_gcal_secret_override",
+    "opt_gkeep_note",
+    "opt_google_oauth_port",
+    "opt_google_secret_override",
     "opt_list_configs",
     "opt_notion_page_id",
     "opt_notion_token_pass_path",
@@ -54,6 +56,7 @@ __all__ = [
     "report_toplevel_exception",
 ]
 
+# Notion --------------------------------------------------------------------------------------
 try:
     from taskwarrior_syncall.notion_side import NotionSide
     from taskwarrior_syncall.tw_notion_utils import convert_notion_to_tw, convert_tw_to_notion
@@ -61,11 +64,27 @@ try:
     __all__.extend(["NotionSide", "convert_notion_to_tw", "convert_tw_to_notion"])
 except ImportError:
     pass
-try:
-    from taskwarrior_syncall.gcal_side import GCalSide
-    from taskwarrior_syncall.tw_gcal_utils import convert_gcal_to_tw, convert_tw_to_gcal
 
-    __all__.extend(["GCalSide", "convert_gcal_to_tw", "convert_tw_to_gcal"])
+# Google --------------------------------------------------------------------------------------
+try:
+    from taskwarrior_syncall.google.gcal_side import GCalSide
+    from taskwarrior_syncall.google.gkeep_todo_side import GKeepTodoSide
+    from taskwarrior_syncall.tw_gcal_utils import convert_gcal_to_tw, convert_tw_to_gcal
+    from taskwarrior_syncall.tw_gkeep_utils import (
+        convert_gkeep_todo_to_tw,
+        convert_tw_to_gkeep_todo,
+    )
+
+    __all__.extend(
+        [
+            "GCalSide",
+            "GKeepTodoSide",
+            "convert_gcal_to_tw",
+            "convert_gkeep_todo_to_tw",
+            "convert_tw_to_gcal",
+            "convert_tw_to_gkeep_todo",
+        ]
+    )
 except ImportError:
     pass
 

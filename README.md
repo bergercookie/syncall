@@ -69,7 +69,14 @@ Requirements:
 
 Installation Options:
 
-- Pypi (may not contain latest version): `pip3 install --user --upgrade taskwarrior-syncall`
+You have to specify at least one extra to do so use the `[]` syntax in pip:
+
+```sh
+# for installing integration with google (e.g. Google Keep / Calendar) and notion
+pip3 install taskwarrior-syncall[notion,google]
+```
+
+- Pypi (may not contain latest version): `pip3 install --user --upgrade taskwarrior-syncall[notion,google]`
 - Github: `pip3 install --user git+https://github.com/bergercookie/taskwarrior-syncall`
 - Download and install `devel` branch locally - bleeding edge
 
@@ -102,7 +109,7 @@ synchronization solution. In case the latter behavior is desired, users may just
 run the script periodically e.g., using cron:
 
 ```sh
-$ crontab -e
+crontab -e
 ...
 
 # Add the following to sync every 10' - modify the arguments according to your

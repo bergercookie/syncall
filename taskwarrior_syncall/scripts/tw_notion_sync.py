@@ -92,7 +92,7 @@ def main(
         return 0
 
     # cli validation --------------------------------------------------------------------------
-    check_required_mutually_exclusive(combination_name, custom_combination_savename)
+    check_optional_mutually_exclusive(combination_name, custom_combination_savename)
     combination_of_tw_project_tags_and_notion_page = any(
         [
             tw_project,

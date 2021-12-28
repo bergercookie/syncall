@@ -23,7 +23,7 @@ name_to_resolution_strategy: Dict[str, ResolutionStrategy] = {
         date_getter_A=lambda item: cast(datetime, item["updated"]),
         date_getter_B=lambda item: cast(datetime, item["modified"]),
     ),
-    "MostRecentRS": LeastRecentRS(
+    "LeastRecentRS": LeastRecentRS(
         date_getter_A=lambda item: cast(datetime, item["updated"]),
         date_getter_B=lambda item: cast(datetime, item["modified"]),
     ),

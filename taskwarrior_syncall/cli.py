@@ -104,22 +104,28 @@ def opt_gcal_calendar():
     )
 
 
-def opt_gcal_secret_override():
+def opt_gkeep_note():
     return click.option(
-        "--gcal-secret",
-        default=None,
-        type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
-        help=(
-            "Override the client secret used for the communication with the Google"
-            " Calendar API"
-        ),
+        "-k",
+        "--gkeep-note",
+        type=str,
+        help="Name of the Google Keep Note to synchronize",
     )
 
 
-def opt_gcal_oauth_port():
+def opt_google_secret_override():
+    return click.option(
+        "--google-secret",
+        default=None,
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+        help="Override the client secret used for the communication with the Google APIs",
+    )
+
+
+def opt_google_oauth_port():
     return click.option(
         "--oauth-port",
         default=8081,
         type=int,
-        help="Port to use for OAuth Authentication with Google Calendar",
+        help="Port to use for OAuth Authentication with Google Applications",
     )

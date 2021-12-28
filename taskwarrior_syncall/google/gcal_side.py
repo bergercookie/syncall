@@ -1,23 +1,25 @@
 import datetime
 import os
-import pickle
 from pathlib import Path
-from typing import Dict, Literal, Optional, Sequence, Union, cast
+from typing import Dict, List, Literal, Optional, Sequence, Union, cast
 
 import dateutil
 import pkg_resources
 import pytz
 from bubop import format_datetime_tz, logger
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient import discovery
 from googleapiclient.http import HttpError
 from item_synchronizer.types import ID
 
+from taskwarrior_syncall.google.google_side import GoogleSide
 from taskwarrior_syncall.sync_side import SyncSide
 
+DEFAULT_CLIENT_SECRET = pkg_resources.resource_filename(
+    "taskwarrior_syncall", os.path.join("res", "gcal_client_secret.json")
+)
 
-class GCalSide(SyncSide):
+
+class GCalSide(GoogleSide):
     """GCalSide interacts with the Google Calendar API.
 
 
@@ -27,10 +29,6 @@ class GCalSide(SyncSide):
 
     ID_KEY = "id"
     SUMMARY_KEY = "summary"
-    DEFAULT_CLIENT_SECRET = pkg_resources.resource_filename(
-        __name__, os.path.join("res", "gcal_client_secret.json")
-    )
-
     _identical_comparison_keys = [
         "description",
         "end",
@@ -39,41 +37,39 @@ class GCalSide(SyncSide):
     ]
 
     _date_keys = ["end", "start", "updated"]
-
-    SCOPES = ["https://www.googleapis.com/auth/calendar"]
     _date_format = "%Y-%m-%d"
 
     def __init__(
         self,
         *,
-        oauth_port: int,
         calendar_summary="TaskWarrior Reminders",
-        credentials_cache=Path.home() / ".gcal_credentials.pickle",
-        client_secret=None,
+        client_secret=DEFAULT_CLIENT_SECRET,
         **kargs,
     ):
-        super().__init__(name="Gcal", fullname="Google Calendar", **kargs)
+        super().__init__(
+            name="Gcal",
+            fullname="Google Calendar",
+            scopes=["https://www.googleapis.com/auth/calendar"],
+            credentials_cache=Path.home() / ".gcal_credentials.pickle",
+            client_secret=client_secret,
+            **kargs,
+        )
 
-        self._oauth_port = oauth_port
         self._calendar_summary = calendar_summary
-        self._credentials_cache = credentials_cache
-        self._client_secret = client_secret or self.DEFAULT_CLIENT_SECRET
         self._calendar_id = None
         self._items_cache: Dict[str, dict] = {}
 
-        # If you modify this, delete your previously saved credentials
-        self.service = None
-
     def start(self):
         logger.debug("Connecting to Google Calendar...")
-        self._gain_access()
+        creds = self._get_credentials()
+        self._service = discovery.build("calendar", "v3", credentials=creds)
         self._calendar_id = self._fetch_cal_id()
 
         # Create calendar if not there --------------------------------------------------------
         if self._calendar_id is None:
             logger.info(f"Creating calendar {self._calendar_summary}")
             new_cal = {"summary": self._calendar_summary}
-            ret = self.service.calendars().insert(body=new_cal).execute()  # type: ignore
+            ret = self._service.calendars().insert(body=new_cal).execute()  # type: ignore
             assert "id" in ret
             new_cal_id = ret["id"]
             logger.info(f"Created calendar, id: {new_cal_id}")
@@ -86,9 +82,8 @@ class GCalSide(SyncSide):
 
         :returns: id or None if that was not found
         """
-        res = self.service.calendarList().list().execute()  # type: ignore
-        calendars_list = res.get("items", None)  # list(dict)
-        assert calendars_list and isinstance(calendars_list, list)
+        res = self._service.calendarList().list().execute()  # type: ignore
+        calendars_list: List[dict] = res["items"]
 
         matching_calendars = [
             c["id"] for c in calendars_list if c["summary"] == self._calendar_summary
@@ -107,7 +102,7 @@ class GCalSide(SyncSide):
         """Clear all events from the current calendar."""
         # TODO Currently not functional - returning "400 Bad Request"
         logger.warning(f"Clearing all events from calendar {self._calendar_id}")
-        self.service.calendars().clear(calendarId=self._calendar_id).execute()
+        self._service.calendars().clear(calendarId=self._calendar_id).execute()
 
     def get_all_items(self, **kargs):
         """Get all the events for the calendar that we use.
@@ -116,7 +111,7 @@ class GCalSide(SyncSide):
         """
         # Get the ID of the calendar of interest
         events = []
-        request = self.service.events().list(calendarId=self._calendar_id)
+        request = self._service.events().list(calendarId=self._calendar_id)
 
         # Loop until all pages have been processed.
         while request is not None:
@@ -128,7 +123,7 @@ class GCalSide(SyncSide):
 
             # Get the next request object by passing the previous request
             # object to the list_next method.
-            request = self.service.events().list_next(request, response)
+            request = self._service.events().list_next(request, response)
 
         # cache them
         for e in events:
@@ -147,7 +142,7 @@ class GCalSide(SyncSide):
         ret = None
         try:
             ret = (
-                self.service.events()
+                self._service.events()
                 .get(calendarId=self._calendar_id, eventId=item_id)
                 .execute()
             )
@@ -164,21 +159,23 @@ class GCalSide(SyncSide):
     def update_item(self, item_id, **changes):
         # Check if item is there
         event = (
-            self.service.events().get(calendarId=self._calendar_id, eventId=item_id).execute()
+            self._service.events().get(calendarId=self._calendar_id, eventId=item_id).execute()
         )
         event.update(changes)
-        self.service.events().update(
+        self._service.events().update(
             calendarId=self._calendar_id, eventId=event["id"], body=event
         ).execute()
 
     def add_item(self, item) -> dict:
-        event = self.service.events().insert(calendarId=self._calendar_id, body=item).execute()
+        event = (
+            self._service.events().insert(calendarId=self._calendar_id, body=item).execute()
+        )
         logger.debug(f'Event created -> {event.get("htmlLink")}')
 
         return event
 
     def delete_single_item(self, item_id) -> None:
-        self.service.events().delete(calendarId=self._calendar_id, eventId=item_id).execute()
+        self._service.events().delete(calendarId=self._calendar_id, eventId=item_id).execute()
 
     @classmethod
     def id_key(cls) -> str:
@@ -187,52 +184,6 @@ class GCalSide(SyncSide):
     @classmethod
     def summary_key(cls) -> str:
         return cls.SUMMARY_KEY
-
-    def _get_credentials(self):
-        """Gets valid user credentials from storage.
-
-        If nothing has been stored, or if the stored credentials are invalid,
-        the OAuth2 flow is completed to obtain the new credentials.
-
-        :return: Credentials, the obtained credentials.
-        """
-
-        creds = None
-        credentials_cache = self._credentials_cache
-        if credentials_cache.is_file():
-            with credentials_cache.open("rb") as f:
-                creds = pickle.load(f)
-
-        if not creds or not creds.valid:
-            logger.info("Invalid credentials. Fetching again...")
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                client_secret = self._client_secret
-                if client_secret != self.DEFAULT_CLIENT_SECRET:
-                    logger.info(f"Using custom client secret -> {client_secret}")
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    client_secret, GCalSide.SCOPES
-                )
-                try:
-                    creds = flow.run_local_server(port=self._oauth_port)
-                except OSError:
-                    raise RuntimeError(
-                        f"Port {self._oauth_port} is already in use, please specify a"
-                        " different port or stop the process that's already using it."
-                    )
-
-            # Save the credentials for the next run
-            with credentials_cache.open("wb") as f:
-                pickle.dump(creds, f)
-        else:
-            logger.info("Using already cached credentials...")
-
-        return creds
-
-    def _gain_access(self):
-        creds = self._get_credentials()
-        self.service = discovery.build("calendar", "v3", credentials=creds)
 
     @staticmethod
     def get_date_key(d: dict) -> Union[Literal["date"], Literal["dateTime"]]:

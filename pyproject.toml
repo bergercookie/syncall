@@ -23,10 +23,19 @@ classifiers = [
   "Operating System :: Unix",
   "Topic :: Utilities",
 ]
-keywords = ["taskwarrior", "synchronization", "google", "calendar", "notion"]
+keywords = [
+  "taskwarrior",
+  "synchronization",
+  "google",
+  "calendar",
+  "notion",
+  "google keep",
+  "gkeep",
+]
 
 [tool.poetry.scripts]
 tw_gcal_sync = "taskwarrior_syncall.scripts.tw_gcal_sync:main"
+tw_gkeep_sync = "taskwarrior_syncall.scripts.tw_gkeep_sync:main"
 tw_notion_sync = "taskwarrior_syncall.scripts.tw_notion_sync:main"
 
 # end-user dependencies --------------------------------------------------------
@@ -40,6 +49,7 @@ click = "^8.0"
 google-api-python-client = { version = "^2.1.0", optional = true }
 google-auth-oauthlib = { version = "^0.4.4", optional = true }
 notion-client = { version = "^0.7.1", optional = true }
+gkeepapi = { version = "^0.13.7", optional = true }
 # pyclickup = { version = "^0.1.4", optional = true }
 
 loguru = "^0.5.3"
@@ -54,7 +64,8 @@ item-synchronizer = "1.1.2"
 bubop = "0.1.6a"
 
 [tool.poetry.extras]
-gcal = ["google-api-python-client", "google-auth-oauthlib"]
+google = ["google-api-python-client", "google-auth-oauthlib"]
+gkeep = ["gkeepapi"]
 notion = ["notion-client"]
 
 # dev dependencies -------------------------------------------------------------
@@ -75,7 +86,7 @@ types-python-dateutil = "^2.8.3"
 types-pytz = "^2021.3.2"
 types-setuptools = "^57.4.4"
 google-api-python-client-stubs = "^1.9.0"
-coverage = {version="^6.2", extras=["toml"]}
+coverage = { version = "^6.2", extras = ["toml"] }
 coveralls = "^3.3.1"
 
 # isort ------------------------------------------------------------------------
