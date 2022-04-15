@@ -7,7 +7,7 @@ from taskwarrior_syncall.app_utils import (
     cache_or_reuse_cached_combination,
     fetch_app_configuration,
     get_config_name_for_args,
-    inform_about_app_extra,
+    inform_about_app_extras,
     inform_about_combination_name_usage,
     list_named_combinations,
     name_to_resolution_strategy,

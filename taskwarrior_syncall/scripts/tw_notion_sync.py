@@ -18,12 +18,12 @@ from bubop import (
     verbosity_int_to_std_logging_lvl,
 )
 
-from taskwarrior_syncall import inform_about_app_extra
+from taskwarrior_syncall import inform_about_app_extras
 
 try:
     from taskwarrior_syncall import NotionSide
 except ImportError:
-    inform_about_app_extra(["notion"])
+    inform_about_app_extras(["notion"])
 
 
 from notion_client import Client  # type: ignore

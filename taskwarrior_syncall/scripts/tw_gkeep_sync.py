@@ -11,11 +11,12 @@ from bubop import (
     loguru_tqdm_sink,
 )
 
+from taskwarrior_syncall import inform_about_app_extras
+
 try:
     from taskwarrior_syncall import GKeepTodoSide
 except ImportError:
-    logger.error(f"You have to install the [google] extra for {sys.argv[0]} to work. Exiting.")
-    sys.exit(1)
+    inform_about_app_extras(["gkeepapi"])
 
 from taskwarrior_syncall import (
     Aggregator,
@@ -48,7 +49,6 @@ from taskwarrior_syncall import (
 @opt_list_configs("TW", "Google Keep")
 @opt_resolution_strategy()
 @opt_combination("TW", "Google Keep")
-@opt_list_configs("TW", "Google Keep")
 @opt_custom_combination_savename("TW", "Google Keep")
 @click.option("-v", "--verbose", count=True)
 def main(
@@ -64,7 +64,9 @@ def main(
     """Synchronize Notes from your Google Keep with filters from Taskwarrior.
 
     The list of TW tasks is determined by a combination of TW tags and a TW project while the
-    note in GKeep should be provided by their name. if it doesn't exist it will be crated
+    note in GKeep should be specified using their name. if it doesn't exist it will be crated.
+
+    This service will synchronize all the checkboxes found in Google Calendar.
     """
     # setup logger ----------------------------------------------------------------------------
     loguru_tqdm_sink(verbosity=verbose)

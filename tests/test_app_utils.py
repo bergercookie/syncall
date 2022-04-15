@@ -1,3 +1,4 @@
+import sys
 from unittest.mock import patch
 
 import pytest
@@ -52,8 +53,9 @@ def test_report_toplevel_exception(caplog):
 
 def test_inform_about_combination_name_usage(fs, caplog):
     e = "kalimera"
+    sys.argv[0] = e
     c = "kalinuxta"
-    inform_about_combination_name_usage(exec_name=e, combination_name=c)
+    inform_about_combination_name_usage(combination_name=c)
     assert e in caplog.text and c in caplog.text
 
 

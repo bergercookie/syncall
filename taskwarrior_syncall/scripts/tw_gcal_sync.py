@@ -11,12 +11,12 @@ from bubop import (
     loguru_tqdm_sink,
 )
 
-from taskwarrior_syncall import inform_about_app_extra
+from taskwarrior_syncall import inform_about_app_extras
 
 try:
     from taskwarrior_syncall import GCalSide
 except ImportError:
-    inform_about_app_extra(["google"])
+    inform_about_app_extras(["google"])
 
 from taskwarrior_syncall import (
     Aggregator,
@@ -53,7 +53,6 @@ from taskwarrior_syncall import (
 @opt_list_configs("TW", "Google Calendar")
 @opt_resolution_strategy()
 @opt_combination("TW", "Google Calendar")
-@opt_list_configs("TW", "Google Calendar")
 @opt_custom_combination_savename("TW", "Google Calendar")
 @click.option("-v", "--verbose", count=True)
 def main(

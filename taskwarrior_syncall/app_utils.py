@@ -174,7 +174,7 @@ def inform_about_combination_name_usage(combination_name: str):
     )
 
 
-def inform_about_app_extra(extras: Sequence[str]) -> NoReturn:
+def inform_about_app_extras(extras: Sequence[str]) -> NoReturn:
     """Inform the user about required package extras and exit."""
     exec_name = Path(sys.argv[0]).stem
     extras_str = ",".join(extras)
