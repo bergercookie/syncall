@@ -8,7 +8,7 @@
   <td>master</td>
   <td>
     <a href="https://github.com/bergercookie/taskwarrior-syncall/actions" alt="master">
-    <img src="https://github.com/bergercookie/taskwarrior-syncall/actions/workflows/ci.yml/badge.svg" /></a>
+    <img src="https://github.com/bergercookie/taskwarrior-syncall/actions/workflows/ci.yml/badge.svg?branch=master" /></a>
   </td>
   <td>devel</td>
   <td>

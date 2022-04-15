@@ -32,6 +32,10 @@ class NotionSide(SyncSide):
     def summary_key(cls) -> str:
         return "plaintext"
 
+    @classmethod
+    def last_modification_key(cls) -> str:
+        return "last_modified_date"
+
     def start(self):
         logger.info(f"Initializing {self.fullname}...")
         self._page_contents = self._client.blocks.children.list(block_id=self._page_id)

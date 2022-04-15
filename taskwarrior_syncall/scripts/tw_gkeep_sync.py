@@ -1,6 +1,5 @@
-import sys
-from pathlib import Path
-from typing import List
+import os
+from typing import Sequence
 
 import click
 from bubop import (
@@ -21,16 +20,20 @@ except ImportError:
 from taskwarrior_syncall import (
     Aggregator,
     TaskWarriorSide,
+    __version__,
     cache_or_reuse_cached_combination,
     convert_gkeep_todo_to_tw,
     convert_tw_to_gkeep_todo,
     fetch_app_configuration,
+    fetch_from_pass_manager,
+    get_resolution_strategy,
     inform_about_combination_name_usage,
     list_named_combinations,
-    name_to_resolution_strategy,
     opt_combination,
     opt_custom_combination_savename,
     opt_gkeep_note,
+    opt_gkeep_passwd_pass_path,
+    opt_gkeep_user_pass_path,
     opt_list_configs,
     opt_resolution_strategy,
     opt_tw_project,
@@ -40,8 +43,10 @@ from taskwarrior_syncall import (
 
 
 @click.command()
-# google calendar options ---------------------------------------------------------------------
+# google keep options ---------------------------------------------------------------------
 @opt_gkeep_note()
+@opt_gkeep_user_pass_path()
+@opt_gkeep_passwd_pass_path()
 # taskwarrior options -------------------------------------------------------------------------
 @opt_tw_tags()
 @opt_tw_project()
@@ -51,9 +56,12 @@ from taskwarrior_syncall import (
 @opt_combination("TW", "Google Keep")
 @opt_custom_combination_savename("TW", "Google Keep")
 @click.option("-v", "--verbose", count=True)
+@click.version_option(__version__)
 def main(
     gkeep_note: str,
-    tw_tags: List[str],
+    gkeep_user_pass_path: str,
+    gkeep_passwd_pass_path: str,
+    tw_tags: Sequence[str],
     tw_project: str,
     resolution_strategy: str,
     verbose: int,
@@ -64,16 +72,19 @@ def main(
     """Synchronize Notes from your Google Keep with filters from Taskwarrior.
 
     The list of TW tasks is determined by a combination of TW tags and a TW project while the
-    note in GKeep should be specified using their name. if it doesn't exist it will be crated.
+    note in GKeep should be specified using their full name. if it doesn't exist it will be
+    created.
 
-    This service will synchronize all the checkboxes found in Google Calendar.
+    This service will create TaskWarrior tasks with the specified filter for each one of the
+    checkboxed items in the specified Google Keep note and will create Google Keep items for
+    each one of the tasks in the Taskwarrior filter. You have to first "Show checkboxes" in the
+    Google Keep Note in order to use it with this service.
     """
     # setup logger ----------------------------------------------------------------------------
     loguru_tqdm_sink(verbosity=verbose)
     log_to_syslog(name="tw_gkeep_sync")
     logger.debug("Initialising...")
     inform_about_config = False
-    exec_name = Path(sys.argv[0]).stem
 
     if do_list_configs:
         list_named_combinations(config_fname="tw_gkeep_configs")
@@ -136,9 +147,31 @@ def main(
     )
 
     # initialize sides ------------------------------------------------------------------------
-    tw_side = TaskWarriorSide(tags=tw_tags, project=tw_project)
+    # fetch username
+    gkeep_user = os.environ.get("GKEEP_USERNAME")
+    if gkeep_user is not None:
+        logger.debug("Reading the gkeep username from environment variable...")
+    else:
+        gkeep_user = fetch_from_pass_manager(gkeep_user_pass_path)
+    assert gkeep_user
 
-    gkeep_side = GKeepTodoSide()
+    # fetch password
+    gkeep_passwd = os.environ.get("GKEEP_PASSWD")
+    if gkeep_passwd is not None:
+        logger.debug("Reading the gkeep password from environment variable...")
+    else:
+        gkeep_passwd = fetch_from_pass_manager(gkeep_passwd_pass_path)
+    assert gkeep_passwd
+
+    gkeep_side = GKeepTodoSide(
+        note_title=gkeep_note,
+        gkeep_user=gkeep_user,
+        gkeep_passwd=gkeep_passwd,
+        notes_label="tw_gkeep_sync",
+    )
+
+    # initialize taskwarrior ------------------------------------------------------------------
+    tw_side = TaskWarriorSide(tags=tw_tags, project=tw_project)
 
     # sync ------------------------------------------------------------------------------------
     try:
@@ -147,7 +180,9 @@ def main(
             side_B=tw_side,
             converter_B_to_A=convert_tw_to_gkeep_todo,
             converter_A_to_B=convert_gkeep_todo_to_tw,
-            resolution_strategy=name_to_resolution_strategy[resolution_strategy],
+            resolution_strategy=get_resolution_strategy(
+                resolution_strategy, side_A_type=type(gkeep_side), side_B_type=type(tw_side)
+            ),
             config_fname=combination_name,
             ignore_keys=(
                 (),
@@ -159,11 +194,11 @@ def main(
         logger.error("Exiting...")
         return 1
     except:
-        report_toplevel_exception()
+        report_toplevel_exception(is_verbose=verbose >= 1)
         return 1
 
     if inform_about_config:
-        inform_about_combination_name_usage(exec_name, combination_name)
+        inform_about_combination_name_usage(combination_name)
 
     return 0
 

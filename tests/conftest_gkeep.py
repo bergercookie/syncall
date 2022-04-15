@@ -1,5 +1,11 @@
-import gkeepapi
 import pytest
+
+
+@pytest.fixture()
+def gkeep_raw_item(request: pytest.FixtureRequest) -> dict:
+    """Fixture to parametrize on."""
+    param = request.param  # type: ignore
+    return request.getfixturevalue(param)
 
 
 @pytest.fixture()
@@ -59,7 +65,7 @@ def gkeep_simple_pending_item():
 
 
 @pytest.fixture()
-def gkeep_note():
+def gkeep_list0():
     return {
         "id": "1640713336402.1772858868",
         "kind": "notes#node",
@@ -84,6 +90,82 @@ def gkeep_note():
         "color": "DEFAULT",
         "isArchived": False,
         "isPinned": False,
-        "title": "A test note",
+        "title": "A test list",
+        "collaborators": [],
+    }
+
+
+@pytest.fixture()
+def gkeep_list1():
+    return {
+        "id": "17bb5ae1fb8.7ce1b3ded4d6a3f7",
+        "kind": "notes#node",
+        "type": "LIST",
+        "parentId": "root",
+        "sortValue": "5890307729",
+        "text": "",
+        "serverId": "1xe7OcSNBXzMVbPU3PRCYslPq75uM5M0dKMhIBkHK43xi8pyiHD2j0cAI9QgoUIfSj2aB",
+        "timestamps": {
+            "kind": "notes#timestamps",
+            "created": "2021-09-05T11:18:13.282000Z",
+            "trashed": "1970-01-01T00:00:00.000000Z",
+            "updated": "2021-09-05T11:24:55.822000Z",
+            "userEdited": "2021-09-05T11:24:55.720000Z",
+        },
+        "nodeSettings": {
+            "newListItemPlacement": "BOTTOM",
+            "graveyardState": "COLLAPSED",
+            "checkedListItemsPolicy": "GRAVEYARD",
+        },
+        "annotationsGroup": {
+            "kind": "notes#annotationsGroup",
+            "annotations": [
+                {
+                    "id": "f4c1a837-0f6f-4b3f-a34c-b163817f9259",
+                    "topicCategory": {"category": "FOOD"},
+                }
+            ],
+        },
+        "color": "RED",
+        "isArchived": False,
+        "isPinned": True,
+        "title": "Todo",
+        "collaborators": [],
+    }
+
+
+@pytest.fixture()
+def gkeep_note():
+    return {
+        "id": "1630840404258.423492350",
+        "kind": "notes#node",
+        "type": "NOTE",
+        "parentId": "root",
+        "sortValue": "78643201",
+        "text": "",
+        "serverId": "14rOB8irunIXU-0XMY8DLLqT2vNaPsFFRKO1MfYg-KXWrrYYG_boCioHhcPy6IQ",
+        "timestamps": {
+            "kind": "notes#timestamps",
+            "created": "2021-09-05T11:13:30.881000Z",
+            "trashed": "1970-01-01T00:00:00.000000Z",
+            "updated": "2021-09-05T11:14:21.868000Z",
+            "userEdited": "2021-09-05T11:13:53.176000Z",
+        },
+        "nodeSettings": {
+            "newListItemPlacement": "BOTTOM",
+            "graveyardState": "EXPANDED",
+            "checkedListItemsPolicy": "GRAVEYARD",
+        },
+        "annotationsGroup": {"kind": "notes#annotationsGroup"},
+        "color": "TEAL",
+        "isArchived": False,
+        "isPinned": False,
+        "title": "a sample note without checkboxes",
+        "labelIds": [
+            {
+                "labelId": "tag.qr30ughe2zk6.1630840458798",
+                "deleted": "1970-01-01T00:00:00.000000Z",
+            }
+        ],
         "collaborators": [],
     }

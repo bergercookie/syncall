@@ -44,6 +44,14 @@ class SyncSide(abc.ABC):
         """
         pass
 
+    def finish(self):
+        """Finalization steps.
+
+        Call this manually. Derived classes can take care of closing open connections, flashing
+        their cached data, etc.
+        """
+        pass
+
     @abc.abstractmethod
     def get_all_items(self, **kargs) -> Sequence[ItemType]:
         """Query side and return a sequence of items
@@ -101,10 +109,13 @@ class SyncSide(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def summary_key(cls) -> str:
-        """
-        Key in the dictionary of the added/updated/deleted item that refers a summary of
-        that Item.
-        """
+        """Key in the dictionary of the item that refers to its summary."""
+        raise NotImplementedError("Implement in derived")
+
+    @classmethod
+    @abc.abstractmethod
+    def last_modification_key(cls) -> str:
+        """Key in the dictionary of the item that refers to its modification date."""
         raise NotImplementedError("Implement in derived")
 
     @final

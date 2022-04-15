@@ -29,6 +29,7 @@ class GCalSide(GoogleSide):
 
     ID_KEY = "id"
     SUMMARY_KEY = "summary"
+    LAST_MODIFICATION_KEY = "updated"
     _identical_comparison_keys = [
         "description",
         "end",
@@ -188,6 +189,10 @@ class GCalSide(GoogleSide):
     def summary_key(cls) -> str:
         return cls.SUMMARY_KEY
 
+    @classmethod
+    def last_modification_key(cls) -> str:
+        return cls.LAST_MODIFICATION_KEY
+
     @staticmethod
     def get_date_key(d: dict) -> Union[Literal["date"], Literal["dateTime"]]:
         """Get key corresponding to the date field."""
@@ -268,7 +273,7 @@ class GCalSide(GoogleSide):
             )
 
     @classmethod
-    def items_are_identical(cls, item1, item2, ignore_keys: Sequence[ID] = []) -> bool:
+    def items_are_identical(cls, item1, item2, ignore_keys: Sequence[str] = []) -> bool:
         for item in [item1, item2]:
             for key in cls._date_keys:
                 if key not in item:

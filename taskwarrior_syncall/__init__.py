@@ -6,11 +6,13 @@ from taskwarrior_syncall.app_utils import (
     app_name,
     cache_or_reuse_cached_combination,
     fetch_app_configuration,
+    fetch_from_pass_manager,
     get_config_name_for_args,
+    get_resolution_strategy,
     inform_about_app_extras,
     inform_about_combination_name_usage,
     list_named_combinations,
-    name_to_resolution_strategy,
+    name_to_resolution_strategy_type,
     report_toplevel_exception,
 )
 from taskwarrior_syncall.cli import (
@@ -18,6 +20,8 @@ from taskwarrior_syncall.cli import (
     opt_custom_combination_savename,
     opt_gcal_calendar,
     opt_gkeep_note,
+    opt_gkeep_passwd_pass_path,
+    opt_gkeep_user_pass_path,
     opt_google_oauth_port,
     opt_google_secret_override,
     opt_list_configs,
@@ -38,14 +42,19 @@ __all__ = [
     "app_name",
     "cache_or_reuse_cached_combination",
     "fetch_app_configuration",
+    "fetch_from_pass_manager",
     "get_config_name_for_args",
+    "inform_about_app_extras",
     "inform_about_combination_name_usage",
     "list_named_combinations",
-    "name_to_resolution_strategy",
+    "get_resolution_strategy",
+    "name_to_resolution_strategy_type",
     "opt_combination",
     "opt_custom_combination_savename",
     "opt_gcal_calendar",
     "opt_gkeep_note",
+    "opt_gkeep_passwd_pass_path",
+    "opt_gkeep_user_pass_path",
     "opt_google_oauth_port",
     "opt_google_secret_override",
     "opt_list_configs",
@@ -66,11 +75,22 @@ try:
 except ImportError:
     pass
 
-# Google --------------------------------------------------------------------------------------
+# Gcal ----------------------------------------------------------------------------------------
 try:
     from taskwarrior_syncall.google.gcal_side import GCalSide
-    from taskwarrior_syncall.google.gkeep_todo_side import GKeepTodoSide
     from taskwarrior_syncall.tw_gcal_utils import convert_gcal_to_tw, convert_tw_to_gcal
+except ImportError:
+    __all__.extend(
+        [
+            "GCalSide",
+            "convert_gcal_to_tw",
+            "convert_tw_to_gcal",
+        ]
+    )
+
+try:
+    from taskwarrior_syncall.google.gkeep_todo_item import GKeepTodoItem
+    from taskwarrior_syncall.google.gkeep_todo_side import GKeepTodoSide
     from taskwarrior_syncall.tw_gkeep_utils import (
         convert_gkeep_todo_to_tw,
         convert_tw_to_gkeep_todo,
@@ -78,15 +98,13 @@ try:
 
     __all__.extend(
         [
-            "GCalSide",
             "GKeepTodoSide",
-            "convert_gcal_to_tw",
+            "GKeepTodoItem",
             "convert_gkeep_todo_to_tw",
-            "convert_tw_to_gcal",
             "convert_tw_to_gkeep_todo",
         ]
     )
 except ImportError:
     pass
 
-__version__ = "v1.1.0"
+__version__ = "1.2.0b2"

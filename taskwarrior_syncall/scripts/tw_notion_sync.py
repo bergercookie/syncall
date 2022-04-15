@@ -1,8 +1,6 @@
 """Console script for notion_taskwarrior."""
 import os
-import subprocess
 import sys
-from pathlib import Path
 from typing import List
 
 import click
@@ -12,9 +10,6 @@ from bubop import (
     log_to_syslog,
     logger,
     loguru_tqdm_sink,
-    non_empty,
-    read_gpg_token,
-    valid_path,
     verbosity_int_to_std_logging_lvl,
 )
 
@@ -31,13 +26,15 @@ from notion_client import Client  # type: ignore
 from taskwarrior_syncall import (
     Aggregator,
     TaskWarriorSide,
+    __version__,
     cache_or_reuse_cached_combination,
     convert_notion_to_tw,
     convert_tw_to_notion,
     fetch_app_configuration,
+    fetch_from_pass_manager,
+    get_resolution_strategy,
     inform_about_combination_name_usage,
     list_named_combinations,
-    name_to_resolution_strategy,
     opt_combination,
     opt_custom_combination_savename,
     opt_list_configs,
@@ -64,6 +61,7 @@ from taskwarrior_syncall import (
 @opt_list_configs("TW", "Notion")
 @opt_custom_combination_savename("TW", "Notion")
 @click.option("-v", "--verbose", count=True)
+@click.version_option(__version__)
 def main(
     notion_page_id: str,
     tw_tags: List[str],
@@ -151,28 +149,7 @@ def main(
     if token_v2 is not None:
         logger.debug("Reading the Notion API key from environment variable...")
     else:
-        logger.debug("Attempting to read the Notion API key from UNIX Password Store...")
-        pass_dir = valid_path(os.environ.get("PASSWORD_STORE_DIR", "~/.password-store"))
-        if str(token_pass_path).startswith(str(pass_dir)):
-            path = Path(token_pass_path)
-        else:
-            path = pass_dir / token_pass_path
-        pass_full_path = path.with_suffix(".gpg")
-
-        try:
-            token_v2 = read_gpg_token(pass_full_path)
-        except subprocess.CalledProcessError as err:
-            logger.exception(
-                "".join(
-                    [
-                        "Couldn't read the notion token from pass\nFull path ->"
-                        f" {pass_full_path}",
-                        non_empty("Stdout", err.stdout),
-                        non_empty("Stderr", err.stderr),
-                    ]
-                )
-            )
-            return 1
+        token_v2 = fetch_from_pass_manager(token_pass_path)
 
     assert token_v2
 
@@ -194,7 +171,9 @@ def main(
             side_B=tw_side,
             converter_B_to_A=convert_tw_to_notion,
             converter_A_to_B=convert_notion_to_tw,
-            resolution_strategy=name_to_resolution_strategy[resolution_strategy],
+            resolution_strategy=get_resolution_strategy(
+                resolution_strategy, side_A_type=type(notion_side), side_B_type=type(tw_side)
+            ),
             config_fname=combination_name,
             ignore_keys=(
                 ("last_modified_date",),
@@ -206,7 +185,7 @@ def main(
         logger.error("Exiting...")
         return 1
     except:
-        report_toplevel_exception()
+        report_toplevel_exception(is_verbose=verbose >= 1)
         return 1
 
     if inform_about_config:

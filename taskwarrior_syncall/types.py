@@ -2,7 +2,8 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, TypedDict, Union
 
 from item_synchronizer.types import ID
 
-NotionID = ID
+# ---------------------------------------------------------------------------------------------
+# Taskwarrior
 
 
 class TaskwarriorRawItem(TypedDict, total=False):
@@ -38,6 +39,10 @@ class TaskwarriorRawItem(TypedDict, total=False):
 
 # Item as returned from the Taskw Python API on tw.get_task(id=...)
 TaskwarriorRawTuple = Tuple[Optional[int], TaskwarriorRawItem]
+
+# ---------------------------------------------------------------------------------------------
+# Notion
+NotionID = ID
 
 
 class NotionRawItem(TypedDict):

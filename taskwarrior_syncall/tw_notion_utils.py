@@ -1,4 +1,4 @@
-"""Notion-related utils"""
+"""Notion-related utils."""
 import datetime
 from typing import cast
 

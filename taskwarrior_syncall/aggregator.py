@@ -122,7 +122,7 @@ class Aggregator:
         return self
 
     def __exit__(self, *_):
-        pass
+        self.finish()
 
     def detect_changes(self, helper: SideHelper, items: Dict[ID, Item]) -> SideChanges:
         """
@@ -183,24 +183,30 @@ class Aggregator:
         for item_id in changes_B.new.union(changes_B.modified):
             item = side_B.get_item(item_id)
             if item is None:
-                raise RuntimeError
+                raise RuntimeError(f"Failed to retrieve serialized version of Item {item_id}")
             pickle_dump(item, side_B_serdes_dir / item_id)
         for item_id in changes_A.new.union(changes_A.modified):
             item = side_A.get_item(item_id)
             if item is None:
-                raise RuntimeError
+                raise RuntimeError(f"Failed to retrieve serialized version of Item {item_id}")
             pickle_dump(item, side_A_serdes_dir / item_id)
 
         # remove deleted pickled items
         self._remove_serdes_files(helper=self._helper_B, ids=changes_B.deleted)
         self._remove_serdes_files(helper=self._helper_A, ids=changes_A.deleted)
 
-        # synchronise
+        # synchronize
         self._synchronizer.sync(changes_A=changes_A, changes_B=changes_B)
 
     def start(self):
+        """Initialization actions."""
         self._side_A.start()
         self._side_B.start()
+
+    def finish(self):
+        """Finalization actions."""
+        self._side_A.finish()
+        self._side_B.finish()
 
     # InserterFn = Callable[[Item], ID]
     def inserter_to(self, item: Item, helper: SideHelper) -> ID:
@@ -220,7 +226,7 @@ class Aggregator:
 
         # Cache both sides with pickle - f=id_
         logger.debug(f'Pickling newly created {helper} item -> "{item_created_id}"')
-        pickle_dump(item, serdes_dir / item_created_id)
+        pickle_dump(item_created, serdes_dir / item_created_id)
 
         return item_created_id
 

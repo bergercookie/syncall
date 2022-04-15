@@ -1,7 +1,12 @@
-"""CLI argument functions - reuse across your apps."""
+"""CLI argument functions - reuse across your apps.
+
+This module will be loaded regardless of extras - don't put something here that requires an
+extra dependency.
+"""
 import click
 
-from taskwarrior_syncall.app_utils import name_to_resolution_strategy
+from taskwarrior_syncall.app_utils import name_to_resolution_strategy_type
+from taskwarrior_syncall.constants import COMBINATION_FLAGS
 
 
 def opt_list_configs(name_A: str, name_B: str):
@@ -39,15 +44,15 @@ def opt_resolution_strategy():
         "-r",
         "--resolution_strategy",
         default="AlwaysSecondRS",
-        type=click.Choice(list(name_to_resolution_strategy.keys())),
+        type=click.Choice(list(name_to_resolution_strategy_type.keys())),
         help="Resolution strategy to use during conflicts",
     )
 
 
 def opt_combination(name_A: str, name_B: str):
     return click.option(
-        "-b",
-        "--combination",
+        COMBINATION_FLAGS[0],
+        COMBINATION_FLAGS[1],
         "combination_name",
         type=str,
         help=f"Name of an already saved {name_A}<->{name_B} combination",
@@ -87,6 +92,26 @@ def opt_notion_token_pass_path():
     )
 
 
+def opt_gkeep_user_pass_path():
+    return click.option(
+        "--user",
+        "--user-pass-path",
+        "gkeep_user_pass_path",
+        help="Path in the UNIX password manager to fetch the Google username from",
+        default="gkeepapi/user",
+    )
+
+
+def opt_gkeep_passwd_pass_path():
+    return click.option(
+        "--passwd",
+        "--passwd-pass-path",
+        "gkeep_passwd_pass_path",
+        help="Path in the UNIX password manager to fetch the Google password from",
+        default="gkeepapi/passwd",
+    )
+
+
 def opt_gcal_calendar():
     return click.option(
         "-c",
@@ -101,7 +126,10 @@ def opt_gkeep_note():
         "-k",
         "--gkeep-note",
         type=str,
-        help="Name of the Google Keep Note to synchronize",
+        help=(
+            "Full title of the Google Keep Note to synchronize - Make sure you enable the"
+            " checkboxes"
+        ),
     )
 
 

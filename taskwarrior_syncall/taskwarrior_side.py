@@ -33,11 +33,12 @@ class TaskWarriorSide(SyncSide):
 
     ID_KEY = "uuid"
     SUMMARY_KEY = "description"
+    LAST_MODIFICATION_KEY = "modified"
 
     def __init__(
         self,
-        tags: List[str] = [],
-        project: str = None,
+        tags: Sequence[str] = [],
+        project: Optional[str] = None,
         config_file: Optional[Path] = Path(TASKRC),
         **kargs,
     ):
@@ -158,8 +159,8 @@ class TaskWarriorSide(SyncSide):
         ), "Item already has a UUID, try updating it instead of adding it"
 
         curr_status = item.get("status", None)
-        if curr_status not in ["pending", "done"]:
-            logger.info(f'Invalid status of task [{item["status"]}], setting it to pending')  # type: ignore
+        if curr_status not in ["pending", "done", "completed"]:
+            logger.warning(f'Invalid status of task [{item["status"]}], setting it to pending')  # type: ignore
             item["status"] = "pending"
 
         if self._tags:
@@ -187,7 +188,13 @@ class TaskWarriorSide(SyncSide):
         return cls.SUMMARY_KEY
 
     @classmethod
-    def items_are_identical(cls, item1, item2, ignore_keys: Sequence[str] = []) -> bool:
+    def last_modification_key(cls) -> str:
+        return cls.LAST_MODIFICATION_KEY
+
+    @classmethod
+    def items_are_identical(
+        cls, item1: dict, item2: dict, ignore_keys: Sequence[str] = []
+    ) -> bool:
         keys = [
             k
             for k in ["annotations", "description", "due", "status", "uuid"]

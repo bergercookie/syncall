@@ -74,8 +74,8 @@ compile_commands.json
 *.bak
 s1.py
 
-quickstart.py
+/quickstart*
 src
 .vim
 a.py
-test-client-secret
+test-tw-gcal-sync.json

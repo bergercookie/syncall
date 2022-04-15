@@ -1,37 +1,63 @@
-"""Top-level application utility functions."""
+"""Top-level application utility functions.
+
+Use these functions only in top-level executables. In case of errors they may directly call
+`sys.exit()` to avoid dumping stack traces to the user.
+"""
+
 import logging
 import os
+import subprocess
 import sys
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Mapping, NoReturn, Optional, Sequence, cast
+from typing import Any, Dict, Mapping, NoReturn, Optional, Sequence, Type, cast
+from urllib.parse import quote
 
-from bubop import PrefsManager, format_list, logger
+from bubop import PrefsManager, format_list, logger, non_empty, read_gpg_token, valid_path
 from item_synchronizer.resolution_strategy import (
     AlwaysFirstRS,
     AlwaysSecondRS,
     LeastRecentRS,
     MostRecentRS,
+    RecencyRS,
     ResolutionStrategy,
 )
 
-from taskwarrior_syncall.constants import ISSUES_URL
+from taskwarrior_syncall.constants import COMBINATION_FLAGS, ISSUES_URL
+from taskwarrior_syncall.sync_side import SyncSide
 
 # Various resolution strategies with their respective names so that the user can choose which
 # one they want. ------------------------------------------------------------------------------
-name_to_resolution_strategy: Dict[str, ResolutionStrategy] = {
-    "MostRecentRS": MostRecentRS(
-        date_getter_A=lambda item: cast(datetime, item["updated"]),
-        date_getter_B=lambda item: cast(datetime, item["modified"]),
-    ),
-    "LeastRecentRS": LeastRecentRS(
-        date_getter_A=lambda item: cast(datetime, item["updated"]),
-        date_getter_B=lambda item: cast(datetime, item["modified"]),
-    ),
-    AlwaysFirstRS.name: AlwaysFirstRS(),  # type: ignore
-    AlwaysSecondRS.name: AlwaysSecondRS(),  # type: ignore
+name_to_resolution_strategy_type: Mapping[str, Type[ResolutionStrategy]] = {
+    "MostRecentRS": MostRecentRS,
+    "LeastRecentRS": LeastRecentRS,
+    "AlwaysFirstRS": AlwaysFirstRS,
+    "AlwaysSecondRS": AlwaysSecondRS,
 }
+
+
+def get_resolution_strategy(
+    resolution_strategy_name: str, side_A_type: Type[SyncSide], side_B_type: Type[SyncSide]
+) -> ResolutionStrategy:
+    """
+    Given the name of the resolution strategy and the types of the 2 synchronization sides, get
+    an instance of the resolution strategy in use.
+    """
+    RS = name_to_resolution_strategy_type[resolution_strategy_name]
+    if issubclass(RS, RecencyRS):
+        instance = RS(
+            date_getter_A=lambda item: cast(
+                datetime, item[side_A_type.last_modification_key()]
+            ),
+            date_getter_B=lambda item: cast(
+                datetime, item[side_B_type.last_modification_key()]
+            ),
+        )
+    else:
+        instance = RS()
+
+    return instance
 
 
 def app_name():
@@ -47,7 +73,8 @@ def app_name():
 
 def get_config_name_for_args(*args) -> str:
     """
-    Get a name string by concatenating the given args.
+    Get a name string by concatenating the given args. Encodes the non-ascii
+    characters using the urllib parse method
 
     Usage::
 
@@ -57,6 +84,8 @@ def get_config_name_for_args(*args) -> str:
     '123456__None__a_tag'
     >>> get_config_name_for_args("123456", None, ("a_tag", "b_tag"))
     '123456__None__a_tag,b_tag'
+    >>> get_config_name_for_args("123 456", None, ("another tag", "b_tag"))
+    '123%20456__None__another%20tag,b_tag'
     >>> get_config_name_for_args("123456")
     Traceback (most recent call last):
     RuntimeError: ...
@@ -66,11 +95,14 @@ def get_config_name_for_args(*args) -> str:
     if len(args) == 1:
         raise RuntimeError("get_config_name_for_args requires more > 1 arguments")
 
+    def quote_(obj: str) -> str:
+        return quote(obj, safe="+,")
+
     def format_(obj: Any) -> str:
         if isinstance(obj, str):
-            return obj
+            return quote_(obj)
         elif isinstance(obj, Iterable):
-            return ",".join(map(str, obj))
+            return ",".join(quote_(str(o)) for o in obj)
         return str(obj)
 
     return "__".join(map(format_, args))
@@ -158,19 +190,29 @@ def cache_or_reuse_cached_combination(
     return config_name
 
 
-def report_toplevel_exception():
-    logger.exception(
-        "Application failed; above you can find the error message, which you can use to"
-        f" create an issue -> [{ISSUES_URL}]."
+def report_toplevel_exception(is_verbose: bool):
+    s = (
+        "Application failed; Below you can find the error message and stack trace. If you"
+        " think this is a bug, attach this stack trace to create a new issue ->"
+        f" [{ISSUES_URL}]."
     )
+
+    if not is_verbose:
+        s += (
+            " Also consider running in verbose mode '--verbose' to get more details on this"
+            " issue."
+        )
+
+    logger.exception(s)
 
 
 def inform_about_combination_name_usage(combination_name: str):
+    """Inform the user about the use of the flag for referring to a saved combination."""
     exec_name = Path(sys.argv[0]).stem
     logger.success(
-        'Sync completed successfully. You can now use the "-c" option to refer to this'
-        " particular combination\n\n"
-        f"  {exec_name} -c {combination_name}"
+        "Sync completed successfully. You can now use the"
+        f' {"/".join(COMBINATION_FLAGS)} option to refer to this particular combination\n\n '
+        f" {exec_name} {COMBINATION_FLAGS[1]} {combination_name}"
     )
 
 
@@ -185,3 +227,34 @@ def inform_about_app_extras(extras: Sequence[str]) -> NoReturn:
         f' taskwarrior-syncall[{extras_str}]"\nExiting.'
     )
     sys.exit(1)
+
+
+def fetch_from_pass_manager(password_path: str) -> str:
+    """
+    Gpg-decrypt and read the contents of a password file. The path should be either relative
+    to the password store directory or fullpath.
+    """
+
+    logger.debug(f"Attempting to read {password_path} from UNIX Password Store...")
+    pass_dir = valid_path(os.environ.get("PASSWORD_STORE_DIR", "~/.password-store"))
+    if str(password_path).startswith(str(pass_dir)):
+        path = Path(password_path)
+    else:
+        path = pass_dir / password_path
+    pass_full_path = path.with_suffix(".gpg")
+
+    try:
+        passwd = read_gpg_token(pass_full_path)
+    except subprocess.CalledProcessError as err:
+        logger.error(
+            "\n".join(
+                [
+                    f"Couldn't read {password_path} from pass\n\nFull path: {pass_full_path}",
+                    non_empty("stdout", err.stdout.decode("utf-8"), join_with=": "),
+                    non_empty("stderr", err.stderr.decode("utf-8"), join_with=": "),
+                ]
+            )
+        )
+        sys.exit(1)
+
+    return passwd

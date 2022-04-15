@@ -60,7 +60,8 @@ tqdm = "^4.61.2"
 typing = "^3.7.4"
 taskw = "^1.3.1"
 item-synchronizer = "1.1.2"
-bubop = "0.1.6a"
+# bubop = "0.1.6a"
+bubop = { path = "/home/berger/src_/bubop/", develop = true }
 
 [tool.poetry.extras]
 google = ["google-api-python-client", "google-auth-oauthlib"]
@@ -162,7 +163,13 @@ pythonPlatform = "Linux"
 [tool.coverage.run]
 omit = ["quickstart.py", "a.py", "*/.pdbrc.py", "tests/*"]
 
+# pytest -----------------------------------------------------------------------
+[tool.pytest.ini_options]
+addopts = "--ignore=quickstart* --doctest-modules"
+
 # build-system -----------------------------------------------------------------
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+# vim: tw=80

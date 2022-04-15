@@ -1,6 +1,6 @@
 import datetime
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Sequence
 
 from bubop import is_same_datetime, logger, parse_datetime
 
@@ -30,7 +30,7 @@ class NotionTodoBlock(Mapping):
 
     _date_key_names = {"last_modified_date"}
 
-    def compare(self, other: "NotionTodoBlock", ignore_keys: List[str] = []) -> bool:
+    def compare(self, other: "NotionTodoBlock", ignore_keys: Sequence[str] = []) -> bool:
         """Compare two items, return True if they are considered equal."""
         for key in self._key_names:
             if key in ignore_keys:

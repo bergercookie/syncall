@@ -21,13 +21,14 @@ except ImportError:
 from taskwarrior_syncall import (
     Aggregator,
     TaskWarriorSide,
+    __version__,
     cache_or_reuse_cached_combination,
     convert_gcal_to_tw,
     convert_tw_to_gcal,
     fetch_app_configuration,
+    get_resolution_strategy,
     inform_about_combination_name_usage,
     list_named_combinations,
-    name_to_resolution_strategy,
     opt_combination,
     opt_custom_combination_savename,
     opt_gcal_calendar,
@@ -55,6 +56,7 @@ from taskwarrior_syncall import (
 @opt_combination("TW", "Google Calendar")
 @opt_custom_combination_savename("TW", "Google Calendar")
 @click.option("-v", "--verbose", count=True)
+@click.version_option(__version__)
 def main(
     gcal_calendar: str,
     google_secret: str,
@@ -152,7 +154,9 @@ def main(
             side_B=tw_side,
             converter_B_to_A=convert_tw_to_gcal,
             converter_A_to_B=convert_gcal_to_tw,
-            resolution_strategy=name_to_resolution_strategy[resolution_strategy],
+            resolution_strategy=get_resolution_strategy(
+                resolution_strategy, side_A_type=type(gcal_side), side_B_type=type(tw_side)
+            ),
             config_fname=combination_name,
             ignore_keys=(
                 (),
@@ -164,7 +168,7 @@ def main(
         logger.error("Exiting...")
         return 1
     except:
-        report_toplevel_exception()
+        report_toplevel_exception(is_verbose=verbose >= 1)
         return 1
 
     if inform_about_config:
