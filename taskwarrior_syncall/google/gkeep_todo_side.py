@@ -25,9 +25,6 @@ class GKeepTodoSide(SyncSide):
         super().__init__(
             name="Gkeep",
             fullname="Google Keep",
-            scopes=["https://www.googleapis.com/auth/memento"],
-            credentials_cache=Path.home() / ".gkeep_credentials.pickle",
-            client_secret=client_secret,
             **kargs,
         )
 
@@ -35,8 +32,6 @@ class GKeepTodoSide(SyncSide):
 
     def start(self):
         logger.debug("Connecting to Google Keep...")
-        creds = self._get_credentials()
-        self._service = discovery.build("calendar", "v3", credentials=creds)
         self._note_id = self._fetch_note_id()
 
         # Create note if not there ------------------------------------------------------------

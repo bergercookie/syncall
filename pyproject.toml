@@ -56,7 +56,6 @@ loguru = "^0.5.3"
 python-dateutil = "^2.8.1"
 pytz = "^2021.1"
 rfc3339 = "^6.2"
-sh = "^1.14.1"
 tqdm = "^4.61.2"
 typing = "^3.7.4"
 taskw = "^1.3.1"
@@ -70,7 +69,7 @@ notion = ["notion-client"]
 
 # dev dependencies -------------------------------------------------------------
 [tool.poetry.dev-dependencies]
-black = { version = "21.11b1", allow-prereleases = true }
+black = { version = "22.3.0", allow-prereleases = true }
 identify = "^2.4.0"
 isort = "^5.10.1"
 mock = "*"
@@ -98,7 +97,7 @@ profile = "black"
 
 # black ------------------------------------------------------------------------
 [tool.black]
-experimental-string-processing = true
+preview = true
 line-length = 95
 target-version = ['py38', 'py39']
 include = '\.pyi?$'

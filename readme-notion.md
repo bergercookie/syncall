@@ -13,6 +13,8 @@ program keep synchronized the following attributes:
 - Whether it's checked ✅ or unchecked <-> TW task completion status
 - to_do block is deleted / archived <-> TW task deletion
 
+This service requires the `notion` extra: `pip3 install taskwarrior_syncall[notion]`
+
 ## Usage example
 
 To synchronize the "to_do" blocks of a notion page with a tag called "test" you

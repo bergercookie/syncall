@@ -11,11 +11,12 @@ from bubop import (
     loguru_tqdm_sink,
 )
 
+from taskwarrior_syncall import inform_about_app_extra
+
 try:
     from taskwarrior_syncall import GCalSide
 except ImportError:
-    logger.error(f"You have to install the [google] extra for {sys.argv[0]} to work. Exiting.")
-    sys.exit(1)
+    inform_about_app_extra(["google"])
 
 from taskwarrior_syncall import (
     Aggregator,
@@ -77,7 +78,6 @@ def main(
     log_to_syslog(name="tw_gcal_sync")
     logger.debug("Initialising...")
     inform_about_config = False
-    exec_name = Path(sys.argv[0]).stem
 
     if do_list_configs:
         list_named_combinations(config_fname="tw_gcal_configs")
@@ -169,7 +169,7 @@ def main(
         return 1
 
     if inform_about_config:
-        inform_about_combination_name_usage(exec_name, combination_name)
+        inform_about_combination_name_usage(combination_name)
 
     return 0
 

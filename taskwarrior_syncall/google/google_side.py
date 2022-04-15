@@ -17,7 +17,7 @@ class GoogleSide(SyncSide):
         scopes: Sequence[str],
         oauth_port: int,
         credentials_cache: Path,
-        client_secret=None,
+        client_secret: Path,
         **kargs,
     ):
         super().__init__(**kargs)
@@ -54,11 +54,11 @@ class GoogleSide(SyncSide):
                 flow = InstalledAppFlow.from_client_secrets_file(client_secret, self._scopes)
                 try:
                     creds = flow.run_local_server(port=self._oauth_port)
-                except OSError:
+                except OSError as e:
                     raise RuntimeError(
                         f"Port {self._oauth_port} is already in use, please specify a"
                         " different port or stop the process that's already using it."
-                    )
+                    ) from e
 
             # Save the credentials for the next run
             with credentials_cache.open("wb") as f:

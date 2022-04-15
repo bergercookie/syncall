@@ -43,9 +43,12 @@ class GCalSide(GoogleSide):
         self,
         *,
         calendar_summary="TaskWarrior Reminders",
-        client_secret=DEFAULT_CLIENT_SECRET,
+        client_secret,
         **kargs,
     ):
+        if client_secret is None:
+            client_secret = DEFAULT_CLIENT_SECRET
+
         super().__init__(
             name="Gcal",
             fullname="Google Calendar",

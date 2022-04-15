@@ -1,9 +1,11 @@
 """Top-level application utility functions."""
 import logging
 import os
+import sys
 from collections.abc import Iterable
 from datetime import datetime
-from typing import Any, Dict, Mapping, Optional, Sequence, cast
+from pathlib import Path
+from typing import Any, Dict, Mapping, NoReturn, Optional, Sequence, cast
 
 from bubop import PrefsManager, format_list, logger
 from item_synchronizer.resolution_strategy import (
@@ -163,9 +165,23 @@ def report_toplevel_exception():
     )
 
 
-def inform_about_combination_name_usage(exec_name: str, combination_name: str):
+def inform_about_combination_name_usage(combination_name: str):
+    exec_name = Path(sys.argv[0]).stem
     logger.success(
         'Sync completed successfully. You can now use the "-c" option to refer to this'
         " particular combination\n\n"
         f"  {exec_name} -c {combination_name}"
     )
+
+
+def inform_about_app_extra(extras: Sequence[str]) -> NoReturn:
+    """Inform the user about required package extras and exit."""
+    exec_name = Path(sys.argv[0]).stem
+    extras_str = ",".join(extras)
+    logger.error(
+        "\nYou have to install the"
+        f' {extras_str} {"extra" if len(extras) == 1 else "extras"} for {exec_name} to'
+        ' work.\nWith pip, you can do it with something like: "pip3 install'
+        f' taskwarrior-syncall[{extras_str}]"\nExiting.'
+    )
+    sys.exit(1)

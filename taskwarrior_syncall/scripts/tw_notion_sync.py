@@ -8,7 +8,6 @@ from typing import List
 import click
 from bubop import (
     check_optional_mutually_exclusive,
-    check_required_mutually_exclusive,
     format_dict,
     log_to_syslog,
     logger,
@@ -19,11 +18,12 @@ from bubop import (
     verbosity_int_to_std_logging_lvl,
 )
 
+from taskwarrior_syncall import inform_about_app_extra
+
 try:
     from taskwarrior_syncall import NotionSide
 except ImportError:
-    logger.error(f"You have to install the [notion] extra for {sys.argv[0]} to work. Exiting.")
-    sys.exit(1)
+    inform_about_app_extra(["notion"])
 
 
 from notion_client import Client  # type: ignore
@@ -85,7 +85,6 @@ def main(
     log_to_syslog(name="tw_notion_sync")
     logger.debug("Initialising...")
     inform_about_config = False
-    exec_name = Path(sys.argv[0]).stem
 
     if do_list_configs:
         list_named_combinations(config_fname="tw_notion_configs")
@@ -211,7 +210,7 @@ def main(
         return 1
 
     if inform_about_config:
-        inform_about_combination_name_usage(exec_name, combination_name)
+        inform_about_combination_name_usage(combination_name)
 
     return 0
 

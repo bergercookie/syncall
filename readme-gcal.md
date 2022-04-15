@@ -4,6 +4,8 @@ Given all the entries of a _Calendar_ of Google Calendar with all the tasks of a
 taskwarrior _filter_ (currently only a single tag is supported and tested)
 synchronise all the events between them.
 
+This service requires the `google` extra: `pip3 install taskwarrior_syncall[google]`
+
 ## Demo - first run - populating calendar in GCal
 
 ![demo_gif](misc/demo.gif)
