@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "taskwarrior_syncall"
-version = "1.2.0b2"
+version = "1.2.0"
 description = "Taskwarrior <-> * bi-directional synchronization tool"
 license = "MIT"
 authors = ["Nikos Koukis <nickkouk@gmail.com>"]
