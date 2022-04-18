@@ -191,7 +191,7 @@ def notion_chained_todo() -> NotionTodoBlockItem:
 @pytest.fixture()
 def page_contents() -> NotionPageContents:
     """
-    Full exmple contents of a notion page.
+    Full example contents of a notion page.
 
     Fetched using the query: "notion.blocks.children.list(block_id=page_id)"
     """

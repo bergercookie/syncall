@@ -38,7 +38,7 @@ class Aggregator:
         # Sample config path: ~/.config/taskwarrior_syncall/taskwarrior_gcal_sync.yaml
         #                     ~/.config/taskwarrior_syncall/taskwarrior_notion_sync.yaml
         #
-        # The stem of the filename can be overriden by the user if they provide `config_fname`.
+        # The stem of the filename can be overridden by the user if they provide `config_fname`.
         #
         # Serdes dirs are shared across multiple different syncrhonizers
         # Sample serdes dirs: ~/.config/taskwarrior_syncall/serdes/gcal/
@@ -127,7 +127,7 @@ class Aggregator:
     def detect_changes(self, helper: SideHelper, items: Dict[ID, Item]) -> SideChanges:
         """
         Given a fresh list of items from the SyncSide, determine which of them are new,
-        modified, or have beeen deleted since the last run.
+        modified, or have been deleted since the last run.
         """
         serdes_dir, _ = self._get_serdes_dirs(helper)
         logger.info(f"Detecting changes from {helper}...")

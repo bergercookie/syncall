@@ -11,7 +11,7 @@ import sys
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Mapping, NoReturn, Optional, Sequence, Type, cast
+from typing import Any, Mapping, NoReturn, Optional, Sequence, Type, cast
 from urllib.parse import quote
 
 from bubop import PrefsManager, format_list, logger, non_empty, read_gpg_token, valid_path
@@ -166,7 +166,7 @@ def cache_or_reuse_cached_combination(
 ):
     """
     App utility function that either retrieves the configuration for the app at hand based on
-    the given arguments or retrieves it based on the custom configuartion name specified.
+    the given arguments or retrieves it based on the custom configuration name specified.
     """
 
     if custom_combination_savename is None:
@@ -174,7 +174,7 @@ def cache_or_reuse_cached_combination(
     else:
         config_name = custom_combination_savename
 
-    # see if this combination corresonds to an already existing configuration -----------------
+    # see if this combination corresponds to an already existing configuration -----------------
     with PrefsManager(app_name=app_name(), config_fname=config_fname) as prefs_manager:
         config_exists = config_name in prefs_manager
 

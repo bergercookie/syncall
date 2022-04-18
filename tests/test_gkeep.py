@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 from bubop.time import format_datetime_tz
 

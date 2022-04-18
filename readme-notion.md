@@ -1,19 +1,17 @@
 # [Taskwarrior](https://taskwarrior.org/) ⬄ [Notion](https://notion.so)
 
-The main executable for this is called `tw_notion_sync`.
+## Description
 
 Synchronize all the `to_do` blocks of a Notion page with a filter in
 Taskwarrior. The taskwarrior filter may be a task, a project or a combination of
 a project and arbitrary tags.
 
 Upon execution, `tw_notion_sync` will synchronize, and on subsequent runs of the
-program keep synchronized the following attributes:
+program keep synchronized, the following attributes:
 
 - Plaintext description of the to_do block <-> TW task title
 - Whether it's checked ✅ or unchecked <-> TW task completion status
 - to_do block is deleted / archived <-> TW task deletion
-
-This service requires the `notion` extra: `pip3 install taskwarrior_syncall[notion]`
 
 ## Usage example
 
@@ -30,9 +28,9 @@ tw_notion_sync -n <page-uuid-grabbed-from-page-url> -t test
 
 ## Installation
 
-### Package installation
+### Package Installation
 
-Install the `taskwarrior-syncall` package from pypi, enabling the `notion`
+Install the `taskwarrior-syncall` package from PyPI, enabling the `notion`
 extra:
 
 ```sh
@@ -65,30 +63,3 @@ There are two ways `tw_notion_sync` can read the aforementioned API token:
 
   The latter will run `gpg` on the background and assumes that you are using a
   gpg-agent, otherwise it will ask you for your GPG password.
-
-## FAQ
-
-<details>
-  <summary>How do I restart the synchronization from scratch?</summary>
-
-- Clean the configuration file of the app. By default that's going to be:
-
-  `$HOME/.config/taskwarrior_syncall/tw_notion_sync.yaml`
-
-- Remove the items of one of the sides. Keep e.g. the items from the notion
-  page and delete the tasks of the tag/project you are using for
-  synchronization.
-- Rerun synchronization from scratch to populate the one side with the items
-  of the other side.
-
-</details>
-
-<details>
-  <summary>I want to synchronize more than a single Notion page / TW filter combination</summary>
-
-That's currently not possible but it is a work in progress.
-If you want to start synchronizing a different combination, please clean the
-configuration file and one of the two sides before doing so. Refer to the
-previous FAQ item for more.
-
-</details>

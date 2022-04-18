@@ -59,7 +59,7 @@ class TaskWarriorSide(SyncSide):
         self._reload_items = True
 
     def start(self):
-        logger.info(f"Intializing {self.fullname}...")
+        logger.info(f"Initializing {self.fullname}...")
 
     def _load_all_items(self):
         """Load all tasks to memory.

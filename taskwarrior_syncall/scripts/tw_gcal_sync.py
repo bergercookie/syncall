@@ -1,5 +1,3 @@
-import sys
-from pathlib import Path
 from typing import List
 
 import click
@@ -34,7 +32,7 @@ from taskwarrior_syncall import (
     opt_gcal_calendar,
     opt_google_oauth_port,
     opt_google_secret_override,
-    opt_list_configs,
+    opt_list_combinations,
     opt_resolution_strategy,
     opt_tw_project,
     opt_tw_tags,
@@ -51,7 +49,7 @@ from taskwarrior_syncall import (
 @opt_tw_tags()
 @opt_tw_project()
 # misc options --------------------------------------------------------------------------------
-@opt_list_configs("TW", "Google Calendar")
+@opt_list_combinations("TW", "Google Calendar")
 @opt_resolution_strategy()
 @opt_combination("TW", "Google Calendar")
 @opt_custom_combination_savename("TW", "Google Calendar")
@@ -67,7 +65,7 @@ def main(
     verbose: int,
     combination_name: str,
     custom_combination_savename: str,
-    do_list_configs: bool,
+    do_list_combinations: bool,
 ):
     """Synchronize calendars from your Google Calendar with filters from Taskwarrior.
 
@@ -80,7 +78,7 @@ def main(
     logger.debug("Initialising...")
     inform_about_config = False
 
-    if do_list_configs:
+    if do_list_combinations:
         list_named_combinations(config_fname="tw_gcal_configs")
         return 0
 

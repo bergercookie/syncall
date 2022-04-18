@@ -1,10 +1,10 @@
 # [Taskwarrior](https://taskwarrior.org/) ⬄ [Google Calendar](https://calendar.google.com/)
 
-Given all the entries of a _Calendar_ of Google Calendar with all the tasks of a
-taskwarrior _filter_ (currently only a single tag is supported and tested)
-synchronise all the events between them.
+## Description
 
-This service requires the `google` extra: `pip3 install taskwarrior_syncall[google]`
+Given all the entries of a _Calendar_ in Google Calendar with all the tasks of a
+taskwarrior _filter_ (combination of tags and projects) synchronise all the
+addition/modification/deletion events between them.
 
 ## Demo - first run - populating calendar in GCal
 
@@ -69,30 +69,21 @@ tw_gcal_sync --help
 tw_gcal_sync -t remindme -c "TW Reminders"
 ```
 
-## Troubleshooting
+## Installation
 
-- Having trouble installing or using the tool? Take a look at either the
-  continuous-integration configuration or the unittsests for the installation
-  steps or the recommended way of using the python code respectively.
-- Something doesn't work? Does the script fail midway through?
+### Package Installation
 
-  - Record the problem and report it in the ISSUES page. Include as much
-    information as possible so that I can reproduce it.
-  - Clean the configuration file. By default that's going to be:
+Install the `taskwarrior-syncall` package from PyPI, enabling the `gcal`
+extra:
 
-    `$HOME/.config/taskwarrior_syncall/tw_gcal_sync.yaml`
-
-  - Remove the corresponding Google Calendar
-  - Rerun synchronization from scratch to populate Google Calendar with all the
-    events from your selected taskwarrior filter.
+```sh
+pip3 install taskwarrior-syncall[gcal]
+```
 
 ## FAQ
 
-<details>
-  <summary>How do I mark an item as done from Google Calendar?</summary>
+### How do I mark an item as done from Google Calendar
 
 If the item was created from Taskwarrior then there should be a `status:
 pending` line in its description. Change it to `status: done` or `status:
 completed`.
-
-</details>

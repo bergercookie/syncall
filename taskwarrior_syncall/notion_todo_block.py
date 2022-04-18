@@ -1,6 +1,6 @@
 import datetime
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional, Sequence
+from typing import Any, Mapping, Optional, Sequence
 
 from bubop import is_same_datetime, logger, parse_datetime
 

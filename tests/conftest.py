@@ -23,11 +23,11 @@ def caplog(_caplog):
     as usual
     """
 
-    class PropogateHandler(logging.Handler):
+    class PropagateHandler(logging.Handler):
         def emit(self, record):
             logging.getLogger(record.name).handle(record)
 
-    logger.add(PropogateHandler(), format="{message}")
+    logger.add(PropagateHandler(), format="{message}")
     yield _caplog
 
 

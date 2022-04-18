@@ -9,10 +9,10 @@ from taskwarrior_syncall.app_utils import name_to_resolution_strategy_type
 from taskwarrior_syncall.constants import COMBINATION_FLAGS
 
 
-def opt_list_configs(name_A: str, name_B: str):
+def opt_list_combinations(name_A: str, name_B: str):
     return click.option(
-        "--list-configs",
-        "do_list_configs",
+        "--list-combinations",
+        "do_list_combinations",
         is_flag=True,
         help=f"List the available named {name_A}<->{name_B} combinations",
     )

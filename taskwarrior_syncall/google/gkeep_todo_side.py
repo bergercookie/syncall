@@ -1,4 +1,4 @@
-from typing import Dict, Literal, Optional, Sequence, Union
+from typing import Optional, Sequence
 
 from bubop import AuthenticationError, logger
 from gkeepapi import Keep

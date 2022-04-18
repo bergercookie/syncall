@@ -37,7 +37,7 @@ from taskwarrior_syncall import (
     list_named_combinations,
     opt_combination,
     opt_custom_combination_savename,
-    opt_list_configs,
+    opt_list_combinations,
     opt_notion_page_id,
     opt_notion_token_pass_path,
     opt_resolution_strategy,
@@ -58,7 +58,7 @@ from taskwarrior_syncall import (
 # misc options --------------------------------------------------------------------------------
 @opt_resolution_strategy()
 @opt_combination("TW", "Notion")
-@opt_list_configs("TW", "Notion")
+@opt_list_combinations("TW", "Notion")
 @opt_custom_combination_savename("TW", "Notion")
 @click.option("-v", "--verbose", count=True)
 @click.version_option(__version__)
@@ -71,7 +71,7 @@ def main(
     verbose: int,
     combination_name: str,
     custom_combination_savename: str,
-    do_list_configs: bool,
+    do_list_combinations: bool,
 ):
     """Synchronise filters of TW tasks with the to_do items of Notion pages
 
@@ -84,7 +84,7 @@ def main(
     logger.debug("Initialising...")
     inform_about_config = False
 
-    if do_list_configs:
+    if do_list_combinations:
         list_named_combinations(config_fname="tw_notion_configs")
         return 0
 

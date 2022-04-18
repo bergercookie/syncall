@@ -34,7 +34,7 @@ from taskwarrior_syncall import (
     opt_gkeep_note,
     opt_gkeep_passwd_pass_path,
     opt_gkeep_user_pass_path,
-    opt_list_configs,
+    opt_list_combinations,
     opt_resolution_strategy,
     opt_tw_project,
     opt_tw_tags,
@@ -51,7 +51,7 @@ from taskwarrior_syncall import (
 @opt_tw_tags()
 @opt_tw_project()
 # misc options --------------------------------------------------------------------------------
-@opt_list_configs("TW", "Google Keep")
+@opt_list_combinations("TW", "Google Keep")
 @opt_resolution_strategy()
 @opt_combination("TW", "Google Keep")
 @opt_custom_combination_savename("TW", "Google Keep")
@@ -67,7 +67,7 @@ def main(
     verbose: int,
     combination_name: str,
     custom_combination_savename: str,
-    do_list_configs: bool,
+    do_list_combinations: bool,
 ):
     """Synchronize Notes from your Google Keep with filters from Taskwarrior.
 
@@ -86,7 +86,7 @@ def main(
     logger.debug("Initialising...")
     inform_about_config = False
 
-    if do_list_configs:
+    if do_list_combinations:
         list_named_combinations(config_fname="tw_gkeep_configs")
         return 0
 
