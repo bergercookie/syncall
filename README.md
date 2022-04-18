@@ -1,7 +1,7 @@
 # taskwarrior-syncall
 
 <p align="center">
-  <img src="https://github.com/bergercookie/taskwarrior-syncall/blob/devel/misc/meme.png"/>
+  <img src="https://raw.githubusercontent.com/bergercookie/taskwarrior-syncall/master/misc/meme.png"/>
 </p>
 
 <table>
@@ -34,9 +34,9 @@
 
 ## Description
 
-`taskwarrior-syncall` is your one-stop software to bi-directionally synchronize a variety of
-services with taskwarrior. Each synchronization comes with its own executable
-which handles the synchronization between that particular service and
+`taskwarrior-syncall` is your one-stop software to bi-directionally synchronize
+a variety of services with taskwarrior. Each synchronization comes with its own
+executable which handles the synchronization between that particular service and
 taskwarrior. Note that the name is `taskwarrior`-specific but it's not tied to
 taskwarrior; You can synchronize items/tasks etc. from two arbitrary sides,
 given that you [implement the corresponding synchronization
