@@ -19,4 +19,3 @@ function _tw_notion_sync_completion;
 end;
 
 complete --no-files --command tw_notion_sync --arguments "(_tw_notion_sync_completion)";
-

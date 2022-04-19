@@ -26,4 +26,3 @@ _tw_gkeep_sync_completion_setup() {
 }
 
 _tw_gkeep_sync_completion_setup;
-

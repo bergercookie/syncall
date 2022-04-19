@@ -26,4 +26,3 @@ _tw_gcal_sync_completion_setup() {
 }
 
 _tw_gcal_sync_completion_setup;
-

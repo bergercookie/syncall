@@ -32,4 +32,3 @@ _tw_notion_sync_completion() {
 }
 
 compdef _tw_notion_sync_completion tw_notion_sync;
-

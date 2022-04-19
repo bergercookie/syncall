@@ -32,4 +32,3 @@ _tw_gkeep_sync_completion() {
 }
 
 compdef _tw_gkeep_sync_completion tw_gkeep_sync;
-

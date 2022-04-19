@@ -26,4 +26,3 @@ _tw_notion_sync_completion_setup() {
 }
 
 _tw_notion_sync_completion_setup;
-

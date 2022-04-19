@@ -19,4 +19,3 @@ function _tw_gkeep_sync_completion;
 end;
 
 complete --no-files --command tw_gkeep_sync --arguments "(_tw_gkeep_sync_completion)";
-

@@ -19,4 +19,3 @@ function _tw_gcal_sync_completion;
 end;
 
 complete --no-files --command tw_gcal_sync --arguments "(_tw_gcal_sync_completion)";
-
