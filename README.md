@@ -344,6 +344,11 @@ href="https://github.com/bergercookie/taskwarrior-syncall/blob/master/combinatio
 
 </details>
 
+## Tab Completion
+
+All synchronization executables support tab auto-completion for their options
+for `bash`, `zsh` and `fish`. You can find them under `completions/`
+
 ## Miscellaneous
 
 - [Implement a New Synchronization Service](implement-a-new-synchronization.md)

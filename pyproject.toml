@@ -7,7 +7,7 @@ authors = ["Nikos Koukis <nickkouk@gmail.com>"]
 readme = "README.md"
 homepage = "https://github.com/bergercookie/taskwarrior_syncall"
 repository = "https://github.com/bergercookie/taskwarrior_syncall"
-include = ["taskwarrior_syncall/py.typed"]
+include = ["taskwarrior_syncall/py.typed", "completions/*"]
 classifiers = [
   "Framework :: Pytest",
   "Programming Language :: Python",
@@ -24,13 +24,16 @@ classifiers = [
   "Topic :: Utilities",
 ]
 keywords = [
-  "taskwarrior",
-  "synchronization",
-  "google",
   "calendar",
-  "notion",
-  "google keep",
   "gkeep",
+  "google calendar",
+  "google keep",
+  "google",
+  "notion",
+  "productivity",
+  "synchronization",
+  "task management",
+  "taskwarrior",
 ]
 
 [tool.poetry.scripts]
