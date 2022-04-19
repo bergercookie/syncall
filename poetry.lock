@@ -1250,7 +1250,7 @@ notion = ["notion-client"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "aa630e395cfa5425d17d6b2152fba38dcb54016f61defe676b45f6bd8e478c48"
+content-hash = "2ffa573ddabbeeac2bc33f4852dbc7ca8777eb6f916da563a1ae4363a23daa79"
 
 [metadata.files]
 anyio = [
