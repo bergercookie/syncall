@@ -4,18 +4,16 @@ set -e
 
 # helpers ----------------------------------------------------------------------
 function finish {
-    tabs 8
+	tabs 8
 }
 trap finish EXIT
 
 function inside_virtualenv() {
 	python3 -qc "import sys; sys.exit(0 if sys.prefix != sys.base_prefix else 1)"
-	return $?
 }
 
 function inside_git_repo() {
 	git rev-parse
-	return $?
 }
 
 function completion_dir_for() {
@@ -25,11 +23,9 @@ function completion_dir_for() {
 }
 
 function get_ext_for() {
-	if [[ "$1" == "bash" || "$1" == "zsh" ]]
-	then
+	if [[ "$1" == "bash" || "$1" == "zsh" ]]; then
 		echo ".sh"
-	elif [[ "$1" == "fish" ]]
-	then
+	elif [[ "$1" == "fish" ]]; then
 		echo ".fish"
 	else
 		echo ""
