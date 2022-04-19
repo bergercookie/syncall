@@ -79,3 +79,4 @@ src
 .vim
 a.py
 test-tw-gcal-sync.json
+/notion_config.toml
