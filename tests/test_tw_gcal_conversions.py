@@ -2,7 +2,7 @@ from pathlib import Path
 
 import yaml
 
-from taskwarrior_syncall import convert_gcal_to_tw, convert_tw_to_gcal
+from syncall import convert_gcal_to_tw, convert_tw_to_gcal
 
 from .generic_test_case import GenericTestCase
 

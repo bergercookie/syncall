@@ -1,6 +1,6 @@
 import pytest
 
-from taskwarrior_syncall.types import TwRawItem
+from syncall.types import TwRawItem
 
 
 @pytest.fixture()

@@ -20,17 +20,17 @@ repos:
       #   args: ["--autofix"]
       # - id: sort-simple-yaml
   - repo: https://github.com/tcort/markdown-link-check
-    rev: "v3.10.0"
+    rev: "v3.10.3"
     hooks:
       # https://github.com/tcort/markdown-link-check#config-file-format
       - id: markdown-link-check
-        args: ["--config", ".markdown-link-check.json"]
+        args: ["--progress", "--config", ".markdown-link-check.json"]
   - repo: https://github.com/markdownlint/markdownlint
-    rev: "v0.11.0"
+    rev: "v0.12.0"
     hooks:
       - id: markdownlint
         exclude: ^.github/
-        entry: mdl -r ~MD033,~MD013,~MD034
+        entry: mdl -r ~MD033,~MD013,~MD034,~MD029
   - repo: local
     hooks:
       - id: check-github-workflows

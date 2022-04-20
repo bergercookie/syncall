@@ -6,6 +6,7 @@ from _pytest.logging import caplog as _caplog  # type: ignore
 from bubop import PrefsManager
 from loguru import logger
 
+from .conftest_fs import *
 from .conftest_gkeep import *
 from .conftest_notion import *
 from .conftest_tw import *

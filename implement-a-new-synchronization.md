@@ -2,7 +2,7 @@
 
 There has been major refactoring in this software to make it more generic and
 extendable and should hopefully be straightforward to support a new
-synchronization between two arbitrary services using `taskwarrior-syncall`. If
+synchronization between two arbitrary services using `syncall`. If
 in doubt, have a look at an existing synchronization (e.g., `Taskwarrior`  <->
 `Google Keep`) and mimic the way things are done there. That being said, you
 should be comfortable with python before attempting to do so.
@@ -10,7 +10,7 @@ should be comfortable with python before attempting to do so.
 Let's say you want to implement synchronization of the items of service `alpha`,
 with the items of service `beta`.
 
-`taskwarrior-syncall`, out-of-the-box, provides you with the following:
+`syncall`, out-of-the-box, provides you with the following:
 
 - A clear, well-tested framework, built on top of
   [item-synchronizer](https://github.com/bergercookie/item_synchronizer)
@@ -30,25 +30,25 @@ The following need to be done:
 1. Implement a new top-level executable (`alpha_beta_sync.py`). Add a line about
    this executable in `pyproject.toml` (under `[tool.poetry.scripts]`) so that
    it's installed as part of the python package. See for example
-   [tw_notion_sync](https://github.com/bergercookie/taskwarrior-syncall/blob/master/taskwarrior_syncall/scripts/tw_notion_sync.py).
+   [tw_notion_sync](https://github.com/bergercookie/syncall/blob/master/syncall/scripts/tw_notion_sync.py).
    This executable should take care of setting the command line interface with
    the user of the tool, read credentials for connecting to the synchronization
    services, and most importantly invoke the
-   [Aggregator](https://github.com/bergercookie/taskwarrior-syncall/blob/master/taskwarrior_syncall/aggregator.py).
+   [Aggregator](https://github.com/bergercookie/syncall/blob/master/syncall/aggregator.py).
 
    We're making use of `click` for CLI parsing across the top-level
    executables, and you can find command-line flags to re-use in the
-   [app_utils](https://github.com/bergercookie/taskwarrior-syncall/blob/master/taskwarrior_syncall/app_utils.py)
+   [app_utils](https://github.com/bergercookie/syncall/blob/master/syncall/app_utils.py)
    package.
 
 1. Create a new Synchronization Side class for communicating with service
    `alpha` and a new synchronization Side class for communicating with service
    `beta`. If one of these sides already exists, e.g.,
-   [NotionSide](https://github.com/bergercookie/taskwarrior-syncall/blob/master/taskwarrior_syncall/notion_side.py),
+   [NotionSide](https://github.com/bergercookie/syncall/blob/master/syncall/notion/notion_side.py),
    you can just reuse that.
 
    This class should implement the
-   [SyncSide](https://github.com/bergercookie/taskwarrior-syncall/blob/master/taskwarrior_syncall/sync_side.py)
+   [SyncSide](https://github.com/bergercookie/syncall/blob/master/syncall/sync_side.py)
    abstract class and should abide to the following interface.
 
    ```py
@@ -153,7 +153,7 @@ The following need to be done:
    item, and a second one to convert a `beta` item to an `alpha` item. The
    convention is to name them `convert_tw_to_notion` and `convert_notion_to_tw`.
    These methods should be relatively short. See for example
-   [tw_notion_utils](https://github.com/bergercookie/taskwarrior-syncall/blob/master/taskwarrior_syncall/tw_notion_utils.py).
+   [tw_notion_utils](https://github.com/bergercookie/syncall/blob/master/syncall/tw_notion_utils.py).
 
 You shouldn't need to tinker with:
 
@@ -162,6 +162,6 @@ You shouldn't need to tinker with:
   class. That's the meat of the synchronization process and it's independent of
   the sides that you want to synchronize.
 - The
-  [Aggregator](https://github.com/bergercookie/taskwarrior-syncall/blob/master/taskwarrior_syncall/aggregator.py)
+  [Aggregator](https://github.com/bergercookie/syncall/blob/master/syncall/aggregator.py)
   class. This sets the stage for calling the `Synchronizer` and
   should also be independent of the sides that you want to synchronize.

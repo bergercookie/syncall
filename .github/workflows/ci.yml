@@ -13,27 +13,27 @@ jobs:
       - name: Install with pip3 - no extras
         run: |
           pip3 install .
-          pip3 show taskwarrior-syncall
+          pip3 show syncall
       - name: Install with pip3 - all extras
         run: |
           pip3 install .[google,notion,gkeep,asana]
-          pip3 show taskwarrior-syncall
+          pip3 show syncall
       - name: Install with pip3 - google
         run: |
           pip3 install .[google]
-          pip3 show taskwarrior-syncall
+          pip3 show syncall
       - name: Install with pip3 - notion
         run: |
           pip3 install .[notion]
-          pip3 show taskwarrior-syncall
+          pip3 show syncall
       - name: Install with pip3 - notion
         run: |
           pip3 install .[gkeep]
-          pip3 show taskwarrior-syncall
+          pip3 show syncall
       - name: Install with pip3 - asana
         run: |
           pip3 install .[asana]
-          pip3 show taskwarrior-syncall
+          pip3 show syncall
   unittests:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -50,11 +50,11 @@ jobs:
         uses: abatilo/actions-poetry@v2.1.3
       - name: Install prerequisites
         run: |
-          poetry install -E google -E notion -E gkeep -E asana
           sudo ./scripts/install-taskwarrior.sh
+          ./scripts/poetry-install-all-extras.sh
           task --version
       - name: Run tests
-        run: poetry run pytest --doctest-modules
+        run: poetry run pytest
   style_and_linters:
     runs-on: ubuntu-latest
     steps:
@@ -79,8 +79,8 @@ jobs:
           uses: abatilo/actions-poetry@v2.1.3
         - name: Install prerequisites
           run: |
-            poetry install -E google -E notion -E gkeep -E asana
             sudo ./scripts/install-taskwarrior.sh
+            ./scripts/poetry-install-all-extras.sh
             task --version
         - name: Coverage
           run: |
