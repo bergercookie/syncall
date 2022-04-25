@@ -22,6 +22,7 @@ repos:
     rev: "v0.11.0"
     hooks:
       - id: markdownlint
+        exclude: ^.github/ISSUE_TEMPLATE/
         entry: mdl -r ~MD033,~MD013,~MD034
   - repo: local
     hooks:
