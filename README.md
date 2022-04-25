@@ -353,6 +353,7 @@ for `bash`, `zsh` and `fish`. You can find them under `completions/`
 
 - [Implement a New Synchronization Service](implement-a-new-synchronization.md)
 - [Using Multiple Combinations](combinations.md)
+- [Contributing Guide](CONTRIBUTING.md)
 
 ## Self Promotion
 
