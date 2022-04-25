@@ -49,6 +49,6 @@ Read more about this [here](https://gkeepapi.readthedocs.io/en/latest/#faq).
 
 To provide the password, you can either use the `GKEEP_USERNAME` and
 `GKEEP_PASSWD` before running `tw_gkeep_sync` or (recommended), use [the UNIX
-Password Manager](`https://www.passwordstore.org/) to store your username and
+Password Manager](https://www.passwordstore.org/) to store your username and
 password to your Google account and provide the paths to them (use
 `--user-pass-path ... --passwd-pass-path ...` in this case).

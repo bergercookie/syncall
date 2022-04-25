@@ -17,7 +17,14 @@ repos:
       - id: trailing-whitespace
       # - id: check-symlinks
       # - id: pretty-format-json
+      #   args: ["--autofix"]
       # - id: sort-simple-yaml
+  - repo: https://github.com/tcort/markdown-link-check
+    rev: "v3.10.0"
+    hooks:
+      # https://github.com/tcort/markdown-link-check#config-file-format
+      - id: markdown-link-check
+        args: ["--config", ".markdown-link-check.json"]
   - repo: https://github.com/markdownlint/markdownlint
     rev: "v0.11.0"
     hooks:

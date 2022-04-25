@@ -319,7 +319,6 @@ crontab -e
    earlier step and will look like this:
 
    ```yaml
-
    ---
    testnote__None__test_tag:
      gkeep_note: testnote
