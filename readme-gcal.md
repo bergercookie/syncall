@@ -73,11 +73,11 @@ tw_gcal_sync -t remindme -c "TW Reminders"
 
 ### Package Installation
 
-Install the `taskwarrior-syncall` package from PyPI, enabling the `gcal`
+Install the `taskwarrior-syncall` package from PyPI, enabling the `google`
 extra:
 
 ```sh
-pip3 install taskwarrior-syncall[gcal]
+pip3 install taskwarrior-syncall[google]
 ```
 
 ## FAQ
