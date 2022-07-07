@@ -57,6 +57,11 @@ At the moment the list of supported synchronization combinations is the followin
     <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://www.google.com/keep/">Google Keep Checkboxes</a></td>
     <td><tt>tw-gkeep-sync</tt></td>
   </tr>
+  <tr>
+    <td><a href="https://github.com/bergercookie/taskwarrior-syncall/blob/master/readme-asana.md">README</a></td>
+    <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://www.asana.com">Asana Tasks</a></td>
+    <td><tt>tw-asana-sync</tt></td>
+  </tr>
 </tbody>
 </table>
 

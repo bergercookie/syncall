@@ -16,6 +16,19 @@ test = ["coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "pytest (>=6.0)", "pytes
 trio = ["trio (>=0.16)"]
 
 [[package]]
+name = "asana"
+version = "1.0.0"
+description = "Asana API client"
+category = "main"
+optional = true
+python-versions = "*"
+
+[package.dependencies]
+requests = ">=2.20.0,<3.0.0"
+requests-oauthlib = ">=0.8.0,<2.0"
+six = ">=1.10,<2.0.0"
+
+[[package]]
 name = "astroid"
 version = "2.11.2"
 description = "An abstract syntax tree for Python with inference support."
@@ -1243,6 +1256,7 @@ docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [extras]
+asana = ["asana"]
 gkeep = ["gkeepapi"]
 google = ["google-api-python-client", "google-auth-oauthlib"]
 notion = ["notion-client"]
@@ -1250,12 +1264,16 @@ notion = ["notion-client"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "2ffa573ddabbeeac2bc33f4852dbc7ca8777eb6f916da563a1ae4363a23daa79"
+content-hash = "c336e0755ae8b31eef7c5a64498d145c9754e655719eafbfbedd6f7fe9b8a734"
 
 [metadata.files]
 anyio = [
     {file = "anyio-3.5.0-py3-none-any.whl", hash = "sha256:b5fa16c5ff93fa1046f2eeb5bbff2dad4d3514d6cda61d02816dba34fa8c3c2e"},
     {file = "anyio-3.5.0.tar.gz", hash = "sha256:a0aeffe2fb1fdf374a8e4b471444f0f3ac4fb9f5a5b542b48824475e0042a5a6"},
+]
+asana = [
+    {file = "asana-1.0.0-py2.py3-none-any.whl", hash = "sha256:ea970c1e2bf67c6cd5a801173a00a070aec544218eec87e083e180397d032904"},
+    {file = "asana-1.0.0.tar.gz", hash = "sha256:dd4c75bb6d8b7d1cfdba24bd424d9927970676e6afa93ed2a062cd88a612907f"},
 ]
 astroid = [
     {file = "astroid-2.11.2-py3-none-any.whl", hash = "sha256:cc8cc0d2d916c42d0a7c476c57550a4557a083081976bf42a73414322a6411d9"},

@@ -24,6 +24,7 @@ classifiers = [
   "Topic :: Utilities",
 ]
 keywords = [
+  "asana",
   "calendar",
   "gkeep",
   "google calendar",
@@ -37,6 +38,7 @@ keywords = [
 ]
 
 [tool.poetry.scripts]
+tw_asana_sync = "taskwarrior_syncall.scripts.tw_asana_sync:main"
 tw_gcal_sync = "taskwarrior_syncall.scripts.tw_gcal_sync:main"
 tw_gkeep_sync = "taskwarrior_syncall.scripts.tw_gkeep_sync:main"
 tw_notion_sync = "taskwarrior_syncall.scripts.tw_notion_sync:main"
@@ -53,6 +55,7 @@ google-api-python-client = { version = "^2.1.0", optional = true }
 google-auth-oauthlib = { version = "^0.4.4", optional = true }
 notion-client = { version = "^0.7.1", optional = true }
 gkeepapi = { version = "^0.13.7", optional = true }
+asana = { version = "^1.0.0", optional = true }
 
 loguru = "^0.5.3"
 python-dateutil = "^2.8.1"
@@ -67,6 +70,7 @@ bubop = { version = "0.1.8a0", allow-prereleases = true }
 google = ["google-api-python-client", "google-auth-oauthlib"]
 gkeep = ["gkeepapi"]
 notion = ["notion-client"]
+asana = ["asana"]
 
 # dev dependencies -------------------------------------------------------------
 [tool.poetry.dev-dependencies]
