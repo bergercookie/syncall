@@ -16,6 +16,10 @@ from taskwarrior_syncall.app_utils import (
     report_toplevel_exception,
 )
 from taskwarrior_syncall.cli import (
+    opt_asana_task_gid,
+    opt_asana_token_pass_path,
+    opt_asana_workspace_gid,
+    opt_asana_workspace_name,
     opt_combination,
     opt_custom_combination_savename,
     opt_gcal_calendar,
@@ -24,6 +28,7 @@ from taskwarrior_syncall.cli import (
     opt_gkeep_user_pass_path,
     opt_google_oauth_port,
     opt_google_secret_override,
+    opt_list_asana_workspaces,
     opt_list_combinations,
     opt_notion_page_id,
     opt_notion_token_pass_path,
@@ -49,6 +54,10 @@ __all__ = [
     "list_named_combinations",
     "get_resolution_strategy",
     "name_to_resolution_strategy_type",
+    "opt_asana_task_gid",
+    "opt_asana_token_pass_path",
+    "opt_asana_workspace_gid",
+    "opt_asana_workspace_name",
     "opt_combination",
     "opt_custom_combination_savename",
     "opt_gcal_calendar",
@@ -57,6 +66,7 @@ __all__ = [
     "opt_gkeep_user_pass_path",
     "opt_google_oauth_port",
     "opt_google_secret_override",
+    "opt_list_asana_workspaces",
     "opt_list_combinations",
     "opt_notion_page_id",
     "opt_notion_token_pass_path",
@@ -65,6 +75,18 @@ __all__ = [
     "opt_tw_tags",
     "report_toplevel_exception",
 ]
+
+# Asana ----------------------------------------------------------------------------------------
+try:
+    from taskwarrior_syncall.asana.asana_side import AsanaSide
+    from taskwarrior_syncall.asana.utils import list_asana_workspaces
+    from taskwarrior_syncall.tw_asana_utils import convert_asana_to_tw, convert_tw_to_asana
+
+    __all__.extend(
+        ["AsanaSide", "convert_asana_to_tw", "convert_tw_to_asana", "list_asana_workspaces"]
+    )
+except ImportError:
+    pass
 
 # Notion --------------------------------------------------------------------------------------
 try:

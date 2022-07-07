@@ -9,6 +9,55 @@ from taskwarrior_syncall.app_utils import name_to_resolution_strategy_type
 from taskwarrior_syncall.constants import COMBINATION_FLAGS
 
 
+def opt_asana_task_gid(**kwargs):
+    return click.option(
+        "-a",
+        "--asana-task-gid",
+        "asana_task_gid",
+        type=str,
+        help="Limit sync to provided task",
+        **kwargs,
+    )
+
+
+def opt_asana_token_pass_path():
+    return click.option(
+        "--token",
+        "--token-pass-path",
+        "token_pass_path",
+        help="Path in the UNIX password manager to fetch",
+    )
+
+
+def opt_asana_workspace_gid():
+    return click.option(
+        "-w",
+        "--asana-workspace-gid",
+        "asana_workspace_gid",
+        type=str,
+        help="Asana workspace GID used to filter tasks",
+    )
+
+
+def opt_asana_workspace_name():
+    return click.option(
+        "-W",
+        "--asana-workspace-name",
+        "asana_workspace_name",
+        type=str,
+        help="Asana workspace name used to filter tasks",
+    )
+
+
+def opt_list_asana_workspaces():
+    return click.option(
+        "--list-asana-workspaces",
+        "do_list_asana_workspaces",
+        is_flag=True,
+        help=f"List the available Asana workspaces",
+    )
+
+
 def opt_list_combinations(name_A: str, name_B: str):
     return click.option(
         "--list-combinations",
@@ -88,7 +137,6 @@ def opt_notion_token_pass_path():
         "--token-pass-path",
         "token_pass_path",
         help="Path in the UNIX password manager to fetch",
-        default="notion.so/dev/integration/taskwarrior/token",
     )
 
 

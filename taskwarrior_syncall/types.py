@@ -184,6 +184,23 @@ class NotionPageContents(TypedDict):
     has_more: bool
 
 
+# ---------------------------------------------------------------------------------------------
+# Asana
+AsanaGID = ID
+
+
+# Task as returned from Asana API.
+class AsanaRawTask(TypedDict):
+    completed: bool
+    completed_at: str
+    created_at: str
+    due_at: str
+    due_on: str
+    gid: AsanaGID
+    name: str
+    modified_at: str
+
+
 # Task as returned from taskw.get_task(id=...)
 TwRawItem = Tuple[Optional[int], Dict[str, Any]]
 TwItem = Dict[str, Any]

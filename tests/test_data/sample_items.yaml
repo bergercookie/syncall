@@ -12,6 +12,21 @@ tw_item:
   annotations:
   - This is the annotation text
   - This is the other annotation text
+tw_item_w_due:
+  description: Kalimera!
+  entry: 2019-03-05 00:03:09
+  due: 2019-03-09 00:00:00
+  id: 276
+  modified: 2019-03-05 00:03:09
+  status: pending
+  tags:
+  - remindme
+  urgency: 0
+  uuid: !!python/object:uuid.UUID
+    int: 168941310994917300384925376981287779
+  annotations:
+  - This is the annotation text
+  - This is the other annotation text
 gcal_item_expected:
   description: 'IMPORTED FROM TASKWARRIOR
 
@@ -99,3 +114,47 @@ tw_item_expected:
   uuid: !!python/object:uuid.UUID
     int: 168941310994917300384925376981287779
   modified: 2019-03-08 00:29:06.602000
+asana_task:
+  completed: false
+  completed_at: null
+  created_at: !!python/object/apply:datetime.datetime
+    args: [2019, 3, 5]
+    kwds:
+      hour: 0
+      minute: 3
+      second: 9
+  due_at: !!python/object/apply:datetime.datetime
+    args: [2019, 3, 4]
+    kwds:
+      hour: 5
+      minute: 0
+      second: 0
+  due_on: null
+  gid: "123456789012345"
+  modified_at: !!python/object/apply:datetime.datetime
+    args: [2019, 3, 8]
+    kwds:
+      hour: 0
+      minute: 29
+      second: 6
+      microsecond: 602000
+  name: another summary goes here
+asana_task_expected:
+  completed: false
+  completed_at: null
+  created_at: !!python/object/apply:datetime.datetime
+    args: [2019, 3, 5]
+    kwds:
+      hour: 0
+      minute: 3
+      second: 9
+  due_at: null
+  due_on: null
+  gid: null
+  modified_at: !!python/object/apply:datetime.datetime
+    args: [2019, 3, 5]
+    kwds:
+      hour: 0
+      minute: 3
+      second: 9
+  name: Kalimera!
