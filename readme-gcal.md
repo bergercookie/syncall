@@ -51,10 +51,10 @@ and download the credentials:
 
   ![download-btn](misc/gcal-json-btn.png)
 
-To specify your custom credentials JSON file use the `--gcal-secret` flag as follows:
+To specify your custom credentials JSON file use the `--google-secret` flag as follows:
 
 ```sh
-tw_gcal_sync -c "<calendar-name>" -t "<taskwarrior-tag>" --gcal-secret "<path/to/downloaded/json/file>"
+tw_gcal_sync -c "<calendar-name>" -t "<taskwarrior-tag>" --google-secret "<path/to/downloaded/json/file>"
 ```
 
 ## Usage instructions
