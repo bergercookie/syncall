@@ -4,19 +4,8 @@
   <img src="https://raw.githubusercontent.com/bergercookie/taskwarrior-syncall/master/misc/meme.png"/>
 </p>
 
-<table>
-  <td>master</td>
-  <td>
-    <a href="https://github.com/bergercookie/taskwarrior-syncall/actions" alt="master">
-    <img src="https://github.com/bergercookie/taskwarrior-syncall/actions/workflows/ci.yml/badge.svg?branch=master" /></a>
-  </td>
-  <td>devel</td>
-  <td>
-    <a href="https://github.com/bergercookie/taskwarrior-syncall/actions" alt="devel">
-    <img src="https://github.com/bergercookie/taskwarrior-syncall/actions/workflows/ci.yml/badge.svg?branch=devel" /></a>
-  </td>
-</table>
-
+<a href="https://github.com/bergercookie/taskwarrior-syncall/actions" alt="master">
+<img src="https://github.com/bergercookie/taskwarrior-syncall/actions/workflows/ci.yml/badge.svg?branch=master" /></a>
 <a href='https://coveralls.io/github/bergercookie/taskwarrior-syncall?branch=master'>
 <img src='https://coveralls.io/repos/github/bergercookie/taskwarrior-syncall/badge.svg?branch=master' alt='Coverage Status' /></a>
 <a href="https://github.com/pre-commit/pre-commit">
