@@ -241,7 +241,7 @@ pip3 install taskwarrior-syncall[notion,google]
 ```
 
 - PyPI (may not contain latest version): `pip3 install --user --upgrade taskwarrior-syncall[notion,google,gkeep]`
-- Github: `pip3 install --user git+https://github.com/bergercookie/taskwarrior-syncall`
+- Github: `pip3 install --user "taskwarrior-syncall[google] @ git+https://github.com/bergercookie/taskwarrior-syncall"`
 - Download and install `devel` branch locally - bleeding edge
 
   ```sh
