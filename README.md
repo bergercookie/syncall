@@ -98,15 +98,14 @@ though, please complete the installation instructions below.
 
 ### Sample Usage Instructions
 
-Here's the CLI help page for the synchronizations available. Run with `--help`
-to get the most updated instructions
+Here's the CLI help page for the synchronizations available.
 
-<!-- pastehere start cli_help -->
+<!-- START sniff-and-replace tw_gcal_sync --help START -->
+
 <details>
-  <summary><tt>tw_gcal_sync</tt></summary>
+ <summary><tt>tw_gcal_sync --help</tt></summary>
 
 ```
-tw_gcal_sync --help
 Usage: tw_gcal_sync [OPTIONS]
 
   Synchronize calendars from your Google Calendar with filters from
@@ -125,7 +124,7 @@ Options:
                                   Google Applications
   -t, --taskwarrior-tags TEXT     Taskwarrior tags to sync
   -p, --tw-project TEXT           Taskwarrior project to sync
-  --list-configs                  List the available named TW<->Google
+  --list-combinations             List the available named TW<->Google
                                   Calendar combinations
   -r, --resolution_strategy [MostRecentRS|LeastRecentRS|AlwaysFirstRS|AlwaysSecondRS]
                                   Resolution strategy to use during conflicts
@@ -136,46 +135,59 @@ Options:
   -v, --verbose
   --version                       Show the version and exit.
   --help                          Show this message and exit.
+
 ```
 
 </details>
+
+<!-- END sniff-and-replace -->
+<!-- START sniff-and-replace tw_gcal_sync --help START -->
+
 <details>
-  <summary><tt>tw_notion_sync</tt></summary>
+ <summary><tt>tw_gcal_sync --help</tt></summary>
 
 ```
-$ tw_notion_sync --help
-Usage: tw_notion_sync [OPTIONS]
+Usage: tw_gcal_sync [OPTIONS]
 
-  Synchronise filters of TW tasks with the to_do items of Notion pages
+  Synchronize calendars from your Google Calendar with filters from
+  Taskwarrior.
 
-  The list of TW tasks is determined by a combination of TW tags and TW
-  project while the notion pages should be provided by their URLs.
+  The list of TW tasks is determined by a combination of TW tags and a TW
+  project while the calendar in GCal should be provided by their name. if it
+  doesn't exist it will be crated
 
 Options:
-  -n, --notion-page TEXT          Page ID of the Notion page to sync
-  --token, --token-pass-path TEXT
-                                  Path in the UNIX password manager to fetch
+  -c, --gcal-calendar TEXT        Name of the Google Calendar to sync (will be
+                                  created if not there)
+  --google-secret FILE            Override the client secret used for the
+                                  communication with the Google APIs
+  --oauth-port INTEGER            Port to use for OAuth Authentication with
+                                  Google Applications
   -t, --taskwarrior-tags TEXT     Taskwarrior tags to sync
   -p, --tw-project TEXT           Taskwarrior project to sync
+  --list-combinations             List the available named TW<->Google
+                                  Calendar combinations
   -r, --resolution_strategy [MostRecentRS|LeastRecentRS|AlwaysFirstRS|AlwaysSecondRS]
                                   Resolution strategy to use during conflicts
-  -b, --combination TEXT          Name of an already saved TW<->Notion
-                                  combination
-  --list-configs                  List the available named TW<->Notion
-                                  combinations
-  -s, --save-as TEXT              Save the given TW<->Notion filters
+  -b, --combination TEXT          Name of an already saved TW<->Google
+                                  Calendar combination
+  -s, --save-as TEXT              Save the given TW<->Google Calendar filters
                                   combination using a specified custom name.
   -v, --verbose
   --version                       Show the version and exit.
   --help                          Show this message and exit.
+
 ```
 
 </details>
+
+<!-- END sniff-and-replace -->
+<!-- START sniff-and-replace tw_gkeep_sync --help START -->
+
 <details>
-  <summary><tt>tw_gkeep_sync</tt></summary>
+ <summary><tt>tw_gkeep_sync --help</tt></summary>
 
 ```
-tw_gkeep_sync --help
 Usage: tw_gkeep_sync [OPTIONS]
 
   Synchronize Notes from your Google Keep with filters from Taskwarrior.
@@ -201,7 +213,7 @@ Options:
                                   the Google password from
   -t, --taskwarrior-tags TEXT     Taskwarrior tags to sync
   -p, --tw-project TEXT           Taskwarrior project to sync
-  --list-configs                  List the available named TW<->Google Keep
+  --list-combinations             List the available named TW<->Google Keep
                                   combinations
   -r, --resolution_strategy [MostRecentRS|LeastRecentRS|AlwaysFirstRS|AlwaysSecondRS]
                                   Resolution strategy to use during conflicts
@@ -212,10 +224,46 @@ Options:
   -v, --verbose
   --version                       Show the version and exit.
   --help                          Show this message and exit.
+
 ```
 
 </details>
-<!-- pastehere end cli_help -->
+
+<!-- END sniff-and-replace -->
+<!-- START sniff-and-replace tw_asana_sync --help START -->
+
+<details>
+ <summary><tt>tw_asana_sync --help</tt></summary>
+
+```
+Usage: tw_asana_sync [OPTIONS]
+
+Options:
+  --token, --token-pass-path TEXT
+                                  Path in the UNIX password manager to fetch
+  -w, --asana-workspace-gid TEXT  Asana workspace GID used to filter tasks
+  -W, --asana-workspace-name TEXT
+                                  Asana workspace name used to filter tasks
+  --list-asana-workspaces         List the available Asana workspaces
+  -t, --taskwarrior-tags TEXT     Taskwarrior tags to sync
+  -p, --tw-project TEXT           Taskwarrior project to sync
+  -r, --resolution_strategy [MostRecentRS|LeastRecentRS|AlwaysFirstRS|AlwaysSecondRS]
+                                  Resolution strategy to use during conflicts
+  -b, --combination TEXT          Name of an already saved TW<->Asana
+                                  combination
+  --list-combinations             List the available named TW<->Asana
+                                  combinations
+  -s, --save-as TEXT              Save the given TW<->Asana filters
+                                  combination using a specified custom name.
+  -v, --verbose
+  --version                       Show the version and exit.
+  --help                          Show this message and exit.
+
+```
+
+</details>
+
+<!-- END sniff-and-replace -->
 
 ## Installation instructions
 
