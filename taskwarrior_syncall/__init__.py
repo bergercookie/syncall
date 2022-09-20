@@ -129,4 +129,4 @@ try:
 except ImportError:
     pass
 
-__version__ = "1.2.2a0"
+__version__ = "1.3.0"
