@@ -87,6 +87,7 @@ class CaldavSide(SyncSide):
         )
         if item and not raw:
             item = map_ics_to_item(item.icalendar_component)
+        return item
 
     def delete_single_item(self, item_id: ID):
         todo = self._find_todo_by_id(item_id=item_id, raw=True)
@@ -105,8 +106,8 @@ class CaldavSide(SyncSide):
             priority=item.get("priority"),
             description=item.get("description"),
             status=item.get("status").upper(),
+            due=item.get("due"),
         )
-        print(todo.icalendar_component)
         return map_ics_to_item(todo.icalendar_component)
 
     @classmethod

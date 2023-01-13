@@ -1,4 +1,5 @@
 import traceback
+from datetime import timedelta
 from typing import Dict, List, Optional, Tuple
 from uuid import UUID
 
@@ -37,9 +38,22 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
     for k in ["uuid"]:
         caldav_item["description"] += f"\n* {k}: {tw_item[k]}"
 
+    # Status
     caldav_item["status"] = aliases_tw_caldav_status[tw_item["status"]]
-    if tw_item.get("priority"):
+
+    # Priority
+    if "priority" in tw_item.keys():
         caldav_item["priority"] = aliases_tw_caldav_priority[tw_item["priority"].lower()]
+
+    # Timestamp - Don't mess around too much with created/updated keys
+    if "modified" in tw_item.keys():
+        caldav_item["last-modified"] = tw_item["modified"]
+
+    # Start/due dates
+    # - If given due date -> (start=due-1, end=due)
+    if "due" in tw_item.keys():
+        caldav_item["start"] = tw_item["due"] - timedelta(hours=1)
+        caldav_item["due"] = tw_item["due"]
     return caldav_item
 
 
@@ -65,13 +79,25 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
 
     # Priority
     if caldav_item.get("priority"):
-        tw_item["priority"] = next(
-            key
-            for key, value in aliases_tw_caldav_priority.items()
-            if caldav_item["priority"] == value
+        priority = next(
+            (
+                key
+                for key, value in aliases_tw_caldav_priority.items()
+                if caldav_item["priority"] == value
+            ),
+            None,
         )
+        if priority:
+            tw_item["priority"] = priority
 
-    # TODO: Add created/updated dates
+    # Timestamps
+    if "last-modified" in caldav_item.keys():
+        tw_item["modified"] = caldav_item["last-modified"]
+
+    # Start/due dates
+    if "due" in caldav_item.keys():
+        tw_item["due"] = caldav_item["due"]
+
     return tw_item
 
 
@@ -89,6 +115,10 @@ def map_ics_to_item(vtodo) -> Dict:
         item = vtodo.get(i)
         if item:
             todo_item[i] = item.dt
+
+    if "due" in vtodo.keys():
+        todo_item["due"] = item.dt
+
     return todo_item
 
 

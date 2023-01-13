@@ -113,7 +113,7 @@ def main(
         inform_about_config = True
         combination_name = cache_or_reuse_cached_combination(
             config_args={
-                "gcal_calendar": caldav_calendar,
+                "caldav_calendar": caldav_calendar,
                 "tw_project": tw_project,
                 "tw_tags": tw_tags,
             },
