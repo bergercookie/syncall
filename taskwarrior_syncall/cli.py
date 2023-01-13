@@ -197,3 +197,38 @@ def opt_google_oauth_port():
         type=int,
         help="Port to use for OAuth Authentication with Google Applications",
     )
+
+
+def opt_caldav_calendar():
+    return click.option(
+        "--caldav-calendar",
+        type=str,
+        default="Personal",
+        help="Name of the caldav Calendar to sync (will be created if not there)",
+    )
+
+
+def opt_caldav_url():
+    return click.option(
+        "--caldav-url",
+        type=str,
+        help="URL where the caldav calendar is hosted at (including /dav if applicable)",
+    )
+
+
+def opt_caldav_user_pass_path():
+    return click.option(
+        "--caldav-user",
+        "--caldav-user-pass-path",
+        "caldav_user_pass_path",
+        help="Path in the UNIX password manager to fetch the caldav username from",
+    )
+
+
+def opt_caldav_passwd_pass_path():
+    return click.option(
+        "--caldav-passwd",
+        "--caldav-passwd-pass-path",
+        "caldav_passwd_pass_path",
+        help="Path in the UNIX password manager to fetch the caldav password from",
+    )

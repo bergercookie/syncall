@@ -20,6 +20,10 @@ from taskwarrior_syncall.cli import (
     opt_asana_token_pass_path,
     opt_asana_workspace_gid,
     opt_asana_workspace_name,
+    opt_caldav_calendar,
+    opt_caldav_passwd_pass_path,
+    opt_caldav_url,
+    opt_caldav_user_pass_path,
     opt_combination,
     opt_custom_combination_savename,
     opt_gcal_calendar,
@@ -74,6 +78,10 @@ __all__ = [
     "opt_tw_project",
     "opt_tw_tags",
     "report_toplevel_exception",
+    "opt_caldav_calendar",
+    "opt_caldav_passwd_pass_path",
+    "opt_caldav_url",
+    "opt_caldav_user_pass_path",
 ]
 
 # Asana ----------------------------------------------------------------------------------------
@@ -94,6 +102,15 @@ try:
     from taskwarrior_syncall.tw_notion_utils import convert_notion_to_tw, convert_tw_to_notion
 
     __all__.extend(["NotionSide", "convert_notion_to_tw", "convert_tw_to_notion"])
+except ImportError:
+    pass
+
+# Caldav --------------------------------------------------------------------------------------
+try:
+    from taskwarrior_syncall.caldav_side import CaldavSide
+    from taskwarrior_syncall.tw_caldav_utils import convert_caldav_to_tw, convert_tw_to_caldav
+
+    __all__.extend(["CaldavSide", "converty_caldav_to_tw", "convert_tw_to_caldav"])
 except ImportError:
     pass
 
