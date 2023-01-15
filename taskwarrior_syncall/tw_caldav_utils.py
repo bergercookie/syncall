@@ -54,6 +54,10 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
     if "due" in tw_item.keys():
         caldav_item["start"] = tw_item["due"] - timedelta(hours=1)
         caldav_item["due"] = tw_item["due"]
+
+    if "tags" in tw_item.keys():
+        caldav_item["categories"] = tw_item["tags"]
+
     return caldav_item
 
 
@@ -98,6 +102,9 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
     if "due" in caldav_item.keys():
         tw_item["due"] = caldav_item["due"]
 
+    if "categories" in caldav_item.keys():
+        tw_item["tags"] = caldav_item["categories"]
+
     return tw_item
 
 
@@ -116,8 +123,11 @@ def map_ics_to_item(vtodo) -> Dict:
         if item:
             todo_item[i] = item.dt
 
-    if "due" in vtodo.keys():
-        todo_item["due"] = item.dt
+    if vtodo.get("due"):
+        todo_item["due"] = vtodo["due"].dt
+
+    if vtodo.get("categories"):
+        todo_item["categories"] = [str(category) for category in vtodo["categories"].cats]
 
     return todo_item
 

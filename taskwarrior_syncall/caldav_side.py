@@ -2,6 +2,7 @@ from typing import Dict, Sequence
 
 import caldav
 from bubop import logger
+from icalendar.prop import vCategory, vDatetime, vText
 from item_synchronizer.types import ID
 
 from taskwarrior_syncall.sync_side import SyncSide
@@ -95,9 +96,18 @@ class CaldavSide(SyncSide):
             todo.delete()
 
     def update_item(self, item_id: ID, **changes):
-        todo = self._find_todo_by_id(item_id=item_id)
+        todo = self._find_todo_by_id(item_id=item_id, raw=True)
+        # Sadly, as we have to do some specific tweaking to convert our
+        # item back into a icalendar format
         for key, value in changes.items():
-            todo.icalendar_component[key] = value
+            if key in ["due", "created", "last-modified"]:
+                todo.icalendar_component[key] = vDatetime(value)
+            if key in ["status", "priority", "description", "summary"]:
+                todo.icalendar_component[key] = vText(value)
+            if key == "categories":
+                todo.icalendar_component["categories"] = vCategory(
+                    [vText(cat) for cat in value]
+                )
         todo.save()
 
     def add_item(self, item):
@@ -107,6 +117,7 @@ class CaldavSide(SyncSide):
             description=item.get("description"),
             status=item.get("status").upper(),
             due=item.get("due"),
+            categories=item.get("categories"),
         )
         return map_ics_to_item(todo.icalendar_component)
 
