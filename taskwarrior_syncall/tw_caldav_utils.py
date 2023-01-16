@@ -45,7 +45,7 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
     if "priority" in tw_item.keys():
         caldav_item["priority"] = aliases_tw_caldav_priority[tw_item["priority"].lower()]
 
-    # Timestamp - Don't mess around too much with created/updated keys
+    # Timestamps
     if "modified" in tw_item.keys():
         caldav_item["last-modified"] = tw_item["modified"]
 
@@ -118,7 +118,7 @@ def map_ics_to_item(vtodo) -> Dict:
         item = vtodo.get(i)
         if item:
             todo_item[i] = str(item).lower()
-    for i in ["created", "last-modified"]:
+    for i in ["last-modified"]:
         item = vtodo.get(i)
         if item:
             todo_item[i] = item.dt
@@ -146,9 +146,9 @@ def _parse_caldav_item_desc(
     if "description" not in caldav_item.keys():
         return annotations, uuid
 
-    gcal_desc = caldav_item["description"]
+    caldav_desc = caldav_item["description"]
     # strip whitespaces, empty lines
-    lines = [line.strip() for line in gcal_desc.split("\n") if line][1:]
+    lines = [line.strip() for line in caldav_desc.split("\n") if line][1:]
 
     # annotations
     i = 0
@@ -159,7 +159,7 @@ def _parse_caldav_item_desc(
         else:
             break
 
-    if i == len(lines) - 1:
+    if i == len(lines):
         return annotations, uuid
 
     # Iterate through rest of lines, find only the uuid

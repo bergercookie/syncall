@@ -27,6 +27,36 @@ tw_item_w_due:
   annotations:
   - This is the annotation text
   - This is the other annotation text
+caldav_item_expected:
+  description: 'IMPORTED FROM TASKWARRIOR
+
+
+    * Annotation 1: This is the annotation text
+
+    * Annotation 2: This is the other annotation text
+
+
+    * uuid: 00208973-20da-4988-ae3e-58ef3650c363'
+  summary: Kalimera!
+  last-modified: 2019-03-05 00:03:09
+  status: 'needs-action'
+  categories: ['remindme']
+caldav_item_w_date_expected:
+  description: 'IMPORTED FROM TASKWARRIOR
+
+
+    * Annotation 1: This is the annotation text
+
+    * Annotation 2: This is the other annotation text
+
+
+    * uuid: 00208973-20da-4988-ae3e-58ef3650c363'
+  due: 2019-03-09 00:00:00
+  start: 2019-03-08 23:00:00
+  summary: Kalimera!
+  last-modified: 2019-03-05 00:03:09
+  status: 'needs-action'
+  categories: ['remindme']
 gcal_item_expected:
   description: 'IMPORTED FROM TASKWARRIOR
 
@@ -65,6 +95,14 @@ gcal_item_w_date:
   summary: gcal original event
   transparency: transparent
   updated: '2019-03-16T16:01:32.486Z'
+caldav_item_w_date:
+  created: 2019-03-16 16:01:32.00
+  due: 2019-03-09 00:00:00
+  id: 2s3acrn586e4ed7eff49ja91oh
+  start: 2019-03-10 23:00:00
+  status: 'needs-action'
+  summary: 'gcal original event'
+  last-modified: 2019-03-16 16:01:32.486
 tw_item_w_date_expected:
   annotations: []
   description: gcal original event
@@ -104,6 +142,25 @@ gcal_item:
   status: confirmed
   summary: another summary goes here
   updated: '2019-03-08T00:29:06.602Z'
+caldav_item:
+  created: 2019-03-08 00:29:06.000
+  description: '
+
+    The same old description
+
+
+    * Annotation 1: kalimera
+
+    * Annotation 2: kalinuxta kai kali vradia
+
+
+    * uuid: 00208973-20da-4988-ae3e-58ef3650c363'
+  due: 2019-03-04 05:00:00
+  id: 52ggba92l9ph4d0ghabi3ohdh7
+  start: 2019-03-04 04:00:00
+  status: 'needs-action'
+  summary: another summary goes here
+  last-modified: 2019-03-08 00:29:06.602
 tw_item_expected:
   annotations:
   - kalimera
