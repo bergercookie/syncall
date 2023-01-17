@@ -54,7 +54,7 @@ completions_dir="${git_root_dir}/completions"
 mkdir -p $completions_dir
 
 # main loop --------------------------------------------------------------------
-for exec in tw_gkeep_sync tw_notion_sync tw_gcal_sync tw_asana_sync; do
+for exec in tw_gkeep_sync tw_notion_sync tw_gcal_sync tw_asana_sync tw_caldav_sync; do
 	tabs 4
 	# Run the following, grab the output and dumpt it to the completions/ files...
 	# _TW_GKEEP_SYNC_COMPLETE=fish_source tw_gkeep_sync
