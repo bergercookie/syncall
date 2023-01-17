@@ -289,9 +289,8 @@ Options:
                                   created if not there)
   --caldav-url TEXT               URL where the caldav calendar is hosted at
                                   (including /dav if applicable)
-  --caldav-user, --caldav-user-pass-path TEXT
-                                  Path in the UNIX password manager to fetch
-                                  the caldav username from
+  --caldav-user TEXT              The caldav username for the given caldav
+                                  instance
   --caldav-passwd, --caldav-passwd-pass-path TEXT
                                   Path in the UNIX password manager to fetch
                                   the caldav password from
