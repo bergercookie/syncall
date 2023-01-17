@@ -216,12 +216,11 @@ def opt_caldav_url():
     )
 
 
-def opt_caldav_user_pass_path():
+def opt_caldav_user():
     return click.option(
         "--caldav-user",
-        "--caldav-user-pass-path",
-        "caldav_user_pass_path",
-        help="Path in the UNIX password manager to fetch the caldav username from",
+        "caldav_user",
+        help="The caldav username for the given caldav instance",
     )
 
 

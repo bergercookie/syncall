@@ -32,7 +32,7 @@ from taskwarrior_syncall import (
     opt_caldav_calendar,
     opt_caldav_passwd_pass_path,
     opt_caldav_url,
-    opt_caldav_user_pass_path,
+    opt_caldav_user,
     opt_combination,
     opt_custom_combination_savename,
     opt_list_combinations,
@@ -47,7 +47,7 @@ from taskwarrior_syncall import (
 # caldav options ---------------------------------------------------------------------
 @opt_caldav_calendar()
 @opt_caldav_url()
-@opt_caldav_user_pass_path()
+@opt_caldav_user()
 @opt_caldav_passwd_pass_path()
 # taskwarrior options -------------------------------------------------------------------------
 @opt_tw_tags()
@@ -62,7 +62,7 @@ from taskwarrior_syncall import (
 def main(
     caldav_calendar: str,
     caldav_url: str,
-    caldav_user_pass_path: str,
+    caldav_user: str,
     caldav_passwd_pass_path: str,
     tw_tags: List[str],
     tw_project: str,
@@ -153,11 +153,10 @@ def main(
         )
 
     # fetch username
-    caldav_user = os.environ.get("CALDAV_USERNAME")
-    if caldav_user is not None:
-        logger.debug("Reading the caldav username from environment variable...")
-    else:
-        caldav_user = fetch_from_pass_manager(caldav_user_pass_path)
+    if not caldav_user:
+        caldav_user = os.environ.get("CALDAV_USERNAME")
+    if caldav_user is None:
+        raise RuntimeError("You must provide a username in order to synchronize via caldav")
     assert caldav_user
 
     # fetch password

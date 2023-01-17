@@ -23,7 +23,7 @@ from taskwarrior_syncall.cli import (
     opt_caldav_calendar,
     opt_caldav_passwd_pass_path,
     opt_caldav_url,
-    opt_caldav_user_pass_path,
+    opt_caldav_user,
     opt_combination,
     opt_custom_combination_savename,
     opt_gcal_calendar,
@@ -81,7 +81,7 @@ __all__ = [
     "opt_caldav_calendar",
     "opt_caldav_passwd_pass_path",
     "opt_caldav_url",
-    "opt_caldav_user_pass_path",
+    "opt_caldav_user",
 ]
 
 # Asana ----------------------------------------------------------------------------------------
