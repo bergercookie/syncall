@@ -19,7 +19,7 @@ Current limitations:
 - Only supports authentication with an Asana [Personal Access Token](https://developers.asana.com/docs/personal-access-token)
 - Only syncs Asana tasks that are assigned to the user associated with that access token
 
-## Setup and UsageUsage
+## Setup and Usage
 
 You can find synchronize a series of Taskwarrior tasks that have a particular
 (or multiple) tags or synchronize all the tasks that belong to a particular

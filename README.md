@@ -62,6 +62,11 @@ At the moment the list of supported synchronization combinations is the followin
     <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://www.asana.com">Asana Tasks</a></td>
     <td><tt>tw-asana-sync</tt></td>
   </tr>
+  <tr>
+    <td><a href="https://github.com/bergercookie/taskwarrior-syncall/blob/master/readme-caldav.md">README</a></td>
+    <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ Generic Caldav server</td>
+    <td><tt>tw-asana-sync</tt></td>
+  </tr>
 </tbody>
 </table>
 
@@ -264,7 +269,50 @@ Options:
 </details>
 
 <!-- END sniff-and-replace -->
+<!-- START sniff-and-replace tw_caldav_sync --help START -->
 
+<details>
+ <summary><tt>tw_caldav_sync --help</tt></summary>
+
+```
+Usage: tw_caldav_sync [OPTIONS]
+
+  Synchronize calendars from your caldav Calendar with filters from
+  Taskwarrior.
+
+  The list of TW tasks is determined by a combination of TW tags and a TW
+  project. The calendar in Caldav should be provided by their name. if it
+  doesn't exist it will be created
+
+Options:
+  --caldav-calendar TEXT          Name of the caldav Calendar to sync (will be
+                                  created if not there)
+  --caldav-url TEXT               URL where the caldav calendar is hosted at
+                                  (including /dav if applicable)
+  --caldav-user, --caldav-user-pass-path TEXT
+                                  Path in the UNIX password manager to fetch
+                                  the caldav username from
+  --caldav-passwd, --caldav-passwd-pass-path TEXT
+                                  Path in the UNIX password manager to fetch
+                                  the caldav password from
+  -t, --taskwarrior-tags TEXT     Taskwarrior tags to sync
+  -p, --tw-project TEXT           Taskwarrior project to sync
+  --list-combinations             List the available named TW<->Caldav
+                                  combinations
+  -r, --resolution_strategy [MostRecentRS|LeastRecentRS|AlwaysFirstRS|AlwaysSecondRS]
+                                  Resolution strategy to use during conflicts
+  -b, --combination TEXT          Name of an already saved TW<->Caldav
+                                  combination
+  -s, --save-as TEXT              Save the given TW<->Caldav filters
+                                  combination using a specified custom name.
+  -v, --verbose
+  --version                       Show the version and exit.
+  --help                          Show this message and exit.
+```
+
+</details>
+
+<!-- END sniff-and-replace -->
 ## Installation instructions
 
 ### Requirements
@@ -282,7 +330,7 @@ You have to specify at least one extra. To do so use the `[]` syntax in pip:
 pip3 install taskwarrior-syncall[notion,google]
 ```
 
-- PyPI (may not contain latest version): `pip3 install --user --upgrade taskwarrior-syncall[notion,google,gkeep]`
+- PyPI (may not contain latest version): `pip3 install --user --upgrade taskwarrior-syncall[notion,google,gkeep,asana,caldav-client]`
 - Github: `pip3 install --user "taskwarrior-syncall[google] @ git+https://github.com/bergercookie/taskwarrior-syncall"`
 - Download and install `devel` branch locally - bleeding edge
 
