@@ -203,7 +203,7 @@ def main(
             config_fname=combination_name,
             ignore_keys=(
                 (),
-                ("due", "end", "entry", "modified", "urgency"),
+                (),
             ),
         ) as aggregator:
             aggregator.sync()

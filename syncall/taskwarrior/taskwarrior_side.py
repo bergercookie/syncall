@@ -8,7 +8,6 @@ from taskw import TaskWarrior
 from taskw.warrior import TASKRC
 
 from syncall.sync_side import ItemType, SyncSide
-from syncall.taskwarrior.taskw_duration import duration_serialize
 from syncall.types import TaskwarriorRawItem
 
 OrderByType = Literal[
