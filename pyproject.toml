@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "taskwarrior_syncall"
-version = "1.3.2"
+version = "1.3.3"
 description = "Taskwarrior <-> * bi-directional synchronization tool - this is now deprecated, use syncall instead"
 license = "MIT"
 authors = ["Nikos Koukis <nickkouk@gmail.com>"]
@@ -39,7 +39,7 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-syncall = {version = "^1.4.0", extras = ["google,notion,gkeep,asana"]}
+syncall = {version = "^1.4.0", extras = ["google,notion,gkeep,asana,tw"]}
 
 [build-system]
 requires = ["poetry>=0.12"]
