@@ -84,6 +84,34 @@ pip3 install syncall[google,tw]
 
 ### How do I mark an item as done from Google Calendar
 
-If the item was created from Taskwarrior then there should be a `status:
-pending` line in its description. Change it to `status: done` or `status:
-completed`.
+If the item was created from Taskwarrior then there should be a
+`status: pending` line in its description. Change it to `status: done` or
+`status: completed`.
+
+### How do i modify the default event duration / How do I change the duration of a said event from Taskwarrior
+
+`syncall` is aware of the `twgcalsyncduration` UDA:
+
+You can assign a custom duration to a taskwarrior task using something like the following:
+
+```sh
+# create a task ...
+
+# Make this a 15min task
+task <id> mod twgcalsyncduration:15M
+```
+
+Then on subsequent runs, it will create an event of the said duration in Google
+Calendar.
+
+You can also edit the default event duration using the
+`--default-event-duration-mins INTEGER` flag (specify it in minutes)
+
+- **Note:** To make it viewing the duration a bit more user friendly, e.g., for
+  taskwarrior reports, the user can also add the following section to their
+  `.taskrc`:
+
+  ```sh
+  uda.twgcalsyncduration.type=duration
+  uda.twgcalsyncduration.label=GCal duration
+  ```
