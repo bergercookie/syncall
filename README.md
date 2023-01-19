@@ -120,9 +120,9 @@ though, please complete the installation instructions below.
 
 ### Requirements
 
-- Taskwarrior - [Installation instructions](https://taskwarrior.org/download/) -
-  Tested with `2.6.1`, should work with `>=2.6`.
 - Python version >= `3.8`
+- For the integrations that require Taskwarrior - ([Installation
+  instructions](https://taskwarrior.org/download/)) version `>=2.6` is required.
 
 ### Installation Options
 
