@@ -30,7 +30,7 @@ repos:
     hooks:
       - id: markdownlint
         exclude: ^.github/
-        entry: mdl -r ~MD033,~MD013,~MD034,~MD029
+        entry: mdl -r ~MD033,~MD013,~MD034,~MD029,~MD007
   - repo: local
     hooks:
       - id: check-github-workflows

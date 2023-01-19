@@ -1,4 +1,4 @@
-#tw [Taskwarrior](https://taskwarrior.org/) ⬄ [Notion](https://notion.so)
+# [Taskwarrior](https://taskwarrior.org/) ⬄ [Notion](https://notion.so)
 
 ## Description
 
