@@ -14,13 +14,12 @@ from bubop import (
 from syncall import inform_about_app_extras
 
 try:
-    from syncall import GCalSide
+    from syncall import GCalSide, TaskWarriorSide
 except ImportError:
     inform_about_app_extras(["google", "tw"])
 
 from syncall import (
     Aggregator,
-    TaskWarriorSide,
     __version__,
     cache_or_reuse_cached_combination,
     convert_gcal_to_tw,

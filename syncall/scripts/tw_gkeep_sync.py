@@ -14,13 +14,12 @@ from syncall import inform_about_app_extras
 from syncall.app_utils import gkeep_read_username_password_token, write_to_pass_manager
 
 try:
-    from syncall import GKeepTodoSide
+    from syncall import GKeepTodoSide, TaskWarriorSide
 except ImportError:
     inform_about_app_extras(["gkeep", "tw"])
 
 from syncall import (
     Aggregator,
-    TaskWarriorSide,
     __version__,
     cache_or_reuse_cached_combination,
     convert_gkeep_todo_to_tw,

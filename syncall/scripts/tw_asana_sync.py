@@ -17,14 +17,13 @@ from syncall import inform_about_app_extras
 from syncall.app_utils import error_and_exit
 
 try:
-    from syncall import AsanaSide
+    from syncall import AsanaSide, TaskWarriorSide
 except ImportError:
     inform_about_app_extras(["asana", "tw"])
 
 
 from syncall import (
     Aggregator,
-    TaskWarriorSide,
     __version__,
     cache_or_reuse_cached_combination,
     convert_asana_to_tw,

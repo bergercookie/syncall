@@ -17,7 +17,7 @@ from bubop import (
 from syncall import inform_about_app_extras
 
 try:
-    from syncall import NotionSide
+    from syncall import NotionSide, TaskWarriorSide
 except ImportError:
     inform_about_app_extras(["notion", "tw"])
 
@@ -26,7 +26,6 @@ from notion_client import Client  # type: ignore
 
 from syncall import (
     Aggregator,
-    TaskWarriorSide,
     __version__,
     cache_or_reuse_cached_combination,
     convert_notion_to_tw,
