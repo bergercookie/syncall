@@ -107,11 +107,11 @@ Calendar.
 You can also edit the default event duration using the
 `--default-event-duration-mins INTEGER` flag (specify it in minutes)
 
-- **Note:** To make it viewing the duration a bit more user friendly, e.g., for
-  taskwarrior reports, the user can also add the following section to their
-  `.taskrc`:
+**Note:** To make it viewing the duration a bit more user friendly, e.g., for
+taskwarrior reports, the user can also add the following section to their
+`.taskrc`:
 
-  ```sh
-  uda.twgcalsyncduration.type=duration
-  uda.twgcalsyncduration.label=GCal duration
-  ```
+```sh
+uda.twgcalsyncduration.type=duration
+uda.twgcalsyncduration.label=GCal duration
+```
