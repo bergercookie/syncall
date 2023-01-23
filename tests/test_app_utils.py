@@ -3,19 +3,19 @@ from unittest.mock import patch
 
 import pytest
 
-from taskwarrior_syncall import (
+from syncall import (
     cache_or_reuse_cached_combination,
     fetch_app_configuration,
     inform_about_combination_name_usage,
     list_named_combinations,
     report_toplevel_exception,
 )
-from taskwarrior_syncall.constants import COMBINATION_FLAGS, ISSUES_URL
+from syncall.constants import COMBINATION_FLAGS, ISSUES_URL
 
 
 def test_list_named_combinations(fs, caplog, mock_prefs_manager):
     with patch(
-        "taskwarrior_syncall.app_utils.PrefsManager",
+        "syncall.app_utils.PrefsManager",
         return_value=mock_prefs_manager,
     ):
         list_named_combinations("doesnt matter")
@@ -31,7 +31,7 @@ def test_list_named_combinations(fs, caplog, mock_prefs_manager):
 
 
 def test_fetch_app_configuration(fs, caplog, mock_prefs_manager):
-    with patch("taskwarrior_syncall.app_utils.PrefsManager", return_value=mock_prefs_manager):
+    with patch("syncall.app_utils.PrefsManager", return_value=mock_prefs_manager):
         # invalid combination
         config = fetch_app_configuration(config_fname="doesntmatter", combination="kalimera")
         assert list(config.keys()) == ["a", "b", "c"]
@@ -66,7 +66,7 @@ def test_inform_about_combination_name_usage(fs, caplog):
 
 
 def test_cache_or_reuse_cached_combination(fs, caplog, mock_prefs_manager):
-    with patch("taskwarrior_syncall.app_utils.PrefsManager", return_value=mock_prefs_manager):
+    with patch("syncall.app_utils.PrefsManager", return_value=mock_prefs_manager):
         cache_or_reuse_cached_combination(
             config_args={"a": 1, "b": 2, "c": 3},
             config_fname="TBD",

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from taskwarrior_syncall.taskwarrior_side import TaskWarriorSide
+from syncall.taskwarrior.taskwarrior_side import TaskWarriorSide
 
 from .generic_test_case import GenericTestCase
 

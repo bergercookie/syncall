@@ -3,7 +3,7 @@ from typing import cast, no_type_check
 
 import pytest
 
-from taskwarrior_syncall.types import NotionPageContents, NotionTodoBlockItem
+from syncall.types import NotionPageContents, NotionTodoBlockItem
 
 
 @pytest.fixture()

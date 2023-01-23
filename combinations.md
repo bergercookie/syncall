@@ -9,13 +9,13 @@ project/tag combination `project:work +customerA`.
 
 Each one of these, (i.e.: `calendar=home,tags=(+home_rems),project=None` and
 `calendar=work,tags=(+customerA),project=work`) is called a `combination`.
-`taskwarrior-syncall` automatically isolates the execution of different
+`syncall` automatically isolates the execution of different
 combinations, meaning that it doesn't mix the items of one combination with
 the items of a different one. Regardless of the synchronization that you use,
 
 You don't need to explicitly specify the name of the combination you want to
 use. In this case, the name of the combination will automatically be determined,
-and `taskwarrior-syncall` will print this combination name at the end of the
+and `syncall` will print this combination name at the end of the
 run.
 
 ```
@@ -47,7 +47,7 @@ tw_gkeep_sync -b testnote__None__test_tag
 16:16:14.89 | INFO      | Loading preferences...
 16:16:14.90 | INFO      |
 
-Loading configuration - /home/berger/.config/taskwarrior_syncall/tw_gkeep_configs.yaml.testnote__None__test_tag
+Loading configuration - /home/berger/.config/syncall/tw_gkeep_configs.yaml.testnote__None__test_tag
 16:16:14.90 | INFO      |
 
 Configuration:

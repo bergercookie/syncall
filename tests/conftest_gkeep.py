@@ -1,4 +1,7 @@
 import pytest
+from gkeepapi.node import List, Note
+
+from syncall.google.gkeep_note import GKeepNote as MyGKeepNote
 
 
 @pytest.fixture()
@@ -135,7 +138,7 @@ def gkeep_list1():
 
 
 @pytest.fixture()
-def gkeep_note():
+def gkeep_note_empty():
     return {
         "id": "1630840404258.423492350",
         "kind": "notes#node",
@@ -169,3 +172,35 @@ def gkeep_note():
         ],
         "collaborators": [],
     }
+
+
+@pytest.fixture()
+def gkeep_list_instance0(gkeep_list0: List) -> List:
+    li = List()
+    li.load(gkeep_list0)
+
+    for i in range(5):
+        li.add(f"item {i}")
+
+    return li
+
+
+@pytest.fixture()
+def gkeep_note_empty_instance(gkeep_note_empty: dict) -> MyGKeepNote:
+    note = MyGKeepNote.from_raw_item(gkeep_note_empty)
+    return note
+
+
+@pytest.fixture()
+def gkeep_note_instance(gkeep_note_empty_instance: MyGKeepNote) -> MyGKeepNote:
+    note = gkeep_note_empty_instance
+    note.plaintext = """Some multi
+line
+text
+
+with some empty lines as well
+as emojis
+😄
+    """
+
+    return note

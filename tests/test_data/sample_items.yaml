@@ -4,6 +4,7 @@ tw_item:
   id: 276
   modified: 2019-03-05 00:03:09
   status: pending
+  twgcalsyncduration: "PT1200S"
   tags:
   - remindme
   urgency: 0
@@ -70,7 +71,7 @@ gcal_item_expected:
 
     * uuid: 00208973-20da-4988-ae3e-58ef3650c363'
   end:
-    dateTime: '2019-03-05T01:03:09.000000Z'
+    dateTime: '2019-03-05T00:23:09.000000Z'
   start:
     dateTime: '2019-03-05T00:03:09.000000Z'
   summary: Kalimera!
@@ -104,6 +105,7 @@ caldav_item_w_date:
   summary: 'gcal original event'
   last-modified: 2019-03-16 16:01:32.486
 tw_item_w_date_expected:
+  twgcalsyncduration: "PT86400S"
   annotations: []
   description: gcal original event
   due: 2019-03-09 00:00:00
@@ -162,6 +164,7 @@ caldav_item:
   summary: another summary goes here
   last-modified: 2019-03-08 00:29:06.602
 tw_item_expected:
+  twgcalsyncduration: "PT3600S"
   annotations:
   - kalimera
   - kalinuxta kai kali vradia

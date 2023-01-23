@@ -2,8 +2,9 @@ import datetime
 
 from dateutil.tz import tzutc
 
-from taskwarrior_syncall.notion_todo_block import NotionTodoBlock
-from taskwarrior_syncall.types import NotionTodoBlockItem
+from syncall.concrete_item import ItemKey, KeyType
+from syncall.notion.notion_todo_block import NotionTodoBlock
+from syncall.types import NotionTodoBlockItem
 
 simple_last_modified_date = datetime.datetime(2021, 12, 4, 10, 1, tzinfo=tzutc())
 chained_last_modified_date = datetime.datetime(2021, 12, 4, 11, 30, tzinfo=tzutc())
@@ -28,7 +29,7 @@ def test_notion_todo_block_compare2(
     n0 = NotionTodoBlock.from_raw_item(notion_simple_todo)
     n1 = NotionTodoBlock.from_raw_item(notion_simple_checked_todo)
     assert not n0.compare(n1)
-    assert n0.compare(n1, ignore_keys=["is_checked"])
+    assert n0.compare(n1, ignore_keys=[ItemKey(name="is_checked", type=KeyType.Boolean)])
 
 
 def test_notion_todo_block_compare3(
@@ -37,7 +38,7 @@ def test_notion_todo_block_compare3(
     n0 = NotionTodoBlock.from_raw_item(notion_simple_todo)
     n1 = NotionTodoBlock.from_raw_item(notion_simple_archived_todo)
     assert not n0.compare(n1)
-    assert n0.compare(n1, ignore_keys=["is_archived"])
+    assert n0.compare(n1, ignore_keys=[ItemKey(name="is_archived", type=KeyType.Boolean)])
 
 
 def test_notion_todo_block_compare4(
@@ -47,7 +48,7 @@ def test_notion_todo_block_compare4(
     n0 = NotionTodoBlock.from_raw_item(notion_simple_todo)
     n1 = NotionTodoBlock.from_raw_item(notion_simple_diff_edited_time_todo)
     assert not n0.compare(n1)
-    assert n0.compare(n1, ignore_keys=["last_modified_date"])
+    assert n0.compare(n1, ignore_keys=[ItemKey(name="last_modified_date", type=KeyType.Date)])
 
 
 def test_notion_todo_block0(notion_simple_todo: NotionTodoBlockItem):

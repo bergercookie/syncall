@@ -2,8 +2,8 @@ import datetime
 
 from bubop import format_datetime_tz, parse_datetime
 
-from taskwarrior_syncall.asana.asana_task import AsanaTask
-from taskwarrior_syncall.types import AsanaRawTask
+from syncall.asana.asana_task import AsanaTask
+from syncall.types import AsanaRawTask
 
 from .generic_test_case import GenericTestCase
 
