@@ -68,8 +68,8 @@ At the moment the list of supported synchronizations is the following:
     <td><tt>tw-asana-sync</tt></td>
   </tr>
   <tr>
-    <td><a href="https://github.com/bergercookie/taskwarrior-syncall/blob/master/readme-caldav.md">README</a></td>
-    <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ Generic Caldav server</td>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-caldav.md">README</a></td>
+    <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ Generic <a href="https://en.wikipedia.org/wiki/CalDAV">Caldav </a> server</td>
     <td><tt>tw-caldav-sync</tt></td>
   </tr>
   <tr>
@@ -138,15 +138,17 @@ You have to specify at least one extra. To do so use the `[]` syntax in pip:
 pip3 install syncall[notion,google]
 ```
 
-- PyPI (may not contain latest version): `pip3 install --user --upgrade syncall[notion,google,gkeep]`
-- Github: `pip3 install --user "syncall[google] @ git+https://github.com/bergercookie/syncall"`
+Here's some of the available options for installing it:
+
+- From PyPI - e.g., Specify three extras for integrations - Google Calendar, Google Keep, Notion): `pip3 install --user --upgrade syncall[notion,google,gkeep]`
+- From Github - e.g., Specify two extras: `pip3 install --user "syncall[gkeep,fs] @ git+https://github.com/bergercookie/syncall"`
 - Download and install `devel` branch locally - bleeding edge
 
   ```sh
   git clone https://github.com/bergercookie/syncall
   cd syncall
   git checkout devel
-  pip3 install --user --upgrade .
+  pip3 install --user --upgrade .[gkeep,fs,google,tw,caldav,asana]
   ```
 
 - Setup using [poetry](https://python-poetry.org/) - handy for local
@@ -154,7 +156,7 @@ pip3 install syncall[notion,google]
 
   ```sh
   git clone https://github.com/bergercookie/syncall
-  poetry install
+  poetry install --all-extras
   # get an interactive shell
   poetry shell
 
@@ -345,12 +347,14 @@ Options:
 ```
 Usage: tw_caldav_sync [OPTIONS]
 
-  Synchronize calendars from your caldav Calendar with filters from
+  Synchronize lists of tasks from your caldav Calendar with filters from
   Taskwarrior.
 
   The list of TW tasks is determined by a combination of TW tags and a TW
-  project. The calendar in Caldav should be provided by their name. if it
-  doesn't exist it will be created
+  project. Use `--all` to synchronize all tasks.
+
+  The calendar in Caldav should be provided by their name. If it doesn't exist
+  it will be created.
 
 Options:
   --caldav-calendar TEXT          Name of the caldav Calendar to sync (will be
@@ -362,11 +366,16 @@ Options:
   --caldav-passwd, --caldav-passwd-pass-path TEXT
                                   Path in the UNIX password manager to fetch
                                   the caldav password from
-  -t, --taskwarrior-tags TEXT     Taskwarrior tags to sync
-  -p, --tw-project TEXT           Taskwarrior project to sync
+  --all, --taskwarrior-all-tasks  Sync all taskwarrior tasks [potentially very
+                                  slow]
+  -t, --taskwarrior-tags TEXT     Taskwarrior tags to synchronize
+  -p, --tw-project TEXT           Taskwarrior project to synchronize
+  --30-days, --only-modified-last-30-days
+                                  Only synchronize Taskwarrior tasks that have
+                                  been modified in the last 30 days
   --list-combinations             List the available named TW<->Caldav
                                   combinations
-  -r, --resolution_strategy [MostRecentRS|LeastRecentRS|AlwaysFirstRS|AlwaysSecondRS]
+  -r, --resolution-strategy [MostRecentRS|LeastRecentRS|AlwaysFirstRS|AlwaysSecondRS]
                                   Resolution strategy to use during conflicts
   -b, --combination TEXT          Name of an already saved TW<->Caldav
                                   combination
@@ -437,12 +446,6 @@ Options:
 </details>
 
 <!-- END sniff-and-replace -->
-
-## Installation instructions
-
-- PyPI (may not contain latest version): `pip3 install --user --upgrade syncall[notion,google,gkeep,asana,caldav]`
-- Github: `pip3 install --user "syncall[google] @ git+https://github.com/bergercookie/taskwarrior-syncall"`
-- # Download and install `devel` branch locally - bleeding edge
 
 ## Mechanics / Automatic synchronization
 

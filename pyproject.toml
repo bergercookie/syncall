@@ -73,15 +73,14 @@ pytz = "^2021.1"
 rfc3339 = "^6.2"
 typing = "^3.7.4"
 item-synchronizer = "^1.1.4"
-bubop = { version = "0.1.9", allow-prereleases = true }
-# bubop = { path = "/home/berger/src_/bubop/", develop = true }
+bubop = { version = "0.1.10", allow-prereleases = true }
 
 [tool.poetry.extras]
 google = ["google-api-python-client", "google-auth-oauthlib"]
 gkeep = ["gkeepapi"]
 notion = ["notion-client"]
 asana = ["asana"]
-caldav= ["caldav", "icalendar"]
+caldav = ["caldav", "icalendar"]
 tw = ["taskw"]
 fs = ["xattr"]
 
@@ -107,9 +106,11 @@ coverage = { version = "^6.2", extras = ["toml"] }
 coveralls = "^3.3.1"
 pycln = "^1.3.1"
 check-jsonschema = "^0.14.3"
+readline = "6.2.4.1"
 
 # isort ------------------------------------------------------------------------
 tzlocal = "^4.2"
+
 [tool.isort]
 include_trailing_comma = true
 line_length = 95

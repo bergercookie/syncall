@@ -16,7 +16,11 @@ jobs:
           pip3 show syncall
       - name: Install with pip3 - all extras
         run: |
-          pip3 install .[google,notion,gkeep,asana]
+          pip3 install .[tw,google,notion,gkeep,asana,caldav]
+          pip3 show syncall
+      - name: Install with pip3 - tw
+        run: |
+          pip3 install .[tw]
           pip3 show syncall
       - name: Install with pip3 - google
         run: |
@@ -26,13 +30,17 @@ jobs:
         run: |
           pip3 install .[notion]
           pip3 show syncall
-      - name: Install with pip3 - notion
+      - name: Install with pip3 - gkeep
         run: |
           pip3 install .[gkeep]
           pip3 show syncall
       - name: Install with pip3 - asana
         run: |
           pip3 install .[asana]
+          pip3 show syncall
+      - name: Install with pip3 - caldav
+        run: |
+          pip3 install .[caldav]
           pip3 show syncall
   unittests:
     runs-on: ${{ matrix.os }}
@@ -48,10 +56,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Python Poetry Action
         uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: "1.3.2"
       - name: Install prerequisites
         run: |
           sudo ./scripts/install-taskwarrior.sh
-          ./scripts/poetry-install-all-extras.sh
+          poetry install --all-extras
           task --version
       - name: Run tests
         run: poetry run pytest
@@ -64,6 +74,8 @@ jobs:
           python-version: "3.8"
       - name: Python Poetry Action
         uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: "1.3.2"
       - name: Install prerequisites
         run: poetry install -E google -E notion -E gkeep
       - name: Run style checkers and linters
@@ -77,19 +89,25 @@ jobs:
             python-version: "3.8"
         - name: Python Poetry Action
           uses: abatilo/actions-poetry@v2.1.3
+          with:
+            poetry-version: "1.3.2"
         - name: Install prerequisites
           run: |
             sudo ./scripts/install-taskwarrior.sh
-            ./scripts/poetry-install-all-extras.sh
+            poetry install --all-extras
             task --version
         - name: Coverage
           run: |
             poetry run coverage run -m pytest --doctest-modules
             poetry run coverage report
+        # Using --service=github + secrets.GITHUB_TOKEN for builds originating from PRs to work
+        # Not sure if both are required
+        # https://github.com/TheKevJames/coveralls-python/issues/252
         - name: Coveralls
-          run: poetry run coveralls
+          run: poetry run coveralls --service=github
           env:
             COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish_package:
     runs-on: ubuntu-latest
     steps:

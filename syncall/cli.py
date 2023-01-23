@@ -4,7 +4,6 @@ This module will be loaded regardless of extras - don't put something here that 
 extra dependency.
 """
 import click
-from bubop import format_list
 from bubop.common_dir import sys
 
 from syncall.app_utils import name_to_resolution_strategy_type
@@ -94,6 +93,16 @@ def opt_list_combinations(name_A: str, name_B: str):
     )
 
 
+def opt_tw_all_tasks():
+    return click.option(
+        "--all",
+        "--taskwarrior-all-tasks",
+        "tw_sync_all_tasks",
+        is_flag=True,
+        help="Sync all taskwarrior tasks [potentially very slow]",
+    )
+
+
 def opt_tw_tags():
     return click.option(
         "-t",
@@ -112,6 +121,16 @@ def opt_tw_project():
         "tw_project",
         type=str,
         help="Taskwarrior project to synchronize",
+    )
+
+
+def opt_tw_only_tasks_modified_30_days():
+    return click.option(
+        "--30-days",
+        "--only-modified-last-30-days",
+        "tw_only_modified_last_30_days",
+        is_flag=True,
+        help="Only synchronize Taskwarrior tasks that have been modified in the last 30 days",
     )
 
 

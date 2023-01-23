@@ -2,9 +2,12 @@ from typing import Dict, Sequence
 
 import caldav
 from bubop import logger
+from caldav.lib.error import NotFoundError
 from icalendar.prop import vCategory, vDatetime, vText
 from item_synchronizer.types import ID
 
+from syncall.app_utils import error_and_exit
+from syncall.caldav.caldav_utils import calendar_todos, icalendar_component
 from syncall.sync_side import SyncSide
 from syncall.tw_caldav_utils import map_ics_to_item
 
@@ -20,8 +23,9 @@ class CaldavSide(SyncSide):
     _identical_comparison_keys = [
         "description",
         "end",
-        "start",
+        "status",
         "summary",
+        "due",
     ]
 
     _date_keys = ["end", "start", "last-modified"]
@@ -40,17 +44,17 @@ class CaldavSide(SyncSide):
         self._calendar = self._get_calendar()
         logger.debug(f"Connected to calendar - {self._calendar.name}")
 
-    def _get_calendar(self) -> caldav.DAVClient.calendar:
+    def _get_calendar(self) -> caldav.Calendar:
         try:
             calendar = self._client.calendar(name=self._calendar_name)
             logger.debug(f"Connected to calendar {calendar.name}")
             acceptable_component_types = calendar.get_supported_components()
             if "VTODO" not in acceptable_component_types:
-                raise RuntimeError(
+                error_and_exit(
                     f"Calendar {self._calendar_name} found but does not support VTODO entries"
                     " - please choose a different calendar"
                 )
-        except caldav.error.NotFoundError:
+        except NotFoundError:
             # Create calendar if not there -------------------------------------------------
             logger.info(f"Calendar not found = Creating new calendar {self._calendar_name}")
             calendar = self._client.make_calendar(
@@ -60,11 +64,11 @@ class CaldavSide(SyncSide):
 
     def get_all_items(self, **kargs):
         todos = []
-        raw_todos = self._calendar.todos()
+        raw_todos = calendar_todos(self._calendar)
 
         # Format & cache items from ics files
         for t in raw_todos:
-            data = t.icalendar_component
+            data = icalendar_component(t)
             item = map_ics_to_item(data)
             todos.append(item)
             self._items_cache[item["id"]] = item
@@ -81,13 +85,13 @@ class CaldavSide(SyncSide):
         item = next(
             (
                 item
-                for item in self._calendar.todos()
-                if item.icalendar_component.get("uid") == item_id
+                for item in calendar_todos(self._calendar)
+                if icalendar_component(item).get("uid") == item_id
             ),
             None,
         )
         if item and not raw:
-            item = map_ics_to_item(item.icalendar_component)
+            item = map_ics_to_item(icalendar_component(item))
         return item
 
     def delete_single_item(self, item_id: ID):
@@ -100,12 +104,14 @@ class CaldavSide(SyncSide):
         # Sadly, as we have to do some specific tweaking to convert our
         # item back into a icalendar format
         for key, value in changes.items():
+            if key == "status":
+                icalendar_component(todo)[key] = vText(value.upper())
             if key in ["due", "created", "last-modified"]:
-                todo.icalendar_component[key] = vDatetime(value)
-            if key in ["status", "priority", "description", "summary"]:
-                todo.icalendar_component[key] = vText(value)
+                icalendar_component(todo)[key] = vDatetime(value)
+            if key in ["priority", "description", "summary"]:
+                icalendar_component(todo)[key] = vText(value)
             if key == "categories":
-                todo.icalendar_component["categories"] = vCategory(
+                icalendar_component(todo)["categories"] = vCategory(
                     [vText(cat) for cat in value]
                 )
         todo.save()
@@ -119,7 +125,7 @@ class CaldavSide(SyncSide):
             due=item.get("due"),
             categories=item.get("categories"),
         )
-        return map_ics_to_item(todo.icalendar_component)
+        return map_ics_to_item(icalendar_component(todo))
 
     @classmethod
     def id_key(cls) -> str:

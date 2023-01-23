@@ -6,7 +6,6 @@ from typing import List
 import click
 from bubop import (
     check_optional_mutually_exclusive,
-    check_required_mutually_exclusive,
     format_dict,
     log_to_syslog,
     logger,

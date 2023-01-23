@@ -3,7 +3,7 @@
 ## Description
 
 Synchronize taskwarrior tasks to a generic caldav server.
-This service has been tested using a self-hosted [nextcloud](https://nextcloud.com/) server, but should theoretically work with any server that implements the [caldav specification](https://www.rfc-editor.org/rfc/rfc4791)
+This service has been tested using a self-hosted [nextcloud](https://nextcloud.com/) server as well as , but should theoretically work with any server that implements the [caldav specification](https://www.rfc-editor.org/rfc/rfc4791)
 
 Upon execution, `tw_caldav_sync` will synchronize, and on subsequent runs of the
 program keep synchronized, the following attributes (tw entries will be converted to a vCard format and visa versa):
@@ -17,14 +17,14 @@ TW <-> Caldav will make the following mappings between items:
   - `pending`, `waiting` <-> `NEEDS-ACTION`
   - `completed` <-> `COMPLETED`
   - `deleted` <-> `CANCELLED`
-- Tw `modified` <-> `LAST-MODIFIED`
-- Tw `prioriy` <-> `PRIORITY`
+- TW `modified` <-> `LAST-MODIFIED`
+- TW `prioriy` <-> `PRIORITY`
   - `""` <-> `None`
   - `L` <-> 9
   - `M` <-> 5
   - `H` <-> 1
-- Tw `annotations`, `uuid` <-> `DESCRIPTION`
-- Tw `tags` <-> `CATEGORIES`
+- TW `annotations`, `uuid` <-> `DESCRIPTION`
+- TW `tags` <-> `CATEGORIES`
 
 ### Current limitations
 

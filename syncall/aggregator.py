@@ -147,7 +147,7 @@ class Aggregator:
         }
 
         # Potentially modified items are all the items that exist in the sync side minus the
-        # ones already determined as deleted or enw
+        # ones already determined as deleted or new
         #
         # For these items, load the cached version and check whether they are the same or not
         # to actually determine the ones that are changed.

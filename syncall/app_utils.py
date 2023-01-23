@@ -175,7 +175,7 @@ def cache_or_reuse_cached_combination(
     else:
         config_name = custom_combination_savename
 
-    # see if this combination corresponds to an already existing configuration -----------------
+    # see if this combination corresponds to an already existing configuration ----------------
     with PrefsManager(app_name=app_name(), config_fname=config_fname) as prefs_manager:
         config_exists = config_name in prefs_manager
 

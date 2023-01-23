@@ -1,9 +1,9 @@
 import datetime
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Sequence, Set, Union, cast
+from typing import Callable, Dict, List, Literal, Optional, Sequence, Set, Union, cast
 from uuid import UUID
 
-from bubop import logger, parse_datetime
+from bubop import assume_local_tz_if_none, logger, parse_datetime
 from taskw import TaskWarrior
 from taskw.warrior import TASKRC
 
@@ -39,26 +39,32 @@ class TaskWarriorSide(SyncSide):
 
     def __init__(
         self,
-        tags: Sequence[str] = [],
+        tags: Sequence[str] = tuple(),
         project: Optional[str] = None,
-        config_file: Optional[Path] = Path(TASKRC),
+        only_modified_since: Optional[datetime.datetime] = None,
+        config_file: Path = Path(TASKRC),
         **kargs,
     ):
         """
-        :param tags: List of tags that all fetched and submitted tasks should have
-        :param project: project identifier that all fetched and submitted tasks should have
+        Constructor.
+
+        :param tags: Only include tasks that have are tagged using *all* the specified tags
+        :param project: Only include tasks that include in this project
+        :param only_modified_since: Only include tasks that are modified since the specified date
         :param config_file: Path to the taskwarrior RC file
         """
         super().__init__(name="Tw", fullname="Taskwarrior", **kargs)
         self._tags: Set[str] = set(tags)
         self._project: str = project or ""
-        self._tw = TaskWarrior(marshal=True, config_filename=config_file)
+        self._tw = TaskWarrior(marshal=True, config_filename=str(config_file))
 
         # All TW tasks
         self._items_cache: Dict[str, TaskwarriorRawItem] = {}
 
         # Whether to refresh the cached list of items
         self._reload_items = True
+
+        self._only_modified_since = only_modified_since
 
     def start(self):
         logger.info(f"Initializing {self.fullname}...")
@@ -99,16 +105,50 @@ class TaskWarriorSide(SyncSide):
         self._load_all_items()
         tasks = list(self._items_cache.values())
         if skip_completed:
-            tasks = [t for t in tasks if t["status"] != "completed"]
+            tasks = [t for t in tasks if t["status"] != "completed"]  # type: ignore
 
-        # filter the tasks based on their tags and their project ------------------------------
-        if self._tags:
-            tasks = [t for t in tasks if self._tags.issubset(t.get("tags", []))]
-        if self._project:
-            tasks = [t for t in tasks if t.get("project", "") == self._project]
+        # filter the tasks based on their tags, project and modification date -----------------
+        def create_tasks_filter() -> Callable[[TaskwarriorRawItem], bool]:
+            always_true = lambda task: True
+            fn = always_true
+
+            tags_fn = lambda task: self._tags.issubset(task.get("tags", []))
+            project_fn = lambda task: task.get("project", "") == self._project
+
+            if self._only_modified_since:
+                mod_since_date = assume_local_tz_if_none(self._only_modified_since)
+
+                def only_modified_since_fn(task):
+                    mod_date = task.get("modified")
+                    if mod_date is None:
+                        logger.warning(
+                            f'Task does not have a modification date {task["uuid"]}, this'
+                            " sounds like a bug but including it anyway..."
+                        )
+                        return True
+
+                    mod_date: datetime.datetime
+                    mod_date = assume_local_tz_if_none(mod_date)
+
+                    if mod_since_date <= mod_date:
+                        return True
+
+                    return False
+
+            if self._tags:
+                fn = lambda task, fn=fn, tags_fn=tags_fn: fn(task) and tags_fn(task)
+            if self._project:
+                fn = lambda task, fn=fn, project_fn=project_fn: fn(task) and project_fn(task)
+            if self._only_modified_since:
+                fn = lambda task, fn=fn: fn(task) and only_modified_since_fn(task)
+
+            return fn
+
+        tasks_filter = create_tasks_filter()
+        tasks = [t for t in tasks if tasks_filter(t)]
 
         for task in tasks:
-            task["uuid"] = str(task["uuid"])
+            task["uuid"] = str(task["uuid"])  # type: ignore
 
         if order_by is not None:
             tasks.sort(key=lambda t: t[kargs["order_by"]], reverse=not use_ascending_order)  # type: ignore
@@ -176,6 +216,14 @@ class TaskWarriorSide(SyncSide):
         new_item = self._tw.task_add(description=description, **item)  # type: ignore
         new_id = new_item["id"]
         logger.debug(f'Task "{new_id}" created - "{description[0:len_print]}"...')
+
+        # explicitly mark as deleted - taskw doesn't like task_add(`status:deleted`) so we have
+        # todo it in two steps
+        if curr_status == "deleted":
+            logger.debug(
+                f'Task "{new_id}" marking as deleted - "{description[0:len_print]}"...'
+            )
+            self._tw.task_delete(id=new_id)
 
         return cast(ItemType, new_item)
 
