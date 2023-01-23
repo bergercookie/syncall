@@ -33,18 +33,18 @@ TW <-> Caldav will make the following mappings between items:
 
 ## Installation
 
-Install the `taskwarrior-syncall` package from PyPI, enabling the `caldav-client`
+Install the `syncall` package from PyPI, enabling the `caldav` and `taskwarrior`
 extra:
 
 ```sh
-pip3 install taskwarrior-syncall[caldav-client]
+pip3 install syncall[caldav, taskwarrior]
 ```
 
 ## Usage
 
 ### Taskwarrior
 
-You can find synchronize a series of Taskwarrior tasks that have a particular
+You can synchronize a series of Taskwarrior tasks that have a particular
 (or multiple) tags or synchronize all the tasks that belong to a particular
 project.
 
@@ -81,6 +81,5 @@ CALDAV_USER=myUser CALDAV_PASSWD=myPass tw_caldav_sync --caldav-url https://next
 
 ## Future Work
 
-- [ ] Handle recurring tasks (will need to manually inject the appropriate ics format when adding/updating caldav tasks)
 - [ ] See if we can handle TW "waiting" tasks a little better (possibly by setting the caldav `start` field to when the wait expires)
 - [ ] Consider how to refactor out extra steps in conversion, and just store caldav items in their vTodo formats (though this will make test files much uglier)

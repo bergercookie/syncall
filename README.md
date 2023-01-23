@@ -440,8 +440,8 @@ Options:
 
 ## Installation instructions
 
-- PyPI (may not contain latest version): `pip3 install --user --upgrade taskwarrior-syncall[notion,google,gkeep,asana,caldav-client]`
-- Github: `pip3 install --user "taskwarrior-syncall[google] @ git+https://github.com/bergercookie/taskwarrior-syncall"`
+- PyPI (may not contain latest version): `pip3 install --user --upgrade syncall[notion,google,gkeep,asana,caldav]`
+- Github: `pip3 install --user "syncall[google] @ git+https://github.com/bergercookie/taskwarrior-syncall"`
 - # Download and install `devel` branch locally - bleeding edge
 
 ## Mechanics / Automatic synchronization

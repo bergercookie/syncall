@@ -12,13 +12,12 @@ from bubop import (
 )
 
 try:
-    from syncall import CaldavSide
+    from syncall import CaldavSide, TaskWarriorSide
 except ImportError:
-    inform_about_app_extras(["caldav-client"])
+    inform_about_app_extras(["caldav", "tw"])
 
 from syncall import (
     Aggregator,
-    TaskWarriorSide,
     __version__,
     cache_or_reuse_cached_combination,
     convert_caldav_to_tw,
