@@ -104,7 +104,7 @@ jobs:
         # Not sure if both are required
         # https://github.com/TheKevJames/coveralls-python/issues/252
         - name: Coveralls
-          run: poetry run coveralls --service=github
+          run: poetry run coveralls --service=github || poetry run coveralls
           env:
             COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
