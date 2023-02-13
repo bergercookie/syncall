@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "syncall"
-version = "1.4.0"
+version = "1.5.0"
 description = "Versatile bi-directional synchronization tool"
 license = "MIT"
 authors = ["Nikos Koukis <nickkouk@gmail.com>"]
