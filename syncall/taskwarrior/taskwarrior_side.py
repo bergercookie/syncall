@@ -1,6 +1,18 @@
 import datetime
 from pathlib import Path
-from typing import Callable, Dict, List, Literal, Optional, Sequence, Set, Union, cast
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Union,
+    cast,
+)
 from uuid import UUID
 
 from bubop import assume_local_tz_if_none, logger, parse_datetime
@@ -21,6 +33,7 @@ OrderByType = Literal[
 ]
 
 tw_duration_key = "twgcalsyncduration"
+tw_config_default_overrides = {"context": "none", f"uda.{tw_duration_key}.type": "duration"}
 
 
 def parse_datetime_(dt: Union[str, datetime.datetime]) -> datetime.datetime:
@@ -43,6 +56,7 @@ class TaskWarriorSide(SyncSide):
         project: Optional[str] = None,
         only_modified_since: Optional[datetime.datetime] = None,
         config_file: Path = Path(TASKRC),
+        config_overrides: Mapping[str, Any] = {},
         **kargs,
     ):
         """
@@ -52,11 +66,19 @@ class TaskWarriorSide(SyncSide):
         :param project: Only include tasks that include in this project
         :param only_modified_since: Only include tasks that are modified since the specified date
         :param config_file: Path to the taskwarrior RC file
+        :param config_overrides: Dictionary of taskrc key, values to override. See also
+                                 tw_config_default_overrides
         """
         super().__init__(name="Tw", fullname="Taskwarrior", **kargs)
         self._tags: Set[str] = set(tags)
         self._project: str = project or ""
-        self._tw = TaskWarrior(marshal=True, config_filename=str(config_file))
+
+        config_overrides_ = tw_config_default_overrides.copy()
+        config_overrides_.update(config_overrides)
+
+        self._tw = TaskWarrior(
+            marshal=True, config_filename=str(config_file), config_overrides=config_overrides_
+        )
 
         # All TW tasks
         self._items_cache: Dict[str, TaskwarriorRawItem] = {}
