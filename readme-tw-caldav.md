@@ -8,6 +8,10 @@ This service has been tested using a self-hosted [nextcloud](https://nextcloud.c
 Upon execution, `tw_caldav_sync` will synchronize, and on subsequent runs of the
 program keep synchronized, the following attributes (tw entries will be converted to a vCard format and visa versa):
 
+## Demo - first run - populating tasklist in Nextcloud
+
+![demo_gif](misc/tw_caldav_sync.gif)
+
 ### Mappings
 
 TW <-> Caldav will make the following mappings between items:
