@@ -64,8 +64,19 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
         caldav_item["start"] = tw_item["due"] - timedelta(hours=1)
         caldav_item["due"] = tw_item["due"]
 
+    # Tags
     if "tags" in tw_item.keys():
         caldav_item["categories"] = tw_item["tags"]
+
+    # Project
+    if "project" in tw_item.keys():
+        # If there are tags use them to prevent overwritting
+        if "tags" in tw_item.keys():
+            project = tw_item["tags"]
+        else:
+            project = []
+        project.append("proj:" + tw_item["project"])
+        caldav_item["categories"] = project
 
     # if start-ed, override the status appropriately
     if "start" in tw_item.keys():
@@ -109,7 +120,15 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
         tw_item["due"] = caldav_item["due"]
 
     if "categories" in caldav_item.keys():
-        tw_item["tags"] = caldav_item["categories"]
+        categories = caldav_item["categories"]
+        # Search the first 'proj:tag' and use it for the project
+        # Then remove it from the list
+        for i in categories:
+            if i.startswith("proj:"):
+                tw_item["project"] = i.split(":")[1]
+                categories.remove(i)
+                break
+        tw_item["tags"] = categories
 
     if caldav_item["status"] == "in-process" and "last-modified" in caldav_item:
         tw_item["start"] = caldav_item["last-modified"]
