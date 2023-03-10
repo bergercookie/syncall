@@ -43,6 +43,73 @@ TaskwarriorRawTuple = Tuple[Optional[int], TaskwarriorRawItem]
 GCalItem = Dict[str, Any]
 
 # ---------------------------------------------------------------------------------------------
+# Google Tasks
+
+
+class GTaskLink(TypedDict):
+    description: str
+    link: str
+    type: str  # "email"
+
+
+class GTasksList(TypedDict):
+    etag: str  # ETag of the resource.
+    id: str  # Task list identifier.
+    kind: str  # Type of the resource. This is always "tasks#taskList".
+    selfLink: str  # URL pointing to this task list. Used to retrieve, update, or delete this task list.
+    title: str  # Title of the task list.
+    updated: str  # Last modification time of the task list (as a RFC 3339 timestamp).
+
+
+class GTasksItem(TypedDict):
+    """Dictionary part of an item as returned from the Google Tasks Python API on tasks().get_task()
+
+    Example:
+
+       {
+        'id': 'Yl9GSzNDVWluTk9heE1sUQ',
+        'kind': 'tasks#task',
+        'status': 'completed',
+        'etag': '"LTc5ODEwNzk2Mg"',
+        'title': 'Simple completed item',
+        'updated': '2021-12-04T15:07:00.000Z',
+        'selfLink': 'https://www.googleapis.com/tasks/v1/lists/YUFLWXdFQ3NLczVKalZsWg/tasks/Yl9GSzNDVWluTk9heE1sUQ',
+        'position': '00000000000000000001',
+        'notes': '''
+            * Annotation: Testing adding annotation in Google Tasks\n
+
+            * status: done\n
+            * uuid: 542f5dbc-b1b7-4a85-b55e-10f5f1d31847
+        ''',
+        'due': '2021-12-04T18:07:00.000Z',
+        "completed": "2021-12-04T15:07:00.000Z",
+        'links': []
+    }"""
+
+    completed: Optional[
+        str
+    ]  # Completion date of the task (as a RFC 3339 timestamp). This field is omitted if the task has not been completed.
+    deleted: bool  # Flag indicating whether the task has been deleted. The default is False.
+    due: Optional[
+        str
+    ]  # Due date of the task (as a RFC 3339 timestamp). Optional. The due date only records date information; the time portion of the timestamp is discarded when setting the due date. It isn't possible to read or write the time that a task is due via the API.
+    etag: str  # ETag of the resource.
+    hidden: bool  # Flag indicating whether the task is hidden. This is the case if the task had been marked completed when the task list was last cleared. The default is False. This field is read-only.
+    id: str  # Task identifier.
+    kind: str  # Type of the resource. This is always "tasks#task".
+    links: List[GTaskLink]  # Collection of links. This collection is read-only.
+    notes: Optional[str]  # Notes describing the task. Optional.
+    parent: Optional[
+        str
+    ]  # Parent task identifier. This field is omitted if it is a top-level task. This field is read-only. Use the "move" method to move the task under a different parent or to the top level.
+    position: str  # String indicating the position of the task among its sibling tasks under the same parent task or at the top level. If this string is greater than another task's corresponding position string according to lexicographical ordering, the task is positioned after the other task under the same parent task (or at the top level). This field is read-only. Use the "move" method to move the task to another position.
+    selfLink: str  # URL pointing to this task. Used to retrieve, update, or delete this task.
+    status: str  # Status of the task. This is either "needsAction" or "completed".
+    title: str  # Title of the task.
+    updated: str  # Last modification time of the task (as a RFC 3339 timestamp).
+
+
+# ---------------------------------------------------------------------------------------------
 # Notion
 NotionID = ID
 

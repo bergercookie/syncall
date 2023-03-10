@@ -31,6 +31,7 @@ from syncall.cli import (
     opt_gkeep_user_pass_path,
     opt_google_oauth_port,
     opt_google_secret_override,
+    opt_gtasks_list,
     opt_list_asana_workspaces,
     opt_list_combinations,
     opt_notion_page_id,
@@ -64,6 +65,7 @@ __all__ = [
     "opt_combination",
     "opt_custom_combination_savename",
     "opt_gcal_calendar",
+    "opt_gtasks_list",
     "opt_gkeep_note",
     "opt_gkeep_passwd_pass_path",
     "opt_gkeep_user_pass_path",
@@ -131,6 +133,19 @@ except ImportError:
             "GCalSide",
             "convert_gcal_to_tw",
             "convert_tw_to_gcal",
+        ]
+    )
+
+# gtasks --------------------------------------------------------------------------------------
+try:
+    from syncall.google.gtasks_side import GTasksSide
+    from syncall.tw_gtasks_utils import convert_gtask_to_tw, convert_tw_to_gtask
+except ImportError:
+    __all__.extend(
+        [
+            "GTasksSide",
+            "convert_gtask_to_tw",
+            "convert_tw_to_gtask",
         ]
     )
 

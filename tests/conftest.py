@@ -9,6 +9,7 @@ from loguru import logger
 from .conftest_fs import *
 from .conftest_gcal import *
 from .conftest_gkeep import *
+from .conftest_gtasks import *
 from .conftest_notion import *
 from .conftest_tw import *
 

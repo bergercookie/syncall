@@ -265,6 +265,15 @@ def opt_gcal_calendar():
     )
 
 
+def opt_gtasks_list():
+    return click.option(
+        "-l",
+        "--gtasks-list",
+        type=str,
+        help="Name of the Google Tasks list to synchronize (will be created if not there)",
+    )
+
+
 def opt_gkeep_labels():
     return click.option(
         "-k",
