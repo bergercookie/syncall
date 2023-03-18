@@ -79,7 +79,7 @@ class Aggregator:
 
         # Correspondences between the two sides -----------------------------------------------
         # For finding the matches between IDs of the two sides
-        # e.g., for Taskwarrior <-> Gcal: tw_gcal_ids
+        # e.g., for Taskwarrior <-> GCal: tw_gcal_ids
         correspondences_prefs_key = f"{self._side_B.name}_{self._side_A.name}_ids"
         if correspondences_prefs_key not in self.prefs_manager:
             self.prefs_manager[correspondences_prefs_key] = bidict()

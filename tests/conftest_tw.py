@@ -1,50 +1,59 @@
-import pytest
+import datetime
 
-from syncall.types import TwRawItem
+import pytest
+from dateutil.tz.tz import tzutc
+
+from syncall.types import TwItem
 
 
 @pytest.fixture()
-def tw_task(request: pytest.FixtureRequest) -> TwRawItem:
+def tw_task(request: pytest.FixtureRequest) -> TwItem:
     """Fixture to parametrize on."""
     param = request.param  # type: ignore
     return request.getfixturevalue(param)
 
 
 @pytest.fixture()
-def tw_simple_pending_task() -> TwRawItem:
-    return (
-        345,
-        {
-            "id": 345,
-            "description": "Arrange to do any home pre-departure covid tests",
-            "entry": "20201027T104745Z",
-            "modified": "20201027T104745Z",
-            "project": "travelling",
-            "status": "pending",
-            "uuid": "3e3fdd67-b8b7-4924-bd86-36daa2e9c1c9",
-            "urgency": 1.20822,
-        },
-    )
+def tw_pending_task() -> TwItem:
+    return {
+        "id": 686,
+        "description": "Arrange to do any home pre-departure covid tests",
+        "entry": datetime.datetime(2023, 3, 10, 11, 26, 7, tzinfo=tzutc()),
+        "modified": datetime.datetime(2023, 3, 10, 13, 33, 48, tzinfo=tzutc()),
+        "project": "a_project",
+        "status": "pending",
+        "uuid": "b2645524-6a3d-4fa2-b8c5-3bf155d03506",
+        "urgency": 1.03836,
+    }
 
 
 @pytest.fixture()
-def tw_simple_completed_task() -> TwRawItem:
-    return (
-        None,
-        {
-            "id": 0,
-            "description": "Talk with family",
-            "due": "20211130T173800Z",
-            "end": "20211130T213004Z",
-            "entry": "20211129T180001Z",
-            "imask": 71,
-            "modified": "20211130T213004Z",
-            "parent": "d39deae3-01b7-4c31-831e-e1fbea526830",
-            "recur": "daily",
-            "rtype": "periodic",
-            "status": "completed",
-            "uuid": "48d74cbd-d2ec-40ce-915b-d17bc7842fff",
-            "tags": ["remindme", "routine"],
-            "urgency": 6.4936,
-        },
-    )
+def tw_pending_with_due_task() -> TwItem:
+    return {
+        "id": 0,
+        "description": "Create and share public photos album",
+        "due": datetime.datetime(2023, 3, 12, 22, 0, tzinfo=tzutc()),
+        "end": datetime.datetime(2023, 3, 13, 17, 58, 12, tzinfo=tzutc()),
+        "entry": datetime.datetime(2023, 1, 25, 20, 47, 26, tzinfo=tzutc()),
+        "modified": datetime.datetime(2023, 3, 13, 17, 58, 12, tzinfo=tzutc()),
+        "project": "travelling",
+        "status": "pending",
+        "uuid": "14bcfc87-a4fe-4c32-898b-179b154a03d1",
+        "tags": ["remindme"],
+        "urgency": 13.3259,
+    }
+
+
+def _as_completed(task):
+    task["status"] = "completed"
+    return task
+
+
+@pytest.fixture()
+def tw_completed_task(tw_pending_task) -> TwItem:
+    return _as_completed(tw_pending_task)
+
+
+@pytest.fixture()
+def tw_completed_with_due_task(tw_pending_with_due_task) -> TwItem:
+    return _as_completed(tw_pending_with_due_task)

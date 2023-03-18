@@ -69,7 +69,6 @@ xattr = { version = "^0.9.9", optional = true }
 
 loguru = "^0.5.3"
 python-dateutil = "^2.8.1"
-pytz = "^2021.1"
 rfc3339 = "^6.2"
 typing = "^3.7.4"
 item-synchronizer = "^1.1.4"
@@ -99,7 +98,6 @@ pyright = "*"
 pytest = "*"
 types-PyYAML = "^5.4.1"
 types-python-dateutil = "^2.8.3"
-types-pytz = "^2021.3.2"
 types-setuptools = "^57.4.4"
 google-api-python-client-stubs = "^1.9.0"
 coverage = { version = "^6.2", extras = ["toml"] }
@@ -109,8 +107,6 @@ check-jsonschema = "^0.14.3"
 readline = "6.2.4.1"
 
 # isort ------------------------------------------------------------------------
-tzlocal = "^4.2"
-
 [tool.isort]
 include_trailing_comma = true
 line_length = 95

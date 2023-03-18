@@ -5,7 +5,7 @@ import pytest
 from syncall.notion.notion_side import NotionSide
 from syncall.notion.notion_todo_block import NotionTodoBlock
 from syncall.tw_notion_utils import convert_notion_to_tw, convert_tw_to_notion
-from syncall.types import NotionPageContents, NotionTodoBlockItem, TwItem, TwRawItem
+from syncall.types import NotionPageContents, NotionTodoBlockItem, TwItem
 
 
 # test conversions ----------------------------------------------------------------------------
@@ -30,12 +30,12 @@ def test_convert_notion_to_tw(notion_todo: NotionTodoBlockItem):
 
 @pytest.mark.parametrize(
     "tw_task",
-    ["tw_simple_pending_task", "tw_simple_completed_task"],
+    ["tw_pending_task", "tw_completed_task"],
     indirect=True,
 )
-def test_convert_tw_to_notion(tw_task: TwRawItem):
-    notion_todo_block = convert_tw_to_notion(tw_task[1])
-    compare_items(notion_todo_block, tw_task[1])
+def test_convert_tw_to_notion(tw_task: TwItem):
+    notion_todo_block = convert_tw_to_notion(tw_task)
+    compare_items(notion_todo_block, tw_task)
 
 
 # test page todo search -----------------------------------------------------------------------
