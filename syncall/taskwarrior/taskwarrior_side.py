@@ -203,7 +203,7 @@ class TaskWarriorSide(SyncSide):
             t.pop(i, False)
 
         # taskwarrior doesn't let you explicitly set the update time.
-        # even if you set it it will revert to the time  that you call
+        # even if you set it it will revert to the time that you call
         # `tw.task_update`
         d = dict(t)
         d.update(changes)

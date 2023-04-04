@@ -3,7 +3,7 @@ from bubop.time import format_datetime_tz
 
 from syncall import GKeepTodoItem
 from syncall.tw_gkeep_utils import convert_gkeep_todo_to_tw, convert_tw_to_gkeep_todo
-from syncall.types import TwItem, TwRawItem
+from syncall.types import TwItem
 
 
 # test conversions ----------------------------------------------------------------------------
@@ -28,12 +28,12 @@ def test_convert_gkeep_to_tw(gkeep_raw_item: dict):
 
 @pytest.mark.parametrize(
     "tw_task",
-    ["tw_simple_pending_task", "tw_simple_completed_task"],
+    ["tw_pending_task", "tw_completed_task"],
     indirect=True,
 )
-def test_convert_tw_to_gkeep_todo(tw_task: TwRawItem):
-    gkeep_item = convert_tw_to_gkeep_todo(tw_task[1])
-    compare_items(gkeep_item, tw_task[1])
+def test_convert_tw_to_gkeep_todo(tw_task: TwItem):
+    gkeep_item = convert_tw_to_gkeep_todo(tw_task)
+    compare_items(gkeep_item, tw_task)
 
 
 @pytest.mark.parametrize(

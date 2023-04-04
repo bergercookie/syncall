@@ -1,4 +1,4 @@
-from typing import Dict, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 import caldav
 from bubop import logger
@@ -7,9 +7,8 @@ from icalendar.prop import vCategory, vDatetime, vText
 from item_synchronizer.types import ID
 
 from syncall.app_utils import error_and_exit
-from syncall.caldav.caldav_utils import calendar_todos, icalendar_component
+from syncall.caldav.caldav_utils import calendar_todos, icalendar_component, map_ics_to_item
 from syncall.sync_side import SyncSide
-from syncall.tw_caldav_utils import map_ics_to_item
 
 
 class CaldavSide(SyncSide):
@@ -36,7 +35,7 @@ class CaldavSide(SyncSide):
 
         self._client = client.principal()
         self._calendar_name = calendar_name
-        self._calendar = None
+        self._calendar: caldav.Calendar
         self._items_cache: Dict[str, dict] = {}
 
     def start(self):
@@ -81,7 +80,7 @@ class CaldavSide(SyncSide):
             item = self._find_todo_by_id(item_id=item_id)
         return item
 
-    def _find_todo_by_id(self, item_id: ID, raw: bool = False):
+    def _find_todo_by_id_raw(self, item_id: ID) -> Optional[caldav.CalendarObjectResource]:
         item = next(
             (
                 item
@@ -90,30 +89,45 @@ class CaldavSide(SyncSide):
             ),
             None,
         )
-        if item and not raw:
-            item = map_ics_to_item(icalendar_component(item))
+
         return item
 
+    def _find_todo_by_id(self, item_id: ID) -> Optional[Dict]:
+        raw_item = self._find_todo_by_id_raw(item_id=item_id)
+        if raw_item:
+            return map_ics_to_item(icalendar_component(raw_item))
+
     def delete_single_item(self, item_id: ID):
-        todo = self._find_todo_by_id(item_id=item_id, raw=True)
-        if todo:
+        todo = self._find_todo_by_id_raw(item_id=item_id)
+        if todo is not None:
             todo.delete()
 
     def update_item(self, item_id: ID, **changes):
-        todo = self._find_todo_by_id(item_id=item_id, raw=True)
-        # Sadly, as we have to do some specific tweaking to convert our
-        # item back into a icalendar format
+        todo = self._find_todo_by_id_raw(item_id=item_id)
+        if todo is None:
+            logger.error(
+                f"Trying to update item but cannot find item on the CalDav server -> {item_id}"
+            )
+            logger.opt(lazy=True).debug(f"Can't update item {item_id}\n\nchanges: {changes}")
+            return
+
+        def set_(key: str, val: Any):
+            icalendar_component(todo)[key] = val
+
+        # pop the key:value (s) that we're intending to potentially update
+        for key in self._identical_comparison_keys:
+            icalendar_component(todo).pop(key)
+
         for key, value in changes.items():
             if key == "status":
-                icalendar_component(todo)[key] = vText(value.upper())
+                set_(key, vText(value.upper()))
             if key in ["due", "created", "last-modified"]:
-                icalendar_component(todo)[key] = vDatetime(value)
+                set_(key, vDatetime(value))
             if key in ["priority", "description", "summary"]:
-                icalendar_component(todo)[key] = vText(value)
+                set_(key, vText(value))
             if key == "categories":
-                icalendar_component(todo)["categories"] = vCategory(
-                    [vText(cat) for cat in value]
-                )
+                set_(key, vCategory([vText(cat) for cat in value]))
+
         todo.save()
 
     def add_item(self, item):

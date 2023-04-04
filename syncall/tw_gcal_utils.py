@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import List, Optional, Tuple
 from uuid import UUID
 
+import dateutil
 from bubop import logger
 from item_synchronizer.types import Item
 
@@ -84,12 +85,13 @@ def convert_tw_to_gcal(
     else:
         duration = default_event_duration
 
-    # handle dates  ---------------------------------------------------------------------------
+    # handle start, end datetimes -------------------------------------------------------------
     # walk through the date_keys using the first of them that's present in the item at hand.
     # - if the prefered key is `scheduled` use the item["scheduled"] as the prefered date and
-    #   create an event with (start=scheduled, end=entry+1).
-    # - if the scheduled key is not found, do the same with the due key if that's found
-    # - if none of the above keys work, use the entry key: (start=entry, end=entry+1)
+    #   create an event with (start=scheduled-duration, end=scheduled).
+    # - if the preferred key is due, create an event with (start=due-duration, end=due)
+    # - if there's no due and no scheduled dates assigned, use the entry key: (start=entry,
+    # end=entry+duration)
     for date_key in date_keys:
         if date_key in tw_item.keys():
             logger.trace(
@@ -112,10 +114,6 @@ def convert_tw_to_gcal(
         gcal_item["start"] = {"dateTime": entry_dt_gcal_str}
 
         gcal_item["end"] = {"dateTime": GCalSide.format_datetime(entry_dt + duration)}
-
-    # update time
-    if "modified" in tw_item.keys():
-        gcal_item["updated"] = GCalSide.format_datetime(tw_item["modified"])
 
     return gcal_item
 
@@ -169,19 +167,16 @@ def convert_gcal_to_tw(
         date_key = "due"
 
     end_time = GCalSide.get_event_time(gcal_item, t="end")
-    tw_item[date_key] = end_time
-
-    # update time
-    if "updated" in gcal_item.keys():
-        tw_item["modified"] = GCalSide.parse_datetime(gcal_item["updated"])
 
     tw_item[tw_duration_key] = taskw_duration_serialize(
         end_time - GCalSide.get_event_time(gcal_item, t="start")
     )
 
+    tw_item[date_key] = end_time
+
     # Note:
     # Don't add extra fields of GCal as TW annotations because then, if converted
-    # backwards, these annotations are going in the description of the Gcal event and then
+    # backwards, these annotations are going in the description of the GCal event and then
     # these are going into the event description and this happens on every conversion. Add
     # them as new TW UDAs if needed
 

@@ -5,8 +5,7 @@ from typing import Dict, List, Literal, Optional, Sequence, Union, cast
 
 import dateutil
 import pkg_resources
-import pytz
-from bubop import format_datetime_tz, logger
+from bubop import assume_local_tz_if_none, format_datetime_tz, logger
 from googleapiclient import discovery
 from googleapiclient.http import HttpError
 
@@ -50,11 +49,11 @@ class GCalSide(GoogleSide):
             client_secret = DEFAULT_CLIENT_SECRET
 
         super().__init__(
-            name="Gcal",
+            name="GCal",
             fullname="Google Calendar",
             scopes=["https://www.googleapis.com/auth/calendar"],
             credentials_cache=Path.home() / ".gcal_credentials.pickle",
-            client_secret=client_secret,
+            client_secret=Path(client_secret),
             **kargs,
         )
 
@@ -230,48 +229,20 @@ class GCalSide(GoogleSide):
         - (dateTime, dateZone) dictionary
         - datetime object
 
-        Usage::
-
-        >>> GCalSide.parse_datetime("2019-03-05T00:03:09Z")
-        datetime.datetime(2019, 3, 5, 0, 3, 9)
-        >>> GCalSide.parse_datetime("2019-03-05")
-        datetime.datetime(2019, 3, 5, 0, 0)
-        >>> GCalSide.parse_datetime("2019-03-05T00:03:01.1234Z")
-        datetime.datetime(2019, 3, 5, 0, 3, 1, 123400)
-        >>> GCalSide.parse_datetime("2019-03-08T00:29:06.602Z")
-        datetime.datetime(2019, 3, 8, 0, 29, 6, 602000)
-
-        >>> from tzlocal import get_localzone_name
-        >>> tz = get_localzone_name()
-        >>> a = GCalSide.parse_datetime({"dateTime": "2021-11-14T22:07:49Z", "timeZone": tz})
-        >>> b = GCalSide.parse_datetime({"dateTime": "2021-11-14T22:07:49.000000Z"})
-        >>> b
-        datetime.datetime(2021, 11, 14, 22, 7, 49)
-        >>> from bubop.time import is_same_datetime
-        >>> is_same_datetime(a, b) or (print(a) or print(b))
-        True
-        >>> GCalSide.parse_datetime({"dateTime": "2021-11-14T22:07:49.123456"})
-        datetime.datetime(2021, 11, 14, 22, 7, 49, 123456)
-        >>> a = GCalSide.parse_datetime({"dateTime": "2021-11-14T22:07:49Z", "timeZone": tz})
-        >>> GCalSide.parse_datetime(a).isoformat() == a.isoformat()
-        True
+        The output datetime is always in local timezone.
         """
 
         if isinstance(dt, str):
-            return dateutil.parser.parse(dt).replace(tzinfo=None)  # type: ignore
+            dt_dt = dateutil.parser.parse(dt)  # type: ignore
+            return cls.parse_datetime(dt_dt)
         elif isinstance(dt, dict):
             date_time = dt.get("dateTime")
             if date_time is None:
                 raise RuntimeError(f"Invalid structure dict: {dt}")
-            dt_dt = GCalSide.parse_datetime(date_time)
-            time_zone = dt.get("timeZone")
-            if time_zone is not None:
-                timezone = pytz.timezone(time_zone)
-                dt_dt = timezone.localize(dt_dt)
 
-            return dt_dt
+            return cls.parse_datetime(date_time)
         elif isinstance(dt, datetime.datetime):
-            return dt
+            return assume_local_tz_if_none(dt)
         else:
             raise RuntimeError(
                 f"Unexpected type of a given date item, type: {type(dt)}, contents: {dt}"

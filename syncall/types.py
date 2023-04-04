@@ -2,10 +2,9 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, TypedDict, Union
 
 from item_synchronizer.types import ID
 
+
 # ---------------------------------------------------------------------------------------------
 # Taskwarrior
-
-
 class TaskwarriorRawItem(TypedDict, total=False):
     """Dictionary part of an item as returned from the Taskw Python API on tw.get_task(id=...).
 
@@ -39,6 +38,9 @@ class TaskwarriorRawItem(TypedDict, total=False):
 
 # Item as returned from the Taskw Python API on tw.get_task(id=...)
 TaskwarriorRawTuple = Tuple[Optional[int], TaskwarriorRawItem]
+
+# Google Calendar -----------------------------------------------------------------------------
+GCalItem = Dict[str, Any]
 
 # ---------------------------------------------------------------------------------------------
 # Notion
@@ -201,6 +203,8 @@ class AsanaRawTask(TypedDict):
     modified_at: str
 
 
+# Extras --------------------------------------------------------------------------------------
 # Task as returned from taskw.get_task(id=...)
+# TODO Are these types needed? They seem to be duplicates of TaskwarriorRawItem ...
 TwRawItem = Tuple[Optional[int], Dict[str, Any]]
 TwItem = Dict[str, Any]
