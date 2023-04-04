@@ -68,13 +68,10 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
 
     # Project
     if "project" in tw_item.keys():
-        # If there are tags use them to prevent overwritting
-        if "tags" in tw_item.keys():
-            project = tw_item["tags"]
-        else:
-            project = []
-        project.append("proj:" + tw_item["project"])
-        caldav_item["categories"] = project
+        categories = []
+        categories.extend(tw_item.get("tags", []))
+        categories.append("proj: " + tw_item["project"])
+        caldav_item["categories"] = categories
 
     # if start-ed, override the status appropriately
     if "start" in tw_item.keys():
@@ -123,7 +120,7 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
         # Then remove it from the list
         for i in categories:
             if i.startswith("proj:"):
-                tw_item["project"] = i.split(":")[1]
+                tw_item["project"] = i.split(":")[1].strip()
                 categories.remove(i)
                 break
         tw_item["tags"] = categories
