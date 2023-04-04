@@ -28,7 +28,7 @@ TW <-> Caldav will make the following mappings between items:
   - `M` <-> 5
   - `H` <-> 1
 - TW `annotations`, `uuid` <-> `DESCRIPTION`
-- TW `project` <-> `CATEGORIES`
+- TW `project` <-> `CATEGORIES` entry starting with `proj: `
 - TW `tags` <-> `CATEGORIES`
 
 ### Current limitations
