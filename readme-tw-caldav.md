@@ -18,9 +18,9 @@ TW <-> Caldav will make the following mappings between items:
 
 - `description` <-> `SUMMARY`
 - `status` <-> `STATUS`
-  - `pending`, `waiting` <-> `NEEDS-ACTION`
-  - `completed` <-> `COMPLETED`
-  - `deleted` <-> `CANCELLED`
+  - `pending`, `waiting` <-> `STATUS:NEEDS-ACTION`
+  - `completed` <-> `STATUS:COMPLETED`
+  - `deleted` <-> `STATUS:CANCELLED`
 - TW `modified` <-> `LAST-MODIFIED`
 - TW `prioriy` <-> `PRIORITY`
   - `""` <-> `None`
