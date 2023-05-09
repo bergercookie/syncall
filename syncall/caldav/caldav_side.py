@@ -137,6 +137,8 @@ class CaldavSide(SyncSide):
             status=item.get("status").upper(),
             due=item.get("due"),
             categories=item.get("categories"),
+            created=item.get("created"),
+            completed=item.get("completed"),
         )
         return map_ics_to_item(icalendar_component(todo))
 

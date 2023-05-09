@@ -53,6 +53,10 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
         caldav_item["priority"] = aliases_tw_caldav_priority[tw_item["priority"].lower()]
 
     # Timestamps
+    if "entry" in tw_item.keys():
+        caldav_item["created"] = tw_item["entry"]
+    if "end" in tw_item.keys():
+        caldav_item["completed"] = tw_item["end"]
     if "modified" in tw_item.keys():
         caldav_item["last-modified"] = tw_item["modified"]
 
@@ -99,6 +103,10 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
         tw_item["priority"] = prio
 
     # Timestamps
+    if "created" in caldav_item.keys():
+        tw_item["entry"] = caldav_item["created"]
+    if "completed" in caldav_item.keys():
+        tw_item["end"] = caldav_item["completed"]
     if "last-modified" in caldav_item.keys():
         tw_item["modified"] = caldav_item["last-modified"]
 
