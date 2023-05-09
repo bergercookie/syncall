@@ -347,3 +347,11 @@ def opt_caldav_passwd_pass_path():
         "caldav_passwd_pass_path",
         help="Path in the UNIX password manager to fetch the caldav password from",
     )
+
+
+def opt_caldav_passwd_cmd():
+    return click.option(
+        "--caldav-passwd-cmd",
+        "caldav_passwd_cmd",
+        help="Command that outputs the caldav password on stdout",
+    )
