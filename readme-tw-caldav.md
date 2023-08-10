@@ -61,7 +61,7 @@ In order to successfully run a sync, you will need the following flags set (mand
 
 - `--caldav-url`: URL where the caldav calendar is hosted at (including `/dav` if applicable)
 - `--caldav-user`: Username required to authenticate your caldav instance
-  - Can also be provided via the `CALDAV_USER` environment variable
+  - Can also be provided via the `CALDAV_USERNAME` environment variable
 - `--caldav-passwd`, `--caldav-passwd-pass-path`: Path to your password `.gpg` file in your [password store](https://www.passwordstore.org/)
   - Alternatively, the password can be provided directly via the `CALDAV_PASSWD` environment variable
 
