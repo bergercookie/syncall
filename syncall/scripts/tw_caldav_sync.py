@@ -18,8 +18,8 @@ from syncall import inform_about_app_extras
 from syncall.app_utils import error_and_exit
 from syncall.cli import (
     opt_caldav_calendar,
-    opt_caldav_passwd_pass_path,
     opt_caldav_passwd_cmd,
+    opt_caldav_passwd_pass_path,
     opt_caldav_url,
     opt_caldav_user,
     opt_tw_all_tasks,
@@ -200,7 +200,7 @@ def main(
         proc = subprocess.run(caldav_passwd_cmd, shell=True, text=True, capture_output=True)
         if proc.returncode != 0:
             error_and_exit(f"Password command failed: {proc.stderr}")
-        # Remove trailing newline/whitespace
+
         caldav_passwd = proc.stdout.rstrip()
     else:
         caldav_passwd = fetch_from_pass_manager(caldav_passwd_pass_path)
