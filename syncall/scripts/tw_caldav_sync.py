@@ -1,5 +1,6 @@
 import datetime
 import os
+import subprocess
 from typing import List, Optional
 
 import caldav
@@ -17,6 +18,7 @@ from syncall import inform_about_app_extras
 from syncall.app_utils import error_and_exit
 from syncall.cli import (
     opt_caldav_calendar,
+    opt_caldav_passwd_cmd,
     opt_caldav_passwd_pass_path,
     opt_caldav_url,
     opt_caldav_user,
@@ -56,6 +58,7 @@ from syncall import (
 @opt_caldav_url()
 @opt_caldav_user()
 @opt_caldav_passwd_pass_path()
+@opt_caldav_passwd_cmd()
 # taskwarrior options -------------------------------------------------------------------------
 @opt_tw_all_tasks()
 @opt_tw_tags()
@@ -73,6 +76,7 @@ def main(
     caldav_url: str,
     caldav_user: Optional[str],
     caldav_passwd_pass_path: str,
+    caldav_passwd_cmd: str,
     tw_sync_all_tasks: bool,
     tw_tags: List[str],
     tw_project: str,
@@ -192,6 +196,12 @@ def main(
     caldav_passwd = os.environ.get("CALDAV_PASSWD")
     if caldav_passwd is not None:
         logger.debug("Reading the caldav password from environment variable...")
+    elif caldav_passwd_cmd is not None:
+        proc = subprocess.run(caldav_passwd_cmd, shell=True, text=True, capture_output=True)
+        if proc.returncode != 0:
+            error_and_exit(f"Password command failed: {proc.stderr}")
+
+        caldav_passwd = proc.stdout.rstrip()
     else:
         caldav_passwd = fetch_from_pass_manager(caldav_passwd_pass_path)
 

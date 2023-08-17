@@ -366,6 +366,9 @@ Options:
   --caldav-passwd, --caldav-passwd-pass-path TEXT
                                   Path in the UNIX password manager to fetch
                                   the caldav password from
+  --caldav-passwd-cmd CMD
+                                  A command (which is run in a shell) that
+                                  outputs the caldav password on stdout
   --all, --taskwarrior-all-tasks  Sync all taskwarrior tasks [potentially very
                                   slow]
   -t, --taskwarrior-tags TEXT     Taskwarrior tags to synchronize
