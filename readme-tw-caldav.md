@@ -41,7 +41,7 @@ Install the `syncall` package from PyPI, enabling the `caldav` and `taskwarrior`
 extra:
 
 ```sh
-pip3 install syncall[caldav, taskwarrior]
+pip3 install 'syncall[caldav, tw]'
 ```
 
 ## Usage
