@@ -3,13 +3,7 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 import click
-from bubop import (
-    check_optional_mutually_exclusive,
-    format_dict,
-    log_to_syslog,
-    logger,
-    loguru_tqdm_sink,
-)
+from bubop import check_optional_mutually_exclusive, format_dict, logger, loguru_tqdm_sink
 
 from syncall import inform_about_app_extras
 from syncall.cli import opt_filename_extension, opt_gkeep_ignore_labels
@@ -32,7 +26,11 @@ from syncall import (
     list_named_combinations,
     report_toplevel_exception,
 )
-from syncall.app_utils import gkeep_read_username_password_token, write_to_pass_manager
+from syncall.app_utils import (
+    app_log_to_syslog,
+    gkeep_read_username_password_token,
+    write_to_pass_manager,
+)
 from syncall.cli import (
     opt_combination,
     opt_custom_combination_savename,
@@ -92,7 +90,7 @@ def main(
     """
     # setup logger ----------------------------------------------------------------------------
     loguru_tqdm_sink(verbosity=verbose)
-    log_to_syslog(name="fs_gkeep_sync")
+    app_log_to_syslog()
     logger.debug("Initialising...")
     inform_about_config = False
 

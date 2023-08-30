@@ -3,15 +3,10 @@ from datetime import timedelta
 from typing import List
 
 import click
-from bubop import (
-    check_optional_mutually_exclusive,
-    format_dict,
-    log_to_syslog,
-    logger,
-    loguru_tqdm_sink,
-)
+from bubop import check_optional_mutually_exclusive, format_dict, logger, loguru_tqdm_sink
 
 from syncall import inform_about_app_extras
+from syncall.app_utils import app_log_to_syslog
 
 try:
     from syncall import GCalSide, TaskWarriorSide
@@ -86,7 +81,7 @@ def main(
     """
     # setup logger ----------------------------------------------------------------------------
     loguru_tqdm_sink(verbosity=verbose)
-    log_to_syslog(name="tw_gcal_sync")
+    app_log_to_syslog()
     logger.debug("Initialising...")
     inform_about_config = False
 

@@ -9,13 +9,12 @@ from bubop import (
     check_optional_mutually_exclusive,
     check_required_mutually_exclusive,
     format_dict,
-    log_to_syslog,
     logger,
     loguru_tqdm_sink,
 )
 
 from syncall import inform_about_app_extras
-from syncall.app_utils import error_and_exit
+from syncall.app_utils import app_log_to_syslog, error_and_exit
 from syncall.cli import (
     opt_caldav_calendar,
     opt_caldav_passwd_cmd,
@@ -97,7 +96,7 @@ def main(
     """
 
     loguru_tqdm_sink(verbosity=verbose)
-    log_to_syslog(name="tw_caldav_sync")
+    app_log_to_syslog()
     logger.debug("Initialising...")
     inform_about_config = False
 

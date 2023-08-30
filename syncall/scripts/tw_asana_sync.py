@@ -5,16 +5,10 @@ from typing import List
 
 import asana
 import click
-from bubop import (
-    check_optional_mutually_exclusive,
-    format_dict,
-    log_to_syslog,
-    logger,
-    loguru_tqdm_sink,
-)
+from bubop import check_optional_mutually_exclusive, format_dict, logger, loguru_tqdm_sink
 
 from syncall import inform_about_app_extras
-from syncall.app_utils import error_and_exit
+from syncall.app_utils import app_log_to_syslog, error_and_exit
 
 try:
     from syncall import AsanaSide, TaskWarriorSide
@@ -85,7 +79,7 @@ def main(
 ):
     loguru_tqdm_sink(verbosity=verbose)
 
-    log_to_syslog(name="tw_asana_sync")
+    app_log_to_syslog()
     logger.debug("Initialising...")
     inform_about_config = False
 

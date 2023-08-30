@@ -7,13 +7,13 @@ import click
 from bubop import (
     check_optional_mutually_exclusive,
     format_dict,
-    log_to_syslog,
     logger,
     loguru_tqdm_sink,
     verbosity_int_to_std_logging_lvl,
 )
 
 from syncall import inform_about_app_extras
+from syncall.app_utils import app_log_to_syslog
 
 try:
     from syncall import NotionSide, TaskWarriorSide
@@ -81,7 +81,7 @@ def main(
     """
     # setup logger ----------------------------------------------------------------------------
     loguru_tqdm_sink(verbosity=verbose)
-    log_to_syslog(name="tw_notion_sync")
+    app_log_to_syslog()
     logger.debug("Initialising...")
     inform_about_config = False
 

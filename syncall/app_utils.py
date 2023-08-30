@@ -4,6 +4,7 @@ Use these functions only in top-level executables. In case of errors they may di
 `sys.exit()` to avoid dumping stack traces to the user.
 """
 
+import inspect
 import logging
 import os
 import subprocess
@@ -14,7 +15,15 @@ from pathlib import Path
 from typing import Any, Mapping, NoReturn, Optional, Sequence, Tuple, Type, cast
 from urllib.parse import quote
 
-from bubop import PrefsManager, format_list, logger, non_empty, read_gpg_token, valid_path
+from bubop import (
+    PrefsManager,
+    format_list,
+    log_to_syslog,
+    logger,
+    non_empty,
+    read_gpg_token,
+    valid_path,
+)
 from bubop.crypto import write_gpg_token
 from item_synchronizer.resolution_strategy import (
     AlwaysFirstRS,
@@ -212,7 +221,7 @@ def inform_about_combination_name_usage(combination_name: str):
     exec_name = Path(sys.argv[0]).stem
     logger.success(
         "Sync completed successfully. You can now use the"
-        f' {"/".join(COMBINATION_FLAGS)} option to refer to this particular combination\n\n '
+        f" {'/'.join(COMBINATION_FLAGS)} option to refer to this particular combination\n\n "
         f" {exec_name} {COMBINATION_FLAGS[1]} {combination_name}"
     )
 
@@ -223,7 +232,7 @@ def inform_about_app_extras(extras: Sequence[str]) -> NoReturn:
     extras_str = ",".join(extras)
     logger.error(
         "\nYou have to install the"
-        f' {extras_str} {"extra" if len(extras) == 1 else "extras"} for {exec_name} to'
+        f" {extras_str} {'extra' if len(extras) == 1 else 'extras'} for {exec_name} to"
         ' work.\nWith pip, you can do it with something like: "pip3 install'
         f' syncall[{extras_str}]"\nExiting.'
     )
@@ -331,3 +340,10 @@ def gkeep_read_username_password_token(
         gkeep_token = fetch_from_pass_manager(gkeep_token_pass_path, allow_fail=True)
 
     return gkeep_user, gkeep_passwd, gkeep_token
+
+
+def app_log_to_syslog():
+    caller_frame = inspect.stack()[1]
+    calling_file = Path(caller_frame[1])
+    fname = calling_file.stem
+    log_to_syslog(name=fname)
