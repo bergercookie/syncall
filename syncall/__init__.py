@@ -1,6 +1,7 @@
 """__init__"""
 
 # global imports ------------------------------------------------------------------------------
+from syncall.__version__ import __version__, __version_tuple__
 from syncall.aggregator import Aggregator
 from syncall.app_utils import (
     app_name,
@@ -41,6 +42,8 @@ from syncall.cli import (
 from syncall.sync_side import ItemType, SyncSide
 
 __all__ = [
+    "__version__",
+    "__version_tuple__",
     "Aggregator",
     "ItemType",
     "SyncSide",
@@ -186,5 +189,3 @@ try:
     )
 except ImportError:
     pass
-
-__version__ = "1.5.1"

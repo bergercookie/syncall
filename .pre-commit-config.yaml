@@ -79,13 +79,13 @@ repos:
         language: system
         pass_filenames: true
         types: [python]
-      - id: check-poetry
+      - id: poetry-check
         name: Poetry check
-        description: Validates the structure of the pyproject.toml file
         entry: poetry check
         language: system
         pass_filenames: false
-        files: pyproject.toml
+        files: "pyproject.toml|poetry.lock"
+
   - repo: meta
     hooks:
       - id: check-hooks-apply
