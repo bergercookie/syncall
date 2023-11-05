@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "syncall"
-version = "1.5.1"
+version = "0.0.0"
 description = "Versatile bi-directional synchronization tool"
 license = "MIT"
 authors = ["Nikos Koukis <nickkouk@gmail.com>"]
@@ -50,7 +50,7 @@ tw_caldav_sync = "syncall.scripts.tw_caldav_sync:main"
 [tool.poetry.dependencies]
 python = "^3.8"
 
-PyYAML = "^5.4.1"
+PyYAML = "^5.3.1"
 bidict = "^0.21.2"
 click = "^8.0"
 
@@ -72,7 +72,7 @@ python-dateutil = "^2.8.1"
 rfc3339 = "^6.2"
 typing = "^3.7.4"
 item-synchronizer = "^1.1.4"
-bubop = { version = "0.1.10", allow-prereleases = true }
+bubop = { version = "0.1.11", allow-prereleases = true }
 
 [tool.poetry.extras]
 google = ["google-api-python-client", "google-auth-oauthlib"]
@@ -191,8 +191,17 @@ omit = [
 addopts = ["--ignore-glob=quickstart*", "--doctest-modules"]
 
 # build-system -----------------------------------------------------------------
+[tool.poetry-dynamic-versioning]
+enable = true
+metadata = true
+dirty = false
+style = "pep440"
+
+[tool.poetry-dynamic-versioning.files."syncall/__version__.py"]
+persistent-substitution = false
+
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
 
 # vim: tw=80
