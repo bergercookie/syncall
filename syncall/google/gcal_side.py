@@ -36,7 +36,6 @@ class GCalSide(GoogleSide):
     ]
 
     _date_keys = ["end", "start", "updated"]
-    _date_format = "%Y-%m-%d"
 
     def __init__(
         self,
@@ -58,24 +57,26 @@ class GCalSide(GoogleSide):
         )
 
         self._calendar_summary = calendar_summary
-        self._calendar_id = None
+        self._calendar_id: str
         self._items_cache: Dict[str, dict] = {}
 
     def start(self):
         logger.debug("Connecting to Google Calendar...")
         creds = self._get_credentials()
         self._service = discovery.build("calendar", "v3", credentials=creds)
-        self._calendar_id = self._fetch_cal_id()
+        cal_id = self._fetch_cal_id()
 
         # Create calendar if not there --------------------------------------------------------
-        if self._calendar_id is None:
+        if cal_id is None:
             logger.info(f"Creating calendar {self._calendar_summary}")
             new_cal = {"summary": self._calendar_summary}
             ret = self._service.calendars().insert(body=new_cal).execute()  # type: ignore
             assert "id" in ret
-            new_cal_id = ret["id"]
+            new_cal_id: str = ret["id"]
             logger.info(f"Created calendar, id: {new_cal_id}")
             self._calendar_id = new_cal_id
+        else:
+            self._calendar_id = cal_id
 
         logger.debug("Connected to Google Calendar.")
 
@@ -99,12 +100,6 @@ class GCalSide(GoogleSide):
             raise RuntimeError(
                 f'Multiple matching calendars for name -> "{self._calendar_summary}"'
             )
-
-    def _clear_all_calendar_entries(self):
-        """Clear all events from the current calendar."""
-        # TODO Currently not functional - returning "400 Bad Request"
-        logger.warning(f"Clearing all events from calendar {self._calendar_id}")
-        self._service.calendars().clear(calendarId=self._calendar_id).execute()
 
     def get_all_items(self, **kargs):
         """Get all the events for the calendar that we use.

@@ -136,8 +136,7 @@ class Aggregator:
         new = {
             item_id for item_id in item_ids if item_id not in self._get_ids_map(helper=helper)
         }
-        # Deleted items do not exist in the sync side but still yet exist in my IDs
-        # correspndences.
+        # Deleted items do not exist in the sync side but still exist in my ID correspndences.
         #
         # Exclude the already new ones determined in the earlier step
         deleted = {

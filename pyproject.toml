@@ -114,6 +114,10 @@ check-jsonschema = "^0.14.3"
 readline = "6.2.4.1"
 
 # isort ------------------------------------------------------------------------
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.5"
+
 [tool.isort]
 include_trailing_comma = true
 line_length = 95
@@ -181,6 +185,11 @@ reportMissingImports = true
 reportMissingTypeStubs = false
 pythonVersion = "3.8"
 pythonPlatform = "Linux"
+
+# ruff -------------------------------------------------------------------------
+[tool.ruff]
+line-length = 95
+target-version = "py38"
 
 # coverage.py ------------------------------------------------------------------
 [tool.coverage]

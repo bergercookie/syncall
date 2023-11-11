@@ -35,10 +35,14 @@ class GTasksSide(GoogleSide):
     ID_KEY = "id"
     TITLE_KEY = "title"
     LAST_MODIFICATION_KEY = "updated"
-    _identical_comparison_keys = ["title", "notes"]
+    _date_keys = ["updated"]
 
-    _date_keys = ["due", "updated"]
-    _date_format = "%Y-%m-%d"
+    # don't put the "due" key for comparison
+    # due key holds the date but not the time that the use has set from the UI so we cannot
+    # really use it for bi-synchronization.
+    #
+    # https://stackoverflow.com/questions/65956873/google-task-api-due-field
+    _identical_comparison_keys = ["title", "notes", "status", *_date_keys]
 
     def __init__(
         self,
@@ -60,7 +64,7 @@ class GTasksSide(GoogleSide):
         )
 
         self._task_list_title = task_list_title
-        self._task_list_id: str | None = None
+        self._task_list_id: Optional[str] = None
         self._items_cache: Dict[str, dict] = {}
 
     def start(self):
@@ -105,7 +109,7 @@ class GTasksSide(GoogleSide):
     def _clear_all_task_list_entries(self):
         """Clear all tasks from the current task list."""
         logger.warning(f"Clearing all tasks from task list {self._task_list_id}")
-        self._service.tasks().clear(tasklist=self._task_list_id).execute()
+        self._service.tasks().clear(tasklist=self._task_list_id).execute()  # type
 
     def get_all_items(self, **kargs) -> Sequence[GTasksItem]:
         """Get all tasks for the task list that we use.
@@ -115,8 +119,22 @@ class GTasksSide(GoogleSide):
         # Get the ID of the task list of interest
         tasks = []
 
-        if self._task_list_id != None:
-            request = self._service.tasks().list(tasklist=self._task_list_id)  # type: ignore
+        if self._task_list_id is not None:
+            request = self._service.tasks().list(
+                tasklist=self._task_list_id,
+                # TL;DR Set showCompleted=True AND showHidden=True if you want to also get the
+                # items that the user has ticked from the app.
+                #
+                # From the ref: https://developers.google.com/tasks/reference/rest/v1/tasks/list
+                #
+                # Flag indicating whether completed tasks are returned in the result. Optional.
+                # The default is True. Note that showHidden must also be True to show tasks
+                # completed in first party clients, such as the web UI and Google's mobile
+                # apps.
+                showCompleted=True,
+                showDeleted=False,
+                showHidden=True,
+            )  # type: ignore
         else:
             raise RuntimeError("You have to provide valid task list ID")
 
@@ -131,7 +149,7 @@ class GTasksSide(GoogleSide):
                 [
                     t
                     for t in response.get("items", [])
-                    if t["status"] != "deleted" and len(t["title"]) > 1
+                    if t["status"] != "deleted" and len(t["title"]) > 0
                 ]
             )
 
@@ -198,25 +216,24 @@ class GTasksSide(GoogleSide):
         return cls.LAST_MODIFICATION_KEY
 
     @staticmethod
-    def get_task_due_time(item: dict) -> datetime.datetime:
-        """
-        Return the datetime on which task is due in datetime format.
-
-        """
-        dt = GTasksSide.parse_datetime(item["due"])
-        return dt
+    def _parse_dt_or_none(item: GTasksItem, field: str) -> Optional[datetime.datetime]:
+        """Return the datetime on which task was completed in datetime format."""
+        if (dt := item.get(field)) is not None:
+            dt_dt = GTasksSide.parse_datetime(dt)
+            assert isinstance(dt_dt, datetime.datetime)
+            return dt_dt
+        else:
+            return None
 
     @staticmethod
-    def get_task_completed_time(item: dict) -> Union[datetime.datetime, None]:
-        """
-        Return the datetime on which task was completed in datetime format.
+    def get_task_due_time(item: GTasksItem) -> Optional[datetime.datetime]:
+        """Return the datetime on which task is due in datetime format."""
+        return GTasksSide._parse_dt_or_none(item=item, field="due")
 
-        """
-        if "completed" in item.keys():
-            dt = GTasksSide.parse_datetime(item["completed"])
-
-            assert isinstance(dt, datetime.datetime)
-            return dt
+    @staticmethod
+    def get_task_completed_time(item: GTasksItem) -> Optional[datetime.datetime]:
+        """Return the datetime on which task was completed in datetime format."""
+        return GTasksSide._parse_dt_or_none(item=item, field="completed")
 
     @staticmethod
     def format_datetime(dt: datetime.datetime) -> str:

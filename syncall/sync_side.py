@@ -162,7 +162,7 @@ class SyncSide(abc.ABC):
             if isinstance(item1[k], datetime.datetime) and isinstance(
                 item2[k], datetime.datetime
             ):
-                if is_same_datetime(item1[k], item2[k], tol=datetime.timedelta(minutes=10)):
+                if is_same_datetime(item1[k], item2[k], tol=datetime.timedelta(minutes=1)):
                     continue
                 else:
                     logger.opt(lazy=True).trace(

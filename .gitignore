@@ -87,3 +87,4 @@ test-tw-gcal-sync.json
 /fs_tests_dir/
 /a/
 /.taskrc
+/.envrc

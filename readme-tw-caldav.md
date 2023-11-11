@@ -2,7 +2,7 @@
 
 ## Description
 
-Synchronize taskwarrior tasks to a generic caldav server.
+Synchronize Taskwarrior tasks to a generic caldav server.
 This service has been tested using a self-hosted [nextcloud](https://nextcloud.com/) server as well as , but should theoretically work with any server that implements the [caldav specification](https://www.rfc-editor.org/rfc/rfc4791)
 
 Upon execution, `tw_caldav_sync` will synchronize, and on subsequent runs of the
@@ -32,12 +32,12 @@ TW <-> Caldav will make the following mappings between items:
 
 ### Current limitations
 
-- No specific support for "waiting" tasks in taskwarrior, they will be treated like any other "needs-action" caldav task
+- No specific support for "waiting" tasks in Taskwarrior, they will be treated like any other "needs-action" caldav task
 - No support for recurring tasks sync in either direction
 
 ## Installation
 
-Install the `syncall` package from PyPI, enabling the `caldav` and `taskwarrior`
+Install the `syncall` package from PyPI, enabling the `caldav` and `Taskwarrior`
 extra:
 
 ```sh
@@ -73,13 +73,13 @@ The following flag is optional:
 
 With flags:
 
-```
+```sh
 tw_caldav_sync --caldav-url https://nextcloud.example.com/remote.php/dav --caldav-calendar MyCalendar --caldav-user myUser --caldav-passwd path/to/myPass --taskwarrior-tags sync
 ```
 
 With environment variables:
 
-```
+```sh
 CALDAV_USER=myUser CALDAV_PASSWD=myPass tw_caldav_sync --caldav-url https://nextcloud.example.com/remote.php/dav --caldav-calendar MyCalendar --taskwarrior-tags sync
 ```
 

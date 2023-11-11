@@ -29,9 +29,9 @@ def test_convert_gtask_to_tw(gtask: GTasksItem):
 
 @pytest.mark.parametrize(
     "tw_task",
-    ["tw_simple_pending_task", "tw_simple_completed_task"],
+    ["tw_pending_task", "tw_completed_task"],
     indirect=True,
 )
-def test_convert_tw_to_gtask(tw_task: TwRawItem):
-    gtask_item = convert_tw_to_gtask(tw_task[1])
-    compare_items(gtask_item, tw_task[1])
+def test_convert_tw_to_gtask(tw_task: TwItem):
+    gtask_item = convert_tw_to_gtask(tw_task)
+    compare_items(gtask_item, tw_task)

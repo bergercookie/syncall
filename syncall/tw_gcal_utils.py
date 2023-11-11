@@ -1,9 +1,6 @@
-import traceback
 from datetime import timedelta
-from typing import List, Optional, Tuple
 from uuid import UUID
 
-import dateutil
 from bubop import logger
 from item_synchronizer.types import Item
 
@@ -13,6 +10,12 @@ from syncall.taskwarrior.taskw_duration import (
 )
 from syncall.taskwarrior.taskw_duration import duration_serialize as taskw_duration_serialize
 from syncall.taskwarrior.taskwarrior_side import tw_duration_key
+from syncall.tw_utils import (
+    extract_tw_fields_from_string,
+    get_tw_annotations_as_str,
+    get_tw_status_and_uuid_as_str,
+)
+from syncall.types import GCalItem
 
 _prefix_title_success_str = "✅"
 _prefix_title_failed_str = "❌"
@@ -49,11 +52,7 @@ def convert_tw_to_gcal(
     prefer_scheduled_date: bool = False,
     default_event_duration: timedelta = timedelta(hours=1),
 ) -> Item:
-    """TW -> GCal Converter.
-
-    .. note:: Do not convert the ID as that may change either manually or
-              after marking the task as "DONE"
-    """
+    """TW -> GCal conversion."""
     assert all(
         i in tw_item.keys() for i in ("description", "status", "uuid")
     ), "Missing keys in tw_item"
@@ -67,13 +66,9 @@ def convert_tw_to_gcal(
 
     # description
     gcal_item["description"] = "IMPORTED FROM TASKWARRIOR\n"
-    if "annotations" in tw_item.keys():
-        for i, annotation in enumerate(tw_item["annotations"]):
-            gcal_item["description"] += f"\n* Annotation {i + 1}: {annotation}"
-
-    gcal_item["description"] += "\n"
-    for k in ["status", "uuid"]:
-        gcal_item["description"] += f"\n* {k}: {tw_item[k]}"
+    gcal_item["description"] += "\n".join(
+        [get_tw_annotations_as_str(tw_item), get_tw_status_and_uuid_as_str(tw_item)]
+    )
 
     date_keys = ["scheduled", "due"] if prefer_scheduled_date else ["due", "scheduled"]
     # event duration --------------------------------------------------------------------------
@@ -119,7 +114,7 @@ def convert_tw_to_gcal(
 
 
 def convert_gcal_to_tw(
-    gcal_item: Item,
+    gcal_item: GCalItem,
     set_scheduled_date: bool = False,
 ) -> Item:
     """GCal -> TW Converter.
@@ -129,7 +124,12 @@ def convert_gcal_to_tw(
     """
 
     # Parse the description
-    annotations, status, uuid = _parse_gcal_item_desc(gcal_item)
+    annotations = []
+    status = "pending"
+    uuid = None
+    if (section := gcal_item.get("description")) is not None:
+        annotations, status, uuid = extract_tw_fields_from_string(section)
+
     assert isinstance(annotations, list)
     assert isinstance(status, str)
     assert isinstance(uuid, UUID) or uuid is None
@@ -138,14 +138,13 @@ def convert_gcal_to_tw(
     # annotations
     tw_item["annotations"] = annotations
 
-    # alias - make aliases dict?
     if status == "done":
         status = "completed"
 
     # Status
     if status not in ["pending", "completed", "deleted", "waiting", "recurring"]:
         logger.error(
-            "Invalid status {status} in GCal->TW conversion of item. Skipping status:"
+            f"Invalid status {status} in GCal->TW conversion of item. Skipping status:"
         )
     else:
         tw_item["status"] = status
@@ -181,49 +180,3 @@ def convert_gcal_to_tw(
     # them as new TW UDAs if needed
 
     return tw_item
-
-
-def _parse_gcal_item_desc(
-    gcal_item: Item,
-) -> Tuple[List[str], str, Optional[UUID]]:
-    """Parse and return the necessary TW fields off a Google Calendar Item."""
-    annotations: List[str] = []
-    status = "pending"
-    uuid = None
-
-    if "description" not in gcal_item.keys():
-        return annotations, status, uuid
-
-    gcal_desc = gcal_item["description"]
-    # strip whitespaces, empty lines
-    lines = [line.strip() for line in gcal_desc.split("\n") if line][1:]
-
-    # annotations
-    i = 0
-    for i, line in enumerate(lines):
-        parts = line.split(":", maxsplit=1)
-        if len(parts) == 2 and parts[0].lower().startswith("* annotation"):
-            annotations.append(parts[1].strip())
-        else:
-            break
-
-    if i == len(lines) - 1:
-        return annotations, status, uuid
-
-    # Iterate through rest of lines, find only the status and uuid ones
-    for line in lines[i:]:
-        parts = line.split(":", maxsplit=1)
-        if len(parts) == 2:
-            start = parts[0].lower()
-            if start.startswith("* status"):
-                status = parts[1].strip().lower()
-            elif start.startswith("* uuid"):
-                try:
-                    uuid = UUID(parts[1].strip())
-                except ValueError as err:
-                    logger.error(
-                        f'Invalid UUID "{err}" provided during GCal -> TW conversion,'
-                        f" Using None...\n\n{traceback.format_exc()}"
-                    )
-
-    return annotations, status, uuid

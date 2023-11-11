@@ -31,4 +31,10 @@ _fs_gkeep_sync_completion() {
     fi
 }
 
-compdef _fs_gkeep_sync_completion fs_gkeep_sync;
+if [[ $zsh_eval_context[-1] == loadautofunc ]]; then
+    # autoload from fpath, call function directly
+    _fs_gkeep_sync_completion "$@"
+else
+    # eval/source/. command, register function for later
+    compdef _fs_gkeep_sync_completion fs_gkeep_sync
+fi

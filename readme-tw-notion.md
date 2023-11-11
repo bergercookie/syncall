@@ -3,7 +3,7 @@
 ## Description
 
 Synchronize all the `to_do` blocks of a Notion page with a filter in
-Taskwarrior. The taskwarrior filter may be a task, a project or a combination of
+Taskwarrior. The Taskwarrior filter may be a task, a project or a combination of
 a project and arbitrary tags.
 
 Upon execution, `tw_notion_sync` will synchronize, and on subsequent runs of the

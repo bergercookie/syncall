@@ -31,9 +31,10 @@ synchronization services/sides at hand.
 
 One of the main goals of `syncall` is to be extendable. Thus it should be easy
 to introduce support for either a new service / synchronization side (e.g.,
-ClickUp) or a new synchronization altogether (e.g., ClickUp <-> Google Keep)
-given that you [implement the corresponding synchronization
-sides and conversion methods](implement-a-new-synchronization.md). See also the
+[`ClickUp`](https://clickup.com/)) or a new synchronization altogether (e.g.,
+ClickUp <-> Google Keep) given that you [implement the corresponding
+synchronization sides and conversion
+methods](implement-a-new-synchronization.md). See also the
 [CONTRIBUTING](CONTRIBUTING.md) guide to get started.
 
 At the moment the list of supported synchronizations is the following:
@@ -47,6 +48,11 @@ At the moment the list of supported synchronizations is the following:
   </tr>
 </thead>
 <tbody>
+  <tr>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-gtasks.md">README</a></td>
+    <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://support.google.com/tasks/answer/7675772">Google Calendar</a></td>
+    <td><tt>tw-gtasks-sync</tt></td>
+  </tr>
   <tr>
     <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-gcal.md">README</a></td>
     <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://calendar.google.com/">Google Calendar</a></td>
@@ -169,6 +175,50 @@ Here's some of the available options for installing it:
 
 Here's the CLI help page for the synchronizations available.
 
+<!-- START sniff-and-replace tw_gtasks_sync --help START -->
+
+<details>
+ <summary><tt>tw_gtasks_sync --help</tt></summary>
+
+```
+Usage: tw_gtasks_sync [OPTIONS]
+
+  Synchronize lists from your Google Tasks with filters from Taskwarrior.
+
+  The list of TW tasks is determined by a combination of TW tags and a TW
+  project while the list in GTasks should be provided by their name. if it
+  doesn't exist it will be crated
+
+Options:
+  -l, --gtasks-list TEXT          Name of the Google Tasks list to synchronize
+                                  (will be created if not there)
+  --google-secret FILE            Override the client secret used for the
+                                  communication with the Google APIs
+  --oauth-port INTEGER            Port to use for OAuth Authentication with
+                                  Google Applications
+  -t, --taskwarrior-tags TEXT     Taskwarrior tags to synchronize
+  -p, --tw-project TEXT           Taskwarrior project to synchronize
+  --list-combinations             List the available named TW<->Google Tasks
+                                  combinations
+  --list-resolution-strategies    List all the available resolution strategies
+                                  and exit
+  -r, --resolution-strategy [MostRecentRS|LeastRecentRS|AlwaysFirstRS|AlwaysSecondRS]
+                                  Resolution strategy to use during conflicts
+  -b, --combination TEXT          Name of an already saved TW<->Google Tasks
+                                  combination
+  -s, --save-as TEXT              Save the given TW<->Google Tasks filters
+                                  combination using a specified custom name.
+  --prefer-scheduled-date         Prefer using the "scheduled" date field
+                                  instead of the "due" date if the former is
+                                  available
+  -v, --verbose
+  --version                       Show the version and exit.
+  --help                          Show this message and exit.
+```
+
+</details>
+
+<!-- END sniff-and-replace -->
 <!-- START sniff-and-replace tw_gcal_sync --help START -->
 
 <details>

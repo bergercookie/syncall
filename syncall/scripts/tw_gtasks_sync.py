@@ -170,7 +170,6 @@ def main(
         return convert_tw_to_gtask(
             *args,
             **kargs,
-            prefer_scheduled_date=prefer_scheduled_date,
         )
 
     convert_B_to_A.__doc__ = convert_tw_to_gtask.__doc__

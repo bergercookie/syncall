@@ -3,7 +3,7 @@
 ## Description
 
 Synchronize all the items of a Google Keep list with a _filter_ in
-Taskwarrior. The taskwarrior _filter_ may be a tag, a project or a combination of
+Taskwarrior. The Taskwarrior _filter_ may be a tag, a project or a combination of
 a project and arbitrary tags.
 
 Upon execution, `tw_gkeep_sync` will synchronize, and on subsequent runs of the

@@ -28,7 +28,6 @@ class CaldavSide(SyncSide):
     ]
 
     _date_keys = ["end", "start", "last-modified"]
-    _date_format = "%Y-%m-%d"
 
     def __init__(self, client: caldav.DAVClient, calendar_name: str) -> None:
         super().__init__(name="caldav", fullname="Caldav")

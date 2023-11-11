@@ -1,9 +1,5 @@
 function _tw_caldav_sync_completion;
-    set -l response;
-
-    for value in (env _TW_CALDAV_SYNC_COMPLETE=fish_complete COMP_WORDS=(commandline -cp) COMP_CWORD=(commandline -t) tw_caldav_sync);
-        set response $response $value;
-    end;
+    set -l response (env _TW_CALDAV_SYNC_COMPLETE=fish_complete COMP_WORDS=(commandline -cp) COMP_CWORD=(commandline -t) tw_caldav_sync);
 
     for completion in $response;
         set -l metadata (string split "," $completion);

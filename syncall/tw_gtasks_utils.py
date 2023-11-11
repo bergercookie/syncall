@@ -1,64 +1,30 @@
-import traceback
-from typing import List, Optional, Tuple
-from uuid import UUID
-
 from bubop import logger
 from item_synchronizer.types import Item
 
 from syncall.google.gtasks_side import GTasksSide
+from syncall.tw_utils import extract_tw_fields_from_string, get_tw_annotations_as_str
+from syncall.types import GTasksItem
 
 
 def convert_tw_to_gtask(
     tw_item: Item,
-    prefer_scheduled_date: bool = False,
 ) -> Item:
-    """TW -> GTasks Converter.
-
-    .. note:: Do not convert the ID as that may change either manually or
-              after marking the task as "DONE"
-    """
+    """TW -> GTasks conversion."""
     assert all(
         i in tw_item.keys() for i in ("description", "status", "uuid")
     ), "Missing keys in tw_item"
 
     gtasks_item = {}
 
-    # Title
+    # title
     gtasks_item["title"] = tw_item["description"]
 
-    # Status
+    # status
     gtasks_item["status"] = "needsAction" if tw_item["status"] == "pending" else "completed"
 
-    # Notes
-    gtasks_item["notes"] = ""
-
-    if "annotations" in tw_item.keys() and len(tw_item["annotations"]) > 0:
-        for i, annotation in enumerate(tw_item["annotations"]):
-            gtasks_item["notes"] += f"\n* Annotation {i + 1}: {annotation}"
-
-    for k in [
-        "status",
-        "uuid",
-    ]:  # NOTE(kisseliov): is notes the only place for tw status and description?
-        gtasks_item["notes"] += f"\n* {k}: {tw_item[k]}"
-
-    date_keys = ["scheduled", "due"] if prefer_scheduled_date else ["due", "scheduled"]
-
-    # handle dates  ---------------------------------------------------------------------------
-    # walk through the date_keys using the first of them that's present in the item at hand.
-    # - if 'scheduled' date is prefered we set task due date to scheduled
-    # - if 'due' date is present we set task due date to it
-    # - otherwise we don't set due date at all
-    for date_key in date_keys:
-        if date_key in tw_item.keys():
-            logger.trace(
-                f'Using "{date_key}" date for {tw_item["uuid"]} for setting the due date of'
-                " the task"
-            )
-            gtasks_item["due"] = GTasksSide.format_datetime(
-                GTasksSide.parse_datetime(tw_item[date_key])
-            )
-            break
+    # notes
+    if annotations_str := get_tw_annotations_as_str(tw_item):
+        gtasks_item["notes"] = annotations_str
 
     # update time
     if "modified" in tw_item.keys():
@@ -70,7 +36,7 @@ def convert_tw_to_gtask(
 
 
 def convert_gtask_to_tw(
-    gtasks_item: Item,
+    gtasks_item: GTasksItem,
     set_scheduled_date: bool = False,
 ) -> Item:
     """GTasks -> TW Converter.
@@ -80,29 +46,31 @@ def convert_gtask_to_tw(
     """
 
     # Parse the description
-    annotations, status, uuid = _parse_gtask_notes(gtasks_item)
-    assert isinstance(annotations, list)
-    assert isinstance(status, str)
-    assert isinstance(uuid, UUID) or uuid is None
+    annotations = []
+    uuid = None
+    if (section := gtasks_item.get("notes")) is not None:
+        annotations, _, uuid = extract_tw_fields_from_string(section)
 
     tw_item: Item = {}
     # annotations
     tw_item["annotations"] = annotations
 
-    # alias - make aliases dict?
-    if status == "completed":
-        status = "completed"
+    gtasks_to_tw_status_corrs = {
+        "completed": "completed",
+        "needsAction": "pending",
+    }
 
-    if status == "needsAction":
-        status = "pending"
-
-    # Status
-    if status not in ["pending", "completed", "deleted", "waiting", "recurring"]:
+    status_gtask = gtasks_item["status"]
+    status_tw = gtasks_to_tw_status_corrs.get(status_gtask)
+    if status_tw is None:
         logger.error(
-            "Invalid status {status} in GCal->TW conversion of item. Skipping status:"
+            f"Unknown Google Task status {status_gtask} for google task item {gtasks_item}."
+            " Setting it to pending"
         )
-    else:
-        tw_item["status"] = status
+        status_tw = "pending"
+
+    # status
+    tw_item["status"] = status_tw
 
     # uuid - may just be created -, thus not there
     if uuid is not None:
@@ -117,58 +85,18 @@ def convert_gtask_to_tw(
     else:
         date_key = "due"
 
-    end_time = GTasksSide.get_task_completed_time(gtasks_item)
-    tw_item[date_key] = end_time
+    # due/scheduled date
+    due_date = GTasksSide.get_task_due_time(gtasks_item)
+    if due_date is not None:
+        tw_item[date_key] = due_date
+
+    # end date
+    end_date = GTasksSide.get_task_completed_time(gtasks_item)
+    if end_date is not None:
+        tw_item["end"] = end_date
 
     # update time
     if "updated" in gtasks_item.keys():
         tw_item["modified"] = GTasksSide.parse_datetime(gtasks_item["updated"])
 
-    # NOTE(kisseliov): consider adding custom UDAs for Google Tasks to handle positions and hierarchy
     return tw_item
-
-
-def _parse_gtask_notes(
-    gtasks_item: Item,
-) -> Tuple[List[str], str, Optional[UUID]]:
-    """Parse and return the necessary TW fields off a Google Tasks task notes."""
-    annotations: List[str] = []
-    status = "pending"
-    uuid = None
-
-    if "notes" not in gtasks_item.keys():
-        return annotations, status, uuid
-
-    gtask_description = gtasks_item["notes"]
-    # strip whitespaces, empty lines
-    lines = [line.strip() for line in gtask_description.split("\n") if line]
-
-    # annotations
-    i = 1
-    for i, line in enumerate(lines):
-        parts = line.split(":", maxsplit=1)
-        if len(parts) == 2 and parts[0].lower().startswith("* annotation"):
-            annotations.append(parts[1].strip())
-        else:
-            break
-
-    if i == len(lines) - 1:
-        return annotations, status, uuid
-
-    # Iterate through rest of lines, find only the status and uuid ones
-    for line in lines[i:]:
-        parts = line.split(":", maxsplit=1)
-        if len(parts) == 2:
-            start = parts[0].lower()
-            if start.startswith("* status"):
-                status = parts[1].strip().lower()
-            elif start.startswith("* uuid"):
-                try:
-                    uuid = UUID(parts[1].strip())
-                except ValueError as err:
-                    logger.error(
-                        f'Invalid UUID "{err}" provided during GTask -> TW conversion,'
-                        f" Using None...\n\n{traceback.format_exc()}"
-                    )
-
-    return annotations, status, uuid

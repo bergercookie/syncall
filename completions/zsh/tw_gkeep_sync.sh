@@ -31,4 +31,10 @@ _tw_gkeep_sync_completion() {
     fi
 }
 
-compdef _tw_gkeep_sync_completion tw_gkeep_sync;
+if [[ $zsh_eval_context[-1] == loadautofunc ]]; then
+    # autoload from fpath, call function directly
+    _tw_gkeep_sync_completion "$@"
+else
+    # eval/source/. command, register function for later
+    compdef _tw_gkeep_sync_completion tw_gkeep_sync
+fi

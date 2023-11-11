@@ -3,7 +3,7 @@
 ## Description
 
 Synchronize all the Google Keep Notes (optionally filtered with a label) with a
-List of files under a local directory. The taskwarrior _filter_ may be a task, a
+List of files under a local directory. The Taskwarrior _filter_ may be a task, a
 project or a combination of a project and arbitrary tags.
 
 Upon execution, `fs_gkeep_sync` will synchronize, and on subsequent runs of the
@@ -52,7 +52,7 @@ See the [Credentials](#credentials) section on how to authenticate with Google.
   supported. You also have to be consistent specifying the name of the said
   directory, i.e., always specify it as an absolute path or always add it as
   the same relative path. As the verbatim name provided is used for naming this
-  combination this will create two different combinatinons and will lead to
+  combination this will create two different combinations and will lead to
   duplication of entries.
 
   ```sh

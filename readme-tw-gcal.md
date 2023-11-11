@@ -1,9 +1,16 @@
 # [Taskwarrior](https://taskwarrior.org/) ⬄ [Google Calendar](https://calendar.google.com/)
 
+> _UPDATE:_ This page describes the `tw_gcal_sync` app, which bi-directionally
+> synchronizes your Taskwarrior items with Google Calendar _events_. Since then a
+> new synchronization has been created which synchronizes your Taskwarrior items
+> with Google Tasks TODO items which in the majority of cases should be more
+> suitable for you to use. To use the latter, head over to the
+> [TW <> Google Tasks README](https://github.com/bergercookie/syncall/blob/master/readme-tw-gtasks.md)
+
 ## Description
 
 Given all the entries of a _Calendar_ in Google Calendar with all the tasks of a
-taskwarrior _filter_ (combination of tags and projects) synchronise all the
+Taskwarrior _filter_ (combination of tags and projects) synchronise all the
 addition/modification/deletion events between them.
 
 ## Demo - first run - populating calendar in GCal
@@ -92,7 +99,7 @@ If the item was created from Taskwarrior then there should be a
 
 `syncall` is aware of the `twgcalsyncduration` UDA:
 
-You can assign a custom duration to a taskwarrior task using something like the following:
+You can assign a custom duration to a Taskwarrior task using something like the following:
 
 ```sh
 # create a task ...
@@ -108,7 +115,7 @@ You can also edit the default event duration using the
 `--default-event-duration-mins INTEGER` flag (specify it in minutes)
 
 **Note:** To make it viewing the duration a bit more user friendly, e.g., for
-taskwarrior reports, the user can also add the following section to their
+Taskwarrior reports, the user can also add the following section to their
 `.taskrc`:
 
 ```sh

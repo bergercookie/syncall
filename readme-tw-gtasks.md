@@ -1,10 +1,10 @@
-# [Taskwarrior](https://taskwarrior.org/) ⬄ [Google Tasks](https://support.google.com/tasks/answer/7675772?hl=en&co=GENIE.Platform%3DDesktop)
+# [Taskwarrior](https://taskwarrior.org/) ⬄ [Google Tasks](https://support.google.com/tasks/answer/7675772)
 
 ## Description
 
-Given all tasks in your Google Task task list of a
-taskwarrior _filter_ (combination of tags and projects) synchronise all the
-addition/modification/deletion tasks between them.
+Given all tasks in your Google Task task list and the task list of a Taskwarrior
+_filter_ (combination of tags and projects) synchronise all the addition /
+modification / deletion events between them.
 
 ## Demo - populating a list in Google Tasks (view from Google Calendar)
 
@@ -14,18 +14,17 @@ addition/modification/deletion tasks between them.
 
 While Taskwarrior is an excellent tool when it comes to keeping TODO lists,
 keeping track of project goals etc., lacks the portability, simplicity and
-minimalistic design of Google Calendar. The latter also has the following
+minimalistic design of Google Tasks. The latter also has the following
 advantages:
 
 - Automatic sync across all your devices
 - Comfortable addition/modification of events using voice commands
 - Actual reminding of events with a variety of mechanisms
 
-## Override Calendar API key
+## Override Google Tasks API key
 
-Unfortunately I've yet to verify this app with Google so new users are
-currently blocked from using it. To bypass that you can register for your own
-developer account with the Google Calendar API with the following steps:
+At the moment in order to use this integration you have to register for your own
+developer account with the Google Tasks API with the following steps:
 
 Firstly, removed the `~/.gtasks_credentials.pickle` file on your system since that
 will be reused if found by the app.
@@ -42,6 +41,9 @@ and download the credentials:
 
 - Again, from the sidebar under `API And Services` click `Credentials`
 - Enable the `Tasks API`
+  - You should give your app the following scopes for the `Tasks API`:
+    - `Create, edit, organize, and delete all your tasks`
+    - `View your tasks`
 - On the sidebar click `Credentials`, and once there click `CREATE CREDENTIALS`
 - Create a new `OAuth Client ID`. Set the type to `Desktop App` (app name is not
   important).
@@ -79,6 +81,17 @@ extras:
 ```sh
 pip3 install syncall[google,tw]
 ```
+
+## Notes re this synchornization
+
+- Currently subtasks of a Google Tasks item are treated as completely
+  independent of the parent task when converted to Taskwarrior
+- It's not possible to get the time part of the "due" field of a task using the
+  Google Tasks API. Due to this restriction we currently do currently do sync
+  the date part (without the time) from Google Tasks to Taskwarrior, but in
+  order not to remove the time part when doing the inverse synchronization, we
+  don't sync the date at all from Taskwarrior to Google Tasks. More
+  information in [this ticket](https://issuetracker.google.com/u/1/issues/128979662)
 
 ## FAQ
 
