@@ -29,9 +29,9 @@ developer account with the Google Tasks API with the following steps:
 Firstly, removed the `~/.gtasks_credentials.pickle` file on your system since that
 will be reused if found by the app.
 
-For creating your own Google Developer App:
+For creating your own Google Cloud Developer App:
 
-- Go to the Google developer console
+- Go to the [Google Cloud developer console](tw-gtasks-integration-test)
 - Make a new project
 - From the sidebar go to `API & Services` and once there click the `ENABLE APIS AND SERVICES` button
 - Look for and Enable the `Tasks API`
@@ -40,11 +40,12 @@ Your newly created app now has access to the Tasks API. We now have to create
 and download the credentials:
 
 - Again, from the sidebar under `API And Services` click `Credentials`
-- Enable the `Tasks API`
-  - You should give your app the following scopes for the `Tasks API`:
-    - `Create, edit, organize, and delete all your tasks`
-    - `View your tasks`
-- On the sidebar click `Credentials`, and once there click `CREATE CREDENTIALS`
+- In the Google Tasks API screen, click the `CREATE CREDENTIALS` button.
+- Select the `User data` radio button (not the `Application data`).
+- Fill in the `OAuth Consent Screen` information (shouldn't affect the process)
+- Allow the said credentials to access the following scopes:
+  - `Create, edit, organize, and delete all your tasks`
+  - `View your tasks`
 - Create a new `OAuth Client ID`. Set the type to `Desktop App` (app name is not
   important).
 - Finally download the credentials in JSON form by clicking the download button
