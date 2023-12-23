@@ -92,9 +92,3 @@ pip3 install syncall[google,tw]
   order not to remove the time part when doing the inverse synchronization, we
   don't sync the date at all from Taskwarrior to Google Tasks. More
   information in [this ticket](https://issuetracker.google.com/u/1/issues/128979662)
-
-## FAQ
-
-### How do I mark an item as done from Google Tasks
-
-Simply mark them as completed.
