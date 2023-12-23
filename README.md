@@ -50,7 +50,7 @@ At the moment the list of supported synchronizations is the following:
 <tbody>
   <tr>
     <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-gtasks.md">README</a></td>
-    <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://support.google.com/tasks/answer/7675772">Google Calendar</a></td>
+    <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://support.google.com/tasks/answer/7675772">Google Tasks</a></td>
     <td><tt>tw-gtasks-sync</tt></td>
   </tr>
   <tr>
@@ -146,8 +146,18 @@ pip3 install syncall[notion,google]
 
 Here's some of the available options for installing it:
 
-- From PyPI - e.g., Specify three extras for integrations - Google Calendar, Google Keep, Notion): `pip3 install --user --upgrade syncall[notion,google,gkeep]`
-- From Github - e.g., Specify two extras: `pip3 install --user "syncall[gkeep,fs] @ git+https://github.com/bergercookie/syncall"`
+- From PyPI - e.g., Specify three extras for integrations - Google (Calendar/Tasks), Google Keep, Notion):
+
+  ```sh
+  pip3 install --user --upgrade syncall[notion,google,gkeep]
+  ```
+
+- From Github - e.g., Specify two extras:
+
+  ```sh
+  pip3 install --user "syncall[gkeep,fs] @ git+https://github.com/bergercookie/syncall"
+  ```
+
 - Download and install `devel` branch locally - bleeding edge
 
   ```sh
