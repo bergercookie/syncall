@@ -23,7 +23,10 @@ advantages:
 
 ## Override Google Tasks API key
 
-At the moment in order to use this integration you have to register for your own
+At the moment the Google Console app that makes use of the Google Tasks API is
+still in Testing mode and awaiting approval from Google. This means that if it
+raches more than 100 users, the integration may stop working for you. In that
+case in order to use this integration you will have to register for your own
 developer account with the Google Tasks API with the following steps:
 
 Firstly, removed the `~/.gtasks_credentials.pickle` file on your system since that
