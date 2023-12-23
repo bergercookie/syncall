@@ -29,8 +29,8 @@ raches more than 100 users, the integration may stop working for you. In that
 case in order to use this integration you will have to register for your own
 developer account with the Google Tasks API with the following steps:
 
-Firstly, removed the `~/.gtasks_credentials.pickle` file on your system since that
-will be reused if found by the app.
+Firstly, remove the `~/.gtasks_credentials.pickle` file on your system since
+that will be reused if found by the app.
 
 For creating your own Google Cloud Developer App:
 
@@ -86,7 +86,7 @@ extras:
 pip3 install syncall[google,tw]
 ```
 
-## Notes re this synchornization
+## Notes re this synchronization
 
 - Currently subtasks of a Google Tasks item are treated as completely
   independent of the parent task when converted to Taskwarrior

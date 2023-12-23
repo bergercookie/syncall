@@ -30,11 +30,11 @@ advantages:
 
 ## Override Calendar API key
 
-Unfortunately I've yet to verify this app with Google so new users are
+Unfortunately I have not yet verified this app with Google so new users are
 currently blocked from using it. To bypass that you can register for your own
 developer account with the Google Calendar API with the following steps:
 
-Firstly, removed the `~/.gcal_credentials.pickle` file on your system since that
+Firstly, remove the `~/.gcal_credentials.pickle` file on your system since that
 will be reused if found by the app.
 
 For creating your own Google Developer App:
