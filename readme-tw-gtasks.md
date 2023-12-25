@@ -1,5 +1,7 @@
 # [Taskwarrior](https://taskwarrior.org/) ⬄ [Google Tasks](https://support.google.com/tasks/answer/7675772)
 
+![logo](misc/meme-tw-gtasks.png)
+
 ## Description
 
 Given all tasks in your Google Task task list and the task list of a Taskwarrior
