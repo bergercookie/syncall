@@ -20,6 +20,9 @@ from taskw import TaskWarrior
 from taskw.warrior import TASKRC
 
 from syncall.sync_side import ItemType, SyncSide
+from syncall.taskwarrior.taskw_duration import (
+    duration_deserialize as taskw_duration_deserialize,
+)
 from syncall.types import TaskwarriorRawItem
 
 OrderByType = Literal[
@@ -234,6 +237,17 @@ class TaskWarriorSide(SyncSide):
 
         description = item.pop("description")
         len_print = min(20, len(description))
+
+        if tw_duration_key in item.keys():
+            duration = item[tw_duration_key]
+            if isinstance(duration, str):
+                duration: datetime.timedelta = taskw_duration_deserialize(duration)
+            assert isinstance(duration, datetime.timedelta)
+        else:
+            duration = datetime.timedelta(hours=1)
+
+        item[tw_duration_key] = duration
+
         logger.trace(f'Adding task "{description[0:len_print]}" with properties:\n\n{item}')
         new_item = self._tw.task_add(description=description, **item)  # type: ignore
         new_id = new_item["id"]

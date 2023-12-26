@@ -75,7 +75,9 @@ def convert_tw_to_gcal(
     # use the UDA field to fetch the duration of the event, otherwise fallback to the default
     # duration
     if tw_duration_key in tw_item.keys():
-        duration: timedelta = taskw_duration_deserialize(tw_item[tw_duration_key])
+        duration = tw_item[tw_duration_key]
+        if isinstance(duration, str):
+            duration: timedelta = taskw_duration_deserialize(duration)
         assert isinstance(duration, timedelta)
     else:
         duration = default_event_duration
