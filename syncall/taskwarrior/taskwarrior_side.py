@@ -21,7 +21,8 @@ from taskw.warrior import TASKRC
 
 from syncall.sync_side import ItemType, SyncSide
 from syncall.taskwarrior.taskw_duration import (
-    duration_deserialize as taskw_duration_deserialize,
+    convert_tw_duration_to_timedelta,
+    tw_duration_key,
 )
 from syncall.types import TaskwarriorRawItem
 
@@ -35,7 +36,6 @@ OrderByType = Literal[
     "urgency",
 ]
 
-tw_duration_key = "twgcalsyncduration"
 tw_config_default_overrides = {"context": "none", f"uda.{tw_duration_key}.type": "duration"}
 
 
@@ -238,15 +238,7 @@ class TaskWarriorSide(SyncSide):
         description = item.pop("description")
         len_print = min(20, len(description))
 
-        if tw_duration_key in item.keys():
-            duration = item[tw_duration_key]
-            if isinstance(duration, str):
-                duration: datetime.timedelta = taskw_duration_deserialize(duration)
-            assert isinstance(duration, datetime.timedelta)
-        else:
-            duration = datetime.timedelta(hours=1)
-
-        item[tw_duration_key] = duration
+        convert_tw_duration_to_timedelta(item=item)
 
         logger.trace(f'Adding task "{description[0:len_print]}" with properties:\n\n{item}')
         new_item = self._tw.task_add(description=description, **item)  # type: ignore
@@ -322,5 +314,7 @@ class TaskWarriorSide(SyncSide):
             # convert datetime keys to actual datetime objects if they are not.
             if "modified" in item:
                 item["modified"] = parse_datetime_(item["modified"])
+
+            convert_tw_duration_to_timedelta(item)
 
         return SyncSide._items_are_identical(item1, item2, keys)

@@ -5,11 +5,9 @@ from bubop import logger
 from item_synchronizer.types import Item
 
 from syncall.google.gcal_side import GCalSide
-from syncall.taskwarrior.taskw_duration import (
-    duration_deserialize as taskw_duration_deserialize,
-)
+from syncall.taskwarrior.taskw_duration import convert_tw_duration_to_timedelta
 from syncall.taskwarrior.taskw_duration import duration_serialize as taskw_duration_serialize
-from syncall.taskwarrior.taskwarrior_side import tw_duration_key
+from syncall.taskwarrior.taskw_duration import tw_duration_key
 from syncall.tw_utils import (
     extract_tw_fields_from_string,
     get_tw_annotations_as_str,
@@ -74,13 +72,7 @@ def convert_tw_to_gcal(
     # event duration --------------------------------------------------------------------------
     # use the UDA field to fetch the duration of the event, otherwise fallback to the default
     # duration
-    if tw_duration_key in tw_item.keys():
-        duration = tw_item[tw_duration_key]
-        if isinstance(duration, str):
-            duration: timedelta = taskw_duration_deserialize(duration)
-        assert isinstance(duration, timedelta)
-    else:
-        duration = default_event_duration
+    convert_tw_duration_to_timedelta(tw_item)
 
     # handle start, end datetimes -------------------------------------------------------------
     # walk through the date_keys using the first of them that's present in the item at hand.
@@ -97,7 +89,9 @@ def convert_tw_to_gcal(
             )
             dt_gcal = GCalSide.format_datetime(tw_item[date_key])
             gcal_item["start"] = {
-                "dateTime": GCalSide.format_datetime(tw_item[date_key] - duration)
+                "dateTime": GCalSide.format_datetime(
+                    tw_item[date_key] - tw_item[tw_duration_key]
+                )
             }
             gcal_item["end"] = {"dateTime": dt_gcal}
             break
@@ -110,7 +104,9 @@ def convert_tw_to_gcal(
 
         gcal_item["start"] = {"dateTime": entry_dt_gcal_str}
 
-        gcal_item["end"] = {"dateTime": GCalSide.format_datetime(entry_dt + duration)}
+        gcal_item["end"] = {
+            "dateTime": GCalSide.format_datetime(entry_dt + tw_item[tw_duration_key])
+        }
 
     return gcal_item
 

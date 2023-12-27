@@ -1,7 +1,12 @@
 """Changes to ralpbean/taskw that have not been merged to upstream project."""
 
+import datetime
 from datetime import timedelta
 from typing import Tuple
+
+from syncall.types import TaskwarriorRawItem
+
+tw_duration_key = "twgcalsyncduration"
 
 
 def extract_part(s: str, split: str) -> Tuple[float, str]:
@@ -118,3 +123,17 @@ def duration_serialize(value: timedelta) -> str:
 
 def duration_deserialize(value: str) -> timedelta:
     return parse_iso8601_duration(value)
+
+
+def convert_tw_duration_to_timedelta(
+    item: TaskwarriorRawItem, default_duration=datetime.timedelta(hours=1)
+) -> None:
+    if tw_duration_key in item.keys():
+        duration = item[tw_duration_key]
+        if isinstance(duration, str):
+            duration: datetime.timedelta = duration_deserialize(duration)
+        assert isinstance(duration, datetime.timedelta)
+    else:
+        duration = default_duration
+
+    item[tw_duration_key] = duration
