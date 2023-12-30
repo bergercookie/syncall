@@ -1,3 +1,4 @@
+import atexit
 import datetime
 import os
 import subprocess
@@ -11,6 +12,7 @@ from bubop import (
     format_dict,
     logger,
     loguru_tqdm_sink,
+    ExitHooks,
 )
 
 from syncall import inform_about_app_extras
@@ -21,6 +23,7 @@ from syncall.cli import (
     opt_caldav_passwd_pass_path,
     opt_caldav_url,
     opt_caldav_user,
+    opt_pdb_on_error,
     opt_tw_all_tasks,
     opt_tw_only_tasks_modified_30_days,
 )
@@ -70,6 +73,7 @@ from syncall import (
 @opt_custom_combination_savename("TW", "Caldav")
 @click.option("-v", "--verbose", count=True)
 @click.version_option(__version__)
+@opt_pdb_on_error()
 def main(
     caldav_calendar: str,
     caldav_url: str,
@@ -85,6 +89,7 @@ def main(
     custom_combination_savename: str,
     resolution_strategy: str,
     do_list_combinations: bool,
+    pdb_on_error: bool,
 ):
     """Synchronize lists of tasks from your caldav Calendar with filters from Taskwarrior.
 
@@ -113,14 +118,12 @@ def main(
     )
 
     check_optional_mutually_exclusive(combination_name, custom_combination_savename)
-    combination_of_tw_project_tags_and_caldav_calendar = any(
-        [
-            tw_project,
-            tw_tags,
-            tw_sync_all_tasks,
-            caldav_calendar,
-        ]
-    )
+    combination_of_tw_project_tags_and_caldav_calendar = any([
+        tw_project,
+        tw_tags,
+        tw_sync_all_tasks,
+        caldav_calendar,
+    ])
     check_optional_mutually_exclusive(
         combination_name, combination_of_tw_project_tags_and_caldav_calendar
     )
@@ -207,32 +210,46 @@ def main(
     client = caldav.DAVClient(url=caldav_url, username=caldav_user, password=caldav_passwd)
     caldav_side = CaldavSide(client=client, calendar_name=caldav_calendar)
 
-    # sync ------------------------------------------------------------------------------------
-    try:
-        with Aggregator(
-            side_A=caldav_side,
-            side_B=tw_side,
-            converter_B_to_A=convert_tw_to_caldav,
-            converter_A_to_B=convert_caldav_to_tw,
-            resolution_strategy=get_resolution_strategy(
-                resolution_strategy, side_A_type=type(caldav_side), side_B_type=type(tw_side)
-            ),
-            config_fname=combination_name,
-            ignore_keys=(
-                (),
-                (),
-            ),
-        ) as aggregator:
-            aggregator.sync()
-    except KeyboardInterrupt:
-        logger.error("Exiting...")
-        return 1
-    except:
-        report_toplevel_exception(is_verbose=verbose >= 1)
-        return 1
+    # teardown function and exception handling ------------------------------------------------
+    hooks: ExitHooks = ExitHooks()
 
-    if inform_about_config:
-        inform_about_combination_name_usage(combination_name)
+    def teardown():
+        if hooks.exception is not None:
+            if hooks.exception.__class__ is KeyboardInterrupt:
+                logger.error("C-c pressed, exiting...")
+            else:
+                report_toplevel_exception(is_verbose=verbose >= 1)
+                return 1
+
+        if inform_about_config:
+            inform_about_combination_name_usage(combination_name)
+
+    if pdb_on_error:
+        logger.warning(
+            "pdb_on_error is enabled. Disabling exit hooks / not taking actions at the end "
+            "of the run."
+        )
+    else:
+        hooks.register()
+        atexit.register(teardown)
+
+    # sync ------------------------------------------------------------------------------------
+    with Aggregator(
+        side_A=caldav_side,
+        side_B=tw_side,
+        converter_B_to_A=convert_tw_to_caldav,
+        converter_A_to_B=convert_caldav_to_tw,
+        resolution_strategy=get_resolution_strategy(
+            resolution_strategy, side_A_type=type(caldav_side), side_B_type=type(tw_side)
+        ),
+        config_fname=combination_name,
+        ignore_keys=(
+            (),
+            (),
+        ),
+        catch_exceptions=not pdb_on_error,
+    ) as aggregator:
+        aggregator.sync()
 
     return 0
 

@@ -22,6 +22,7 @@ from taskw.warrior import TASKRC
 from syncall.sync_side import ItemType, SyncSide
 from syncall.taskwarrior.taskw_duration import (
     convert_tw_duration_to_timedelta,
+    convert_tw_duration_serialize,
     tw_duration_key,
 )
 from syncall.types import TaskwarriorRawItem
@@ -238,7 +239,7 @@ class TaskWarriorSide(SyncSide):
         description = item.pop("description")
         len_print = min(20, len(description))
 
-        convert_tw_duration_to_timedelta(item=item)
+        convert_tw_duration_serialize(item=item)
 
         logger.trace(f'Adding task "{description[0:len_print]}" with properties:\n\n{item}')
         new_item = self._tw.task_add(description=description, **item)  # type: ignore

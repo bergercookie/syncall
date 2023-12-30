@@ -33,6 +33,7 @@ class Aggregator:
         resolution_strategy: ResolutionStrategy = AlwaysSecondRS(),
         config_fname: Optional[str] = None,
         ignore_keys: Tuple[Sequence[str], Sequence[str]] = tuple(),
+        catch_exceptions: bool = False
     ):
         # Preferences manager
         # Sample config path: ~/.config/syncall/taskwarrior_gcal_sync.yaml
@@ -112,6 +113,7 @@ class Aggregator:
             item_getter_A=side_A_fn(self.item_getter_for),
             item_getter_B=side_B_fn(self.item_getter_for),
             resolution_strategy=self._resolution_strategy,
+            catch_exceptions=catch_exceptions,
             side_names=(side_A.fullname, side_B.fullname),
         )
 

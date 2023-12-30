@@ -6,7 +6,7 @@ from typing import Tuple
 
 from syncall.types import TaskwarriorRawItem
 
-tw_duration_key = "twgcalsyncduration"
+tw_duration_key = "syncallduration"
 
 
 def extract_part(s: str, split: str) -> Tuple[float, str]:
@@ -108,7 +108,7 @@ def parse_iso8601_duration(string: str) -> timedelta:
     return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
 
 
-def duration_serialize(value: timedelta) -> str:
+def taskw_duration_serialize(value: timedelta) -> str:
     """
     >>> duration_serialize(timedelta(days=300))
     'PT25920000S'
@@ -121,7 +121,7 @@ def duration_serialize(value: timedelta) -> str:
     return "PT{}S".format(int(value.total_seconds()))
 
 
-def duration_deserialize(value: str) -> timedelta:
+def taskw_duration_deserialize(value: str) -> timedelta:
     return parse_iso8601_duration(value)
 
 
@@ -131,9 +131,24 @@ def convert_tw_duration_to_timedelta(
     if tw_duration_key in item.keys():
         duration = item[tw_duration_key]
         if isinstance(duration, str):
-            duration: datetime.timedelta = duration_deserialize(duration)
+            duration: datetime.timedelta = taskw_duration_deserialize(duration)
         assert isinstance(duration, datetime.timedelta)
     else:
         duration = default_duration
 
     item[tw_duration_key] = duration
+
+def convert_tw_duration_serialize(
+    item: TaskwarriorRawItem, default_duration=datetime.timedelta(hours=1)
+) -> None:
+    if tw_duration_key in item.keys():
+        duration = item[tw_duration_key]
+        if isinstance(duration, str):
+            duration: datetime.timedelta = taskw_duration_deserialize(duration)
+        assert isinstance(duration, datetime.timedelta)
+    else:
+        duration = default_duration
+
+
+    item[tw_duration_key] = taskw_duration_serialize(value=duration)
+
