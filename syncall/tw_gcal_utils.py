@@ -6,7 +6,7 @@ from item_synchronizer.types import Item
 
 from syncall.google.gcal_side import GCalSide
 from syncall.taskwarrior.taskw_duration import convert_tw_duration_to_timedelta
-from syncall.taskwarrior.taskw_duration import duration_serialize as taskw_duration_serialize
+from syncall.taskwarrior.taskw_duration import taskw_duration_serialize
 from syncall.taskwarrior.taskw_duration import tw_duration_key
 from syncall.tw_utils import (
     extract_tw_fields_from_string,
@@ -40,9 +40,9 @@ def _add_success_prefix(gcal_item: Item):
 
 
 def _add_failed_prefix(gcal_item: Item):
-    gcal_item[
-        "summary"
-    ] = f'{_prefix_title_failed_str}{gcal_item["summary"][len(_failed_str)+1:]}'
+    gcal_item["summary"] = (
+        f'{_prefix_title_failed_str}{gcal_item["summary"][len(_failed_str)+1:]}'
+    )
 
 
 def convert_tw_to_gcal(
@@ -64,9 +64,9 @@ def convert_tw_to_gcal(
 
     # description
     gcal_item["description"] = "IMPORTED FROM TASKWARRIOR\n"
-    gcal_item["description"] += "\n".join(
-        [get_tw_annotations_as_str(tw_item), get_tw_status_and_uuid_as_str(tw_item)]
-    )
+    gcal_item["description"] += "\n".join([
+        get_tw_annotations_as_str(tw_item), get_tw_status_and_uuid_as_str(tw_item)
+    ])
 
     date_keys = ["scheduled", "due"] if prefer_scheduled_date else ["due", "scheduled"]
     # event duration --------------------------------------------------------------------------
