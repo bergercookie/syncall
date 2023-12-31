@@ -110,9 +110,9 @@ def parse_iso8601_duration(string: str) -> timedelta:
 
 def taskw_duration_serialize(value: timedelta) -> str:
     """
-    >>> duration_serialize(timedelta(days=300))
+    >>> taskw_duration_serialize(timedelta(days=300))
     'PT25920000S'
-    >>> duration_serialize(timedelta(minutes=3))
+    >>> taskw_duration_serialize(timedelta(minutes=3))
     'PT180S'
     """
     # TODO atm (220220529) taskwarrior does not support float notation for its fields (i.e.,
