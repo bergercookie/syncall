@@ -11,7 +11,8 @@ repos:
       - id: check-toml
       - id: check-yaml
         exclude: ^tests/test_data/sample_items.yaml
-      # - id: debug-statements
+      - id: debug-statements
+        exclude: syncall/pdb_cli_utils.py
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: mixed-line-ending
