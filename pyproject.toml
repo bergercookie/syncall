@@ -74,10 +74,10 @@ loguru = "^0.5.3"
 python-dateutil = "^2.8.1"
 rfc3339 = "^6.2"
 typing = "^3.7.4"
-# item-synchronizer = "^1.1.4"
-# bubop = { version = "0.1.11", allow-prereleases = true }
-item-synchronizer = {path="/home/berger/src/item_synchronizer", develop=true}
-bubop = {path="/home/berger/src/bubop", develop=true}
+item-synchronizer = "^1.1.5"
+bubop = { version = "0.1.12", allow-prereleases = true }
+# item-synchronizer = {path="/home/berger/src/item_synchronizer", develop=true}
+# bubop = {path="/home/berger/src/bubop", develop=true}
 
 [tool.poetry.extras]
 google = [
