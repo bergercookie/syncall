@@ -138,6 +138,7 @@ def convert_tw_duration_to_timedelta(
 
     item[tw_duration_key] = duration
 
+
 def convert_tw_duration_serialize(
     item: TaskwarriorRawItem, default_duration=datetime.timedelta(hours=1)
 ) -> None:
@@ -149,6 +150,4 @@ def convert_tw_duration_serialize(
     else:
         duration = default_duration
 
-
     item[tw_duration_key] = taskw_duration_serialize(value=duration)
-

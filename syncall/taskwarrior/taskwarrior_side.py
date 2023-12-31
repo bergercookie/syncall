@@ -21,8 +21,8 @@ from taskw.warrior import TASKRC
 
 from syncall.sync_side import ItemType, SyncSide
 from syncall.taskwarrior.taskw_duration import (
-    convert_tw_duration_to_timedelta,
     convert_tw_duration_serialize,
+    convert_tw_duration_to_timedelta,
     tw_duration_key,
 )
 from syncall.types import TaskwarriorRawItem
