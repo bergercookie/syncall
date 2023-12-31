@@ -45,13 +45,9 @@ def map_ics_to_item(vtodo) -> Dict:
     for name in ["description", "summary"]:
         todo_item[name] = _convert_one(name)
 
-    for name in ["last-modified"]:
-        item = vtodo.get(name)
-        if item:
-            todo_item[name] = item.dt
-
-    if vtodo.get("due"):
-        todo_item["due"] = vtodo["due"].dt
+    for date_field in ("due", "created", "completed", "last-modified"):
+        if vtodo.get(date_field):
+            todo_item[date_field] = vtodo[date_field].dt
 
     vcategories = vtodo.get("categories")
     if vcategories is not None:
