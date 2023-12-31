@@ -88,4 +88,5 @@ test-tw-gcal-sync.json
 /a/
 /.taskrc
 /.task
+/.task_backup
 /.envrc
