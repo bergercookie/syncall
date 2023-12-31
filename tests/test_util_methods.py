@@ -18,7 +18,7 @@ class TestTW(GenericTestCase):
 
         # Make sure we're in the test directory for these tests
         os.chdir(str(Path(__file__).parent))
-        self.tw_side = TaskWarriorSide(config_file=Path("test.taskrc"))
+        self.tw_side = TaskWarriorSide(config_file_override=Path("test.taskrc"))
 
     def test_get_items(self):
         items = self.tw_side.get_all_items()

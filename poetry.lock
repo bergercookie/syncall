@@ -2446,6 +2446,17 @@ files = [
 cffi = ">=1.0"
 
 [[package]]
+name = "xdg"
+version = "6.0.0"
+description = "Variables defined by the XDG Base Directory Specification"
+optional = true
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "xdg-6.0.0-py3-none-any.whl", hash = "sha256:df3510755b4395157fc04fc3b02467c777f3b3ca383257397f09ab0d4c16f936"},
+    {file = "xdg-6.0.0.tar.gz", hash = "sha256:24278094f2d45e846d1eb28a2ebb92d7b67fc0cab5249ee3ce88c95f649a1c92"},
+]
+
+[[package]]
 name = "zipp"
 version = "3.17.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -2467,9 +2478,9 @@ fs = ["xattr"]
 gkeep = ["gkeepapi"]
 google = ["google-api-python-client", "google-auth-httplib2", "google-auth-oauthlib"]
 notion = ["notion-client"]
-tw = ["taskw"]
+tw = ["taskw", "xdg"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "3cca6f68271eefb31f04161d81113c5b1ecf75fa07646f10cbb50a5ecad6a3ba"
+content-hash = "cd9d39b0d818623c0b5cd01ca30de4216c35c25663f564ad0f0012c568e563a3"

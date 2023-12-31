@@ -18,6 +18,7 @@ from uuid import UUID
 from bubop import assume_local_tz_if_none, logger, parse_datetime
 from taskw import TaskWarrior
 from taskw.warrior import TASKRC
+from xdg import xdg_config_home
 
 from syncall.sync_side import ItemType, SyncSide
 from syncall.taskwarrior.taskw_duration import (
@@ -59,7 +60,7 @@ class TaskWarriorSide(SyncSide):
         tags: Sequence[str] = tuple(),
         project: Optional[str] = None,
         only_modified_since: Optional[datetime.datetime] = None,
-        config_file: Path = Path(TASKRC),
+        config_file_override: Optional[Path] = None,
         config_overrides: Mapping[str, Any] = {},
         **kargs,
     ):
@@ -79,6 +80,29 @@ class TaskWarriorSide(SyncSide):
 
         config_overrides_ = tw_config_default_overrides.copy()
         config_overrides_.update(config_overrides)
+
+        # determine config file
+        config_file = None
+        candidate_config_files = [
+            Path(TASKRC).expanduser(),
+            xdg_config_home() / "task" / "taskrc",
+        ]
+        if config_file_override is not None:
+            if not config_file_override.is_file():
+                raise FileNotFoundError(config_file_override)
+            config_file = config_file_override
+        else:
+            for candidate in candidate_config_files:
+                if candidate.is_file():
+                    config_file = candidate
+
+        if config_file is None:
+            raise RuntimeError(
+                "Could not determine a valid taskwarrior config file and no override config"
+                " file was specified - candidates:"
+                f" {', '.join([str(p) for p in candidate_config_files])}"
+            )
+        logger.debug(f"Initializing Taskwarrior instance using config file: {config_file}")
 
         self._tw = TaskWarrior(
             marshal=True, config_filename=str(config_file), config_overrides=config_overrides_
