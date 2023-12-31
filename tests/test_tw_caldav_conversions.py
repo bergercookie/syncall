@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Dict
 
 import yaml
 
@@ -24,7 +25,7 @@ class TestConversions(GenericTestCase):
         self.caldav_item = conts["caldav_item"]
         self.tw_item_expected = conts["tw_item_expected"]
 
-        self.tw_item = conts["tw_item"]
+        self.tw_item: Dict[str, Any] = conts["tw_item"]
         self.tw_item_w_due = conts["tw_item_w_due"]
         self.caldav_item_expected = conts["caldav_item_expected"]
         self.caldav_item_w_date_expected = conts["caldav_item_w_date_expected"]
@@ -33,20 +34,28 @@ class TestConversions(GenericTestCase):
         self.tw_item_w_date_expected = conts["tw_item_w_date_expected"]
 
         # we don't care about this field yet.
-        self.tw_item.pop("twgcalsyncduration")
-        self.tw_item_expected.pop("twgcalsyncduration")
-        self.tw_item_w_date_expected.pop("twgcalsyncduration")
+        self.tw_item.pop("syncallduration")
+        self.tw_item_expected.pop("syncallduration")
+
+        self.tw_item_w_date_expected.pop("syncallduration")
+        if "entry" in self.tw_item_w_date_expected:
+            self.tw_item_w_date_expected.pop("entry")
+        if "created" in self.tw_item_w_date_expected:
+            self.tw_item_w_date_expected.pop("created")
 
     def test_tw_caldav_basic_convert(self):
         """Basic TW -> Caldav conversion."""
         self.load_sample_items()
+        tw_item = self.tw_item
         caldav_item_out = convert_tw_to_caldav(self.tw_item)
+        caldav_item_out.pop("created", "")
         self.assertDictEqual(caldav_item_out, self.caldav_item_expected)
 
     def test_tw_caldav_w_due_convert(self):
         """Basic TW (with 'due' subfield) -> Caldav conversion."""
         self.load_sample_items()
         caldav_item_out = convert_tw_to_caldav(self.tw_item_w_due)
+        caldav_item_out.pop("created", "")
         self.assertDictEqual(caldav_item_out, self.caldav_item_w_date_expected)
 
     def test_caldav_tw_basic_convert(self):
@@ -68,11 +77,12 @@ class TestConversions(GenericTestCase):
         # UGLY - Rewrite how we do testing for caldav<>tw and gcal<>tw
         intermediate_caldav = convert_tw_to_caldav(self.tw_item)
         intermediate_caldav["priority"] = ""
+        intermediate_caldav.pop("created", "")
 
         tw_item_out = convert_caldav_to_tw(intermediate_caldav)
         self.assertSetEqual(
             set(self.tw_item) ^ set(tw_item_out),
-            set({"id", "urgency", "entry"}),
+            set({"id", "urgency", "entry", "entry"}),
         )
 
         intersection = set(self.tw_item) & set(tw_item_out)
@@ -93,7 +103,6 @@ class TestConversions(GenericTestCase):
             set(self.caldav_item) ^ set(caldav_item_out),
             set(
                 {
-                    "created",
                     "id",
                 }
             ),

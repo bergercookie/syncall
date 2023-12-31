@@ -10,7 +10,7 @@ tw_item:
   id: 276
   modified: 2019-03-05 00:03:09
   status: pending
-  twgcalsyncduration: "PT1200S"
+  syncallduration: "PT1200S"
   tags:
   - remindme
   urgency: 0
@@ -104,7 +104,6 @@ gcal_item_w_date:
   updated: '2019-03-16T16:01:32.486Z'
 caldav_item_w_date:
   priority: ''
-  created: 2019-03-16 16:01:32.00
   due: 2019-03-09 00:00:00
   id: 2s3acrn586e4ed7eff49ja91oh
   start: 2019-03-10 23:00:00
@@ -112,14 +111,13 @@ caldav_item_w_date:
   summary: 'gcal original event'
   last-modified: 2019-03-16 16:01:32.486
 tw_item_w_date_expected:
-  twgcalsyncduration: "PT86400S"
+  syncallduration: "PT86400S"
   annotations: []
   description: gcal original event
   due: 2019-03-09 00:00:00
   status: pending
   modified: 2019-03-16 16:01:32.486000
 gcal_item:
-  created: '2019-03-08T00:29:06.000Z'
   creator: {email: kalimera@gmail.com}
   description: '
 
@@ -152,7 +150,6 @@ gcal_item:
   summary: another summary goes here
   updated: '2019-03-08T00:29:06.602Z'
 caldav_item:
-  created: 2019-03-08 00:29:06.000
   description: '
 
     The same old description
@@ -172,7 +169,7 @@ caldav_item:
   last-modified: 2019-03-08 00:29:06.602
   priority: ''
 tw_item_expected:
-  twgcalsyncduration: "PT3600S"
+  syncallduration: "PT3600S"
   annotations:
   - kalimera
   - kalinuxta kai kali vradia

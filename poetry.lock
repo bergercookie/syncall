@@ -162,13 +162,13 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "bubop"
-version = "0.1.11"
+version = "0.1.12"
 description = "Bergercookie's Useful Bits Of Python"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "bubop-0.1.11-py3-none-any.whl", hash = "sha256:16261ac7ba754f2ff0ddd9fbca26b6d2857d95798bb6f3ab27e51c843726f06a"},
-    {file = "bubop-0.1.11.tar.gz", hash = "sha256:72d2a71308459a6b6206d550a6ae540a18b4bcefc14ab01f9d98595ae8e90ab8"},
+    {file = "bubop-0.1.12-py3-none-any.whl", hash = "sha256:090a13a588e6daaed28fef1d4ca687c2d6cae01b6c55e9adf838253d42d2fc2a"},
+    {file = "bubop-0.1.12.tar.gz", hash = "sha256:8becf500f85beeb816d6ffb3ce61f359ab9c4e73007c2f4d4224a522e333508b"},
 ]
 
 [package.dependencies]
@@ -847,20 +847,18 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "item-synchronizer"
-version = "1.1.4"
+version = "1.1.5"
 description = "Synchronize items bi-directionally between two different sources"
 optional = false
-python-versions = "^3.8"
-files = []
-develop = true
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "item_synchronizer-1.1.5-py3-none-any.whl", hash = "sha256:b57d86689fc49fd163a32464e6505b1d122a00f8a26ca5cb5d80bfde2da1fef0"},
+    {file = "item_synchronizer-1.1.5.tar.gz", hash = "sha256:94aa402c7e844fd4e9da34ca9c9c2f5efd55765e48945282a60f266031b5203e"},
+]
 
 [package.dependencies]
-bidict = "^0.21.4"
-bubop = ">=0.1.8 <0.2"
-
-[package.source]
-type = "directory"
-url = "../item_synchronizer"
+bidict = ">=0.21.4,<0.22.0"
+bubop = ">=0.1.8,<0.2"
 
 [[package]]
 name = "jsonschema"
@@ -2474,4 +2472,4 @@ tw = ["taskw"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "71991ec60ac6c6579ea2aa5e657c3fb2e4dc38e94679c17834fe2ab0b88ce083"
+content-hash = "3cca6f68271eefb31f04161d81113c5b1ecf75fa07646f10cbb50a5ecad6a3ba"

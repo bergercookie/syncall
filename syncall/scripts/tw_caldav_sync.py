@@ -7,12 +7,12 @@ from typing import List, Optional
 import caldav
 import click
 from bubop import (
+    ExitHooks,
     check_optional_mutually_exclusive,
     check_required_mutually_exclusive,
     format_dict,
     logger,
     loguru_tqdm_sink,
-    ExitHooks,
 )
 
 from syncall import inform_about_app_extras
@@ -118,12 +118,14 @@ def main(
     )
 
     check_optional_mutually_exclusive(combination_name, custom_combination_savename)
-    combination_of_tw_project_tags_and_caldav_calendar = any([
-        tw_project,
-        tw_tags,
-        tw_sync_all_tasks,
-        caldav_calendar,
-    ])
+    combination_of_tw_project_tags_and_caldav_calendar = any(
+        [
+            tw_project,
+            tw_tags,
+            tw_sync_all_tasks,
+            caldav_calendar,
+        ]
+    )
     check_optional_mutually_exclusive(
         combination_name, combination_of_tw_project_tags_and_caldav_calendar
     )
