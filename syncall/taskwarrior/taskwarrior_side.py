@@ -163,7 +163,7 @@ class TaskWarriorSide(SyncSide):
             fn = always_true
 
             tags_fn = lambda task: self._tags.issubset(task.get("tags", []))
-            project_fn = lambda task: task.get("project", "") == self._project
+            project_fn = lambda task: task.get("project", "").startswith(self._project)
 
             if self._only_modified_since:
                 mod_since_date = assume_local_tz_if_none(self._only_modified_since)
