@@ -88,8 +88,18 @@ def parse_caldav_item_desc(
         return annotations, uuid
 
     caldav_desc = caldav_item["description"]
+
+    if "uuid" not in caldav_desc:
+        # this must be a new item, let's take all the text of the description and put it under
+        # a single annotation
+        logger.trace(
+            "There's a description but no UUID in this caldav item, using its whole"
+            " description as a single annotation ..."
+        )
+        return [caldav_desc], uuid
+
     # strip whitespaces, empty lines
-    lines = [line.strip() for line in caldav_desc.split("\n") if line][1:]
+    lines = [line.strip() for line in caldav_desc.split("\n") if line]
 
     # annotations
     i = 0
