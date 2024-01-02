@@ -2,8 +2,8 @@ from pathlib import Path
 
 import yaml
 
-from syncall import convert_asana_to_tw, convert_tw_to_asana
 from syncall.asana.asana_task import AsanaTask
+from syncall.tw_asana_utils import convert_asana_to_tw, convert_tw_to_asana
 
 from .generic_test_case import GenericTestCase
 

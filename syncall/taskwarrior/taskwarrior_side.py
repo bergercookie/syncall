@@ -1,23 +1,11 @@
 import datetime
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Literal,
-    Mapping,
-    Optional,
-    Sequence,
-    Set,
-    Union,
-    cast,
-)
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, cast
 from uuid import UUID
 
-from bubop import assume_local_tz_if_none, logger, parse_datetime
-from taskw import TaskWarrior
-from taskw.warrior import TASKRC
+from bubop import logger, parse_datetime
+from taskw_ng import TaskWarrior
+from taskw_ng.warrior import TASKRC
 from xdg import xdg_config_home
 
 from syncall.sync_side import ItemType, SyncSide
@@ -59,7 +47,7 @@ class TaskWarriorSide(SyncSide):
         self,
         tags: Sequence[str] = tuple(),
         project: Optional[str] = None,
-        only_modified_since: Optional[datetime.datetime] = None,
+        tw_filter: str = "",
         config_file_override: Optional[Path] = None,
         config_overrides: Mapping[str, Any] = {},
         **kargs,
@@ -67,9 +55,12 @@ class TaskWarriorSide(SyncSide):
         """
         Constructor.
 
-        :param tags: Only include tasks that have are tagged using *all* the specified tags
-        :param project: Only include tasks that include in this project
-        :param only_modified_since: Only include tasks that are modified since the specified date
+        :param tags: Only include tasks that have are tagged using *all* the specified tags.
+                     Also assign these tags to newly added items
+        :param project: Only include tasks that include in this project. Also assign newly
+                        added items to this project.
+        :param tw_filter: Arbitrary taskwarrior filter to use for determining the list of tasks
+                          to sync
         :param config_file: Path to the taskwarrior RC file
         :param config_overrides: Dictionary of taskrc key, values to override. See also
                                  tw_config_default_overrides
@@ -77,6 +68,7 @@ class TaskWarriorSide(SyncSide):
         super().__init__(name="Tw", fullname="Taskwarrior", **kargs)
         self._tags: Set[str] = set(tags)
         self._project: str = project or ""
+        self._tw_filter: str = tw_filter
 
         config_overrides_ = tw_config_default_overrides.copy()
         config_overrides_.update(config_overrides)
@@ -114,8 +106,6 @@ class TaskWarriorSide(SyncSide):
         # Whether to refresh the cached list of items
         self._reload_items = True
 
-        self._only_modified_since = only_modified_since
-
     def start(self):
         logger.info(f"Initializing {self.fullname}...")
 
@@ -127,8 +117,15 @@ class TaskWarriorSide(SyncSide):
         """
         if not self._reload_items:
             return
+        filter_ = [*[f"+{tag}" for tag in self._tags]]
+        if self._tw_filter:
+            filter_.append(self._tw_filter)
+        if self._project:
+            filter_.append(f"pro:{self._project}")
+        filter_ = f'( {" or ".join(filter_)} )'
+        logger.debug(f"Using the following filter to fetch TW tasks: {filter_}")
+        tasks = self._tw.load_tasks_and_filter(command="all", filter_=filter_)
 
-        tasks = self._tw.load_tasks()
         items = [*tasks["completed"], *tasks["pending"]]
         self._items_cache: Dict[str, TaskwarriorRawItem] = {  # type: ignore
             str(item["uuid"]): item for item in items
@@ -156,46 +153,6 @@ class TaskWarriorSide(SyncSide):
         tasks = list(self._items_cache.values())
         if skip_completed:
             tasks = [t for t in tasks if t["status"] != "completed"]  # type: ignore
-
-        # filter the tasks based on their tags, project and modification date -----------------
-        def create_tasks_filter() -> Callable[[TaskwarriorRawItem], bool]:
-            always_true = lambda task: True
-            fn = always_true
-
-            tags_fn = lambda task: self._tags.issubset(task.get("tags", []))
-            project_fn = lambda task: task.get("project", "").startswith(self._project)
-
-            if self._only_modified_since:
-                mod_since_date = assume_local_tz_if_none(self._only_modified_since)
-
-                def only_modified_since_fn(task):
-                    mod_date = task.get("modified")
-                    if mod_date is None:
-                        logger.warning(
-                            f'Task does not have a modification date {task["uuid"]}, this'
-                            " sounds like a bug but including it anyway..."
-                        )
-                        return True
-
-                    mod_date: datetime.datetime
-                    mod_date = assume_local_tz_if_none(mod_date)
-
-                    if mod_since_date <= mod_date:
-                        return True
-
-                    return False
-
-            if self._tags:
-                fn = lambda task, fn=fn, tags_fn=tags_fn: fn(task) and tags_fn(task)
-            if self._project:
-                fn = lambda task, fn=fn, project_fn=project_fn: fn(task) and project_fn(task)
-            if self._only_modified_since:
-                fn = lambda task, fn=fn: fn(task) and only_modified_since_fn(task)
-
-            return fn
-
-        tasks_filter = create_tasks_filter()
-        tasks = [t for t in tasks if tasks_filter(t)]
 
         for task in tasks:
             task["uuid"] = str(task["uuid"])  # type: ignore

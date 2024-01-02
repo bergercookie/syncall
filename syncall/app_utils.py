@@ -4,6 +4,7 @@ Use these functions only in top-level executables. In case of errors they may di
 `sys.exit()` to avoid dumping stack traces to the user.
 """
 
+import atexit
 import inspect
 import logging
 import os
@@ -16,6 +17,7 @@ from typing import Any, Mapping, NoReturn, Optional, Sequence, Tuple, Type, cast
 from urllib.parse import quote
 
 from bubop import (
+    ExitHooks,
     PrefsManager,
     format_list,
     log_to_syslog,
@@ -128,20 +130,9 @@ def get_named_combinations(config_fname: str) -> Sequence[str]:
         return list(prefs_manager.keys())
 
 
-def list_named_combinations(config_fname: str) -> None:
-    """List the named configurations currently available for the given configuration name.
-
-    Mainly used by the top-level synchronization apps.
-    """
-    logger.success(
-        format_list(
-            header="\n\nNamed configurations currently available",
-            items=get_named_combinations(config_fname=config_fname),
-        )
-    )
-
-
-def fetch_app_configuration(config_fname: str, combination: str) -> Mapping[str, Any]:
+def fetch_app_configuration(
+    side_A_name: str, side_B_name: str, combination: str
+) -> Mapping[str, Any]:
     """
     Fetch the configuration of a top-level synchronization app.
 
@@ -153,6 +144,7 @@ def fetch_app_configuration(config_fname: str, combination: str) -> Mapping[str,
     It will check whether the configuration file at hand exist and will also give meaningful
     errors to the user if the configuration file does not contain the said combination.
     """
+    config_fname = determine_app_config_fname(side_A_name, side_B_name)
     with PrefsManager(app_name=app_name(), config_fname=config_fname) as prefs_manager:
         if combination not in prefs_manager:
             # config not found ----------------------------------------------------------------
@@ -183,6 +175,9 @@ def cache_or_reuse_cached_combination(
         config_name = get_config_name_for_args(*config_args.values())
     else:
         config_name = custom_combination_savename
+
+    if not config_name.endswith((".yaml", ".yml")):
+        config_name = f"{config_name}.yaml"
 
     # see if this combination corresponds to an already existing configuration ----------------
     with PrefsManager(app_name=app_name(), config_fname=config_fname) as prefs_manager:
@@ -347,3 +342,51 @@ def app_log_to_syslog():
     calling_file = Path(caller_frame[1])
     fname = calling_file.stem
     log_to_syslog(name=fname)
+
+
+def register_teardown_handler(
+    pdb_on_error: bool, inform_about_config: bool, combination_name: str, verbose: int
+) -> ExitHooks:
+    """Shortcut for registering the teardown logic in a top-level sync application.
+
+    We're explicilty not catching/reporting exceptions if the pdb_on_error argument is set
+    since the developer is meaning to get a prompt and debug any exception that arises.
+    """
+    hooks: ExitHooks = ExitHooks()
+
+    def teardown():
+        if hooks.exception is not None:
+            if hooks.exception.__class__ is KeyboardInterrupt:
+                logger.error("C-c pressed, exiting...")
+            else:
+                report_toplevel_exception(is_verbose=verbose >= 1)
+                return 1
+
+        if inform_about_config:
+            inform_about_combination_name_usage(combination_name)
+
+    if pdb_on_error:
+        logger.warning(
+            "pdb_on_error is enabled. Disabling exit hooks / not taking actions at the end "
+            "of the run."
+        )
+    else:
+        hooks.register()
+        atexit.register(teardown)
+
+    return hooks
+
+
+def determine_app_config_fname(side_A_name: str, side_B_name: str):
+    """
+    Get the configuration name for the app at hand given the names of the sides involved.
+
+    >>> assert determine_app_config_fname("TW", "Google Tasks") == 'tw__google_tasks__configs.yaml'
+    >>> assert determine_app_config_fname("TW", "Google Calendar") == 'tw__google_calendar__configs.yaml'
+    """
+    config_fname = (
+        f'{side_A_name.replace(" ", "_").lower()}'
+        "__"
+        f'{side_B_name.replace(" ", "_").lower()}__configs.yaml'
+    )
+    return config_fname

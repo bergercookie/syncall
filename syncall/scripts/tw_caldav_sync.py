@@ -1,5 +1,3 @@
-import atexit
-import datetime
 import os
 import subprocess
 from typing import List, Optional
@@ -7,7 +5,6 @@ from typing import List, Optional
 import caldav
 import click
 from bubop import (
-    ExitHooks,
     check_optional_mutually_exclusive,
     check_required_mutually_exclusive,
     format_dict,
@@ -15,19 +12,7 @@ from bubop import (
     loguru_tqdm_sink,
 )
 
-from syncall import inform_about_app_extras
-from syncall.app_utils import app_log_to_syslog, error_and_exit
-from syncall.cli import (
-    opt_caldav_calendar,
-    opt_caldav_passwd_cmd,
-    opt_caldav_passwd_pass_path,
-    opt_caldav_url,
-    opt_caldav_user,
-    opt_pdb_on_error,
-    opt_tw_all_tasks,
-    opt_tw_only_tasks_modified_30_days,
-)
-from syncall.tw_caldav_utils import convert_caldav_to_tw, convert_tw_to_caldav
+from syncall.app_utils import inform_about_app_extras
 
 try:
     from syncall.caldav.caldav_side import CaldavSide
@@ -35,60 +20,40 @@ try:
 except ImportError:
     inform_about_app_extras(["caldav", "tw"])
 
-from syncall import (
-    Aggregator,
-    __version__,
+from syncall.aggregator import Aggregator
+from syncall.app_utils import (
+    app_log_to_syslog,
     cache_or_reuse_cached_combination,
+    error_and_exit,
     fetch_app_configuration,
     fetch_from_pass_manager,
     get_resolution_strategy,
-    inform_about_combination_name_usage,
-    list_named_combinations,
-    opt_combination,
-    opt_custom_combination_savename,
-    opt_list_combinations,
-    opt_resolution_strategy,
-    opt_tw_project,
-    opt_tw_tags,
-    report_toplevel_exception,
+    register_teardown_handler,
 )
+from syncall.cli import opts_caldav, opts_miscellaneous, opts_tw_filtering
+from syncall.tw_caldav_utils import convert_caldav_to_tw, convert_tw_to_caldav
 
 
 @click.command()
-# caldav options ---------------------------------------------------------------------
-@opt_caldav_calendar()
-@opt_caldav_url()
-@opt_caldav_user()
-@opt_caldav_passwd_pass_path()
-@opt_caldav_passwd_cmd()
-# taskwarrior options -------------------------------------------------------------------------
-@opt_tw_all_tasks()
-@opt_tw_tags()
-@opt_tw_project()
-@opt_tw_only_tasks_modified_30_days()
-# misc options --------------------------------------------------------------------------------
-@opt_list_combinations("TW", "Caldav")
-@opt_resolution_strategy()
-@opt_combination("TW", "Caldav")
-@opt_custom_combination_savename("TW", "Caldav")
-@click.option("-v", "--verbose", count=True)
-@click.version_option(__version__)
-@opt_pdb_on_error()
+@opts_caldav()
+@opts_tw_filtering()
+@opts_miscellaneous("TW", "Caldav")
 def main(
     caldav_calendar: str,
     caldav_url: str,
     caldav_user: Optional[str],
     caldav_passwd_pass_path: str,
     caldav_passwd_cmd: str,
-    tw_sync_all_tasks: bool,
+    tw_filter: str,
     tw_tags: List[str],
     tw_project: str,
-    tw_only_modified_last_30_days: bool,
+    tw_only_modified_last_X_days: str,
+    tw_sync_all_tasks: bool,
+    prefer_scheduled_date: bool,
+    resolution_strategy: str,
     verbose: int,
     combination_name: str,
     custom_combination_savename: str,
-    resolution_strategy: str,
-    do_list_combinations: bool,
     pdb_on_error: bool,
 ):
     """Synchronize lists of tasks from your caldav Calendar with filters from Taskwarrior.
@@ -99,44 +64,46 @@ def main(
     The calendar in Caldav should be provided by their name. If it doesn't exist it will be
     created.
     """
-
+    # setup logger ----------------------------------------------------------------------------
     loguru_tqdm_sink(verbosity=verbose)
     app_log_to_syslog()
     logger.debug("Initialising...")
     inform_about_config = False
 
-    if do_list_combinations:
-        list_named_combinations(config_fname="tw_caldav_configs")
-        return 0
-
-    combination_of_tw_tags_and_tw_project = any([tw_tags, tw_project])
-    check_required_mutually_exclusive(
-        tw_sync_all_tasks,
-        combination_of_tw_tags_and_tw_project,
-        "All TW Tasks",
-        "TW Tags + Projects",
-    )
-
+    # cli validation --------------------------------------------------------------------------
     check_optional_mutually_exclusive(combination_name, custom_combination_savename)
-    combination_of_tw_project_tags_and_caldav_calendar = any(
+
+    tw_filter_li = [
+        t
+        for t in [
+            tw_filter,
+            tw_only_modified_last_X_days,
+        ]
+        if t
+    ]
+
+    combination_of_tw_filters_and_caldav_calendar = any(
         [
-            tw_project,
+            tw_filter_li,
             tw_tags,
+            tw_project,
             tw_sync_all_tasks,
             caldav_calendar,
         ]
     )
     check_optional_mutually_exclusive(
-        combination_name, combination_of_tw_project_tags_and_caldav_calendar
+        combination_name, combination_of_tw_filters_and_caldav_calendar
     )
 
     # existing combination name is provided ---------------------------------------------------
     if combination_name is not None:
         app_config = fetch_app_configuration(
-            config_fname="tw_caldav_configs", combination=combination_name
+            side_A_name="Taskwarrior", side_B_name="Caldav", combination=combination_name
         )
+        tw_filter_li = app_config["tw_filter_li"]
         tw_tags = app_config["tw_tags"]
         tw_project = app_config["tw_project"]
+        tw_sync_all_tasks = app_config["tw_sync_all_tasks"]
         caldav_calendar = app_config["caldav_calendar"]
 
     # combination manually specified ----------------------------------------------------------
@@ -145,24 +112,34 @@ def main(
         combination_name = cache_or_reuse_cached_combination(
             config_args={
                 "caldav_calendar": caldav_calendar,
+                "tw_filter_li": tw_filter_li,
                 "tw_project": tw_project,
                 "tw_tags": tw_tags,
-                "tw_sync_all_tasks": tw_sync_all_tasks,
-                "tw_only_modified_last_30_days": tw_only_modified_last_30_days,
             },
             config_fname="tw_caldav_configs",
             custom_combination_savename=custom_combination_savename,
         )
+
+    # more checks -----------------------------------------------------------------------------
+    combination_of_tw_related_options = any([tw_filter_li, tw_tags, tw_project])
+    check_required_mutually_exclusive(
+        tw_sync_all_tasks,
+        combination_of_tw_related_options,
+        "sync_all_tw_tasks",
+        "combination of specific TW-related options",
+    )
 
     # announce configuration ------------------------------------------------------------------
     logger.info(
         format_dict(
             header="Configuration",
             items={
+                "TW Filter": " ".join(tw_filter_li),
                 "TW Tags": tw_tags,
                 "TW Project": tw_project,
                 "TW Sync All Tasks": tw_sync_all_tasks,
                 "Caldav Calendar": caldav_calendar,
+                "Prefer scheduled dates": prefer_scheduled_date,
             },
             prefix="\n\n",
             suffix="\n",
@@ -170,14 +147,9 @@ def main(
     )
 
     # initialize sides ------------------------------------------------------------------------
-    # TW
-    # TODO abstract this
-    only_modified_since = None
-    if tw_only_modified_last_30_days:
-        only_modified_since = datetime.datetime.now() - datetime.timedelta(days=30)
-
+    # tw
     tw_side = TaskWarriorSide(
-        tags=tw_tags, project=tw_project, only_modified_since=only_modified_since
+        tw_filter=" ".join(tw_filter_li), tags=tw_tags, project=tw_project
     )
 
     # caldav
@@ -213,27 +185,12 @@ def main(
     caldav_side = CaldavSide(client=client, calendar_name=caldav_calendar)
 
     # teardown function and exception handling ------------------------------------------------
-    hooks: ExitHooks = ExitHooks()
-
-    def teardown():
-        if hooks.exception is not None:
-            if hooks.exception.__class__ is KeyboardInterrupt:
-                logger.error("C-c pressed, exiting...")
-            else:
-                report_toplevel_exception(is_verbose=verbose >= 1)
-                return 1
-
-        if inform_about_config:
-            inform_about_combination_name_usage(combination_name)
-
-    if pdb_on_error:
-        logger.warning(
-            "pdb_on_error is enabled. Disabling exit hooks / not taking actions at the end "
-            "of the run."
-        )
-    else:
-        hooks.register()
-        atexit.register(teardown)
+    register_teardown_handler(
+        pdb_on_error=pdb_on_error,
+        inform_about_config=inform_about_config,
+        combination_name=combination_name,
+        verbose=verbose,
+    )
 
     # sync ------------------------------------------------------------------------------------
     with Aggregator(

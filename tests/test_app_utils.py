@@ -3,13 +3,13 @@ from unittest.mock import patch
 
 import pytest
 
-from syncall import (
+from syncall.app_utils import (
     cache_or_reuse_cached_combination,
     fetch_app_configuration,
     inform_about_combination_name_usage,
-    list_named_combinations,
     report_toplevel_exception,
 )
+from syncall.cli import _list_named_combinations
 from syncall.constants import COMBINATION_FLAGS, ISSUES_URL
 
 
@@ -18,7 +18,7 @@ def test_list_named_combinations(fs, caplog, mock_prefs_manager):
         "syncall.app_utils.PrefsManager",
         return_value=mock_prefs_manager,
     ):
-        list_named_combinations("doesnt matter")
+        _list_named_combinations("doesnt matter")
         captured = caplog.text
         assert all(
             expected_config in captured
@@ -33,7 +33,9 @@ def test_list_named_combinations(fs, caplog, mock_prefs_manager):
 def test_fetch_app_configuration(fs, caplog, mock_prefs_manager):
     with patch("syncall.app_utils.PrefsManager", return_value=mock_prefs_manager):
         # invalid combination
-        config = fetch_app_configuration(config_fname="doesntmatter", combination="kalimera")
+        config = fetch_app_configuration(
+            side_A_name="side A", side_B_name="side B", combination="kalimera"
+        )
         assert list(config.keys()) == ["a", "b", "c"]
         assert list(config.values()) == [1, 2, [1, 2, 3]]
         captured = caplog.text
@@ -42,7 +44,9 @@ def test_fetch_app_configuration(fs, caplog, mock_prefs_manager):
         # invalid combination
         caplog.clear()
         with pytest.raises(RuntimeError):
-            fetch_app_configuration(config_fname="doesntmatter", combination="doesntexist")
+            fetch_app_configuration(
+                side_A_name="side A", side_B_name="side B", combination="doesntexist"
+            )
             captured = caplog.text
             assert "No such configuration" in captured
 

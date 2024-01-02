@@ -5,64 +5,48 @@ from typing import Optional, Sequence
 import click
 from bubop import check_optional_mutually_exclusive, format_dict, logger, loguru_tqdm_sink
 
-from syncall import inform_about_app_extras
-from syncall.cli import opt_filename_extension, opt_gkeep_ignore_labels
+from syncall.app_utils import inform_about_app_extras
 
 try:
-    from syncall import GKeepNoteSide
+    from syncall.filesystem.filesystem_side import FilesystemSide
+    from syncall.google.gkeep_note_side import GKeepNoteSide
 except ImportError:
     inform_about_app_extras(["gkeep", "fs"])
 
-from syncall import (
-    Aggregator,
-    FilesystemSide,
-    __version__,
-    cache_or_reuse_cached_combination,
-    convert_filesystem_file_to_gkeep_note,
-    convert_gkeep_note_to_filesystem_file,
-    fetch_app_configuration,
-    get_resolution_strategy,
-    inform_about_combination_name_usage,
-    list_named_combinations,
-    report_toplevel_exception,
-)
+
+from syncall.aggregator import Aggregator
 from syncall.app_utils import (
     app_log_to_syslog,
+    cache_or_reuse_cached_combination,
+    fetch_app_configuration,
+    get_resolution_strategy,
     gkeep_read_username_password_token,
+    register_teardown_handler,
     write_to_pass_manager,
 )
 from syncall.cli import (
-    opt_combination,
-    opt_custom_combination_savename,
+    opt_filename_extension,
     opt_filesystem_root,
-    opt_gkeep_labels,
-    opt_gkeep_passwd_pass_path,
-    opt_gkeep_token_pass_path,
-    opt_gkeep_user_pass_path,
-    opt_list_combinations,
-    opt_resolution_strategy,
+    opts_gkeep,
+    opts_miscellaneous,
 )
+from syncall.filesystem_gkeep_utils import (
+    convert_filesystem_file_to_gkeep_note,
+    convert_gkeep_note_to_filesystem_file,
+)
+from syncall.google.gkeep_note_side import GKeepNoteSide
 
 
 @click.command()
-# google keep options -------------------------------------------------------------------------
-@opt_gkeep_labels()
-@opt_gkeep_ignore_labels()
-@opt_gkeep_user_pass_path()
-@opt_gkeep_passwd_pass_path()
-@opt_gkeep_token_pass_path()
+@opts_gkeep()
 # filesystem options --------------------------------------------------------------------------
 @opt_filename_extension()
 @opt_filesystem_root()
 # misc options --------------------------------------------------------------------------------
-@opt_list_combinations("Filesystem", "Google Keep")
-@opt_resolution_strategy()
-@opt_combination("Filesystem", "Google Keep")
-@opt_custom_combination_savename("Filesystem", "Google Keep")
-@click.option("-v", "--verbose", count=True)
-@click.version_option(__version__)
+@opts_miscellaneous("Filesystem", "Google Keep")
 def main(
     filesystem_root: Optional[str],
+    filename_extension: str,
     gkeep_labels: Sequence[str],
     gkeep_ignore_labels: Sequence[str],
     gkeep_user_pass_path: str,
@@ -72,8 +56,7 @@ def main(
     verbose: int,
     combination_name: str,
     custom_combination_savename: str,
-    do_list_combinations: bool,
-    filename_extension: str,
+    pdb_on_error: bool,
 ):
     """
     Synchronize Notes from your Google Keep with text files in a directory on your filesystem.
@@ -93,10 +76,6 @@ def main(
     app_log_to_syslog()
     logger.debug("Initialising...")
     inform_about_config = False
-
-    if do_list_combinations:
-        list_named_combinations(config_fname="fs_gkeep_configs")
-        return 0
 
     # cli validation --------------------------------------------------------------------------
     check_optional_mutually_exclusive(gkeep_labels, gkeep_ignore_labels)
@@ -130,12 +109,13 @@ def main(
     # existing combination name is provided ---------------------------------------------------
     if combination_name is not None:
         app_config = fetch_app_configuration(
-            config_fname="fs_gkeep_configs", combination=combination_name
+            side_A_name="Filesystem", side_B_name="Google Keep", combination=combination_name
         )
         filesystem_root_path = Path(app_config["filesystem_root"])
         gkeep_labels = app_config["gkeep_labels"]
         gkeep_ignore_labels = app_config["gkeep_ignore_labels"]
         filename_extension = app_config["filename_extension"]
+
     # combination manually specified ----------------------------------------------------------
     else:
         inform_about_config = True
@@ -188,7 +168,6 @@ def main(
         gkeep_token_pass_path,
     )
 
-    # initialize google keep  -----------------------------------------------------------------
     gkeep_side = GKeepNoteSide(
         gkeep_labels=gkeep_labels,
         gkeep_ignore_labels=gkeep_ignore_labels,
@@ -197,12 +176,19 @@ def main(
         gkeep_token=gkeep_token,
     )
 
-    # initialize Filesystem Side --------------------------------------------------------------
     filesystem_side = FilesystemSide(
         filesystem_root=filesystem_root_path, filename_extension=filename_extension
     )
 
-    # sync ------------------------------------------------------------------------------------
+    # teardown function and exception handling ------------------------------------------------
+    register_teardown_handler(
+        pdb_on_error=pdb_on_error,
+        inform_about_config=inform_about_config,
+        combination_name=combination_name,
+        verbose=verbose,
+    )
+
+    # take extra arguments into account -------------------------------------------------------
     def converter_A_to_B(gkeep_note):
         return convert_gkeep_note_to_filesystem_file(
             gkeep_note=gkeep_note,
@@ -212,39 +198,30 @@ def main(
 
     converter_A_to_B.__doc__ = convert_gkeep_note_to_filesystem_file.__doc__
 
-    try:
-        with Aggregator(
-            side_A=gkeep_side,
-            side_B=filesystem_side,
-            converter_B_to_A=convert_filesystem_file_to_gkeep_note,
-            converter_A_to_B=converter_A_to_B,
-            resolution_strategy=get_resolution_strategy(
-                resolution_strategy,
-                side_A_type=type(gkeep_side),
-                side_B_type=type(filesystem_side),
-            ),
-            config_fname=combination_name,
-            ignore_keys=(
-                (),
-                (),
-            ),
-        ) as aggregator:
-            aggregator.sync()
-    except KeyboardInterrupt:
-        logger.error("Exiting...")
-        return 1
-    except:
-        report_toplevel_exception(is_verbose=verbose >= 1)
-        return 1
+    # sync ------------------------------------------------------------------------------------
+    with Aggregator(
+        side_A=gkeep_side,
+        side_B=filesystem_side,
+        converter_B_to_A=convert_filesystem_file_to_gkeep_note,
+        converter_A_to_B=converter_A_to_B,
+        resolution_strategy=get_resolution_strategy(
+            resolution_strategy,
+            side_A_type=type(gkeep_side),
+            side_B_type=type(filesystem_side),
+        ),
+        config_fname=combination_name,
+        ignore_keys=(
+            (),
+            (),
+        ),
+    ) as aggregator:
+        aggregator.sync()
 
-    # cache the token
+    # cache the token -------------------------------------------------------------------------
     token = gkeep_side.get_master_token()
     if token is not None:
         logger.debug(f"Caching the gkeep token in pass -> {gkeep_token_pass_path}...")
         write_to_pass_manager(password_path=gkeep_token_pass_path, passwd=token)
-
-    if inform_about_config:
-        inform_about_combination_name_usage(combination_name)
 
     return 0
 

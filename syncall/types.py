@@ -293,7 +293,7 @@ class AsanaRawTask(TypedDict):
 
 
 # Extras --------------------------------------------------------------------------------------
-# Task as returned from taskw.get_task(id=...)
+# Task as returned from get_task(id=...)
 # TODO Are these types needed? They seem to be duplicates of TaskwarriorRawItem ...
 TwRawItem = Tuple[Optional[int], Dict[str, Any]]
 TwItem = Dict[str, Any]

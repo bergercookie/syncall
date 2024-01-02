@@ -1,7 +1,7 @@
 import pytest
 from bubop.time import format_datetime_tz
 
-from syncall import GKeepTodoItem
+from syncall.google.gkeep_todo_item import GKeepTodoItem
 from syncall.tw_gkeep_utils import convert_gkeep_todo_to_tw, convert_tw_to_gkeep_todo
 from syncall.types import TwItem
 
