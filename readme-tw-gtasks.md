@@ -23,7 +23,44 @@ advantages:
 - Comfortable addition/modification of events using voice commands
 - Actual reminding of events with a variety of mechanisms
 
-## Override Google Tasks API key
+## Usage Examples
+
+Run the `tw_gtasks_sync` to synchronise the Google Tasks list of your choice with
+the selected Taskwarrior tag(s). Run with `--help` for the list of options.
+
+```sh
+# Sync the +remindme Taskwarrior tag with the Google Tasks list named "TW Reminders"
+
+tw_gtasks_sync --help
+tw_gtasks_sync -t remindme -l "TW Reminders"
+```
+
+## Installation
+
+### Package Installation
+
+Install the `syncall` package from PyPI, enabling the `google` and `tw`
+extras:
+
+```sh
+pip3 install syncall[google,tw]
+```
+
+## Notes re this synchronization
+
+- Currently subtasks of a Google Tasks item are treated as completely
+  independent of the parent task when converted to Taskwarrior
+- It's not possible to get the time part of the "due" field of a task using the
+  Google Tasks API. Due to this restriction we currently do currently do sync
+  the date part (without the time) from Google Tasks to Taskwarrior, but in
+  order not to remove the time part when doing the inverse synchronization, we
+  don't sync the date at all from Taskwarrior to Google Tasks. More
+  information in [this ticket](https://issuetracker.google.com/u/1/issues/128979662)
+
+<details>
+<summary>Overriding Google Tasks API key (not required)</summary>
+
+**This step isn't since the Google Console app of this project is now verified.**
 
 At the moment the Google Console app that makes use of the Google Tasks API is
 still in Testing mode and awaiting approval from Google. This means that if it
@@ -64,37 +101,5 @@ To specify your custom credentials JSON file use the `--google-secret` flag as f
 ```sh
 tw_gtasks_sync -l "<list-name>" -t "<taskwarrior-tag>" --google-secret "<path/to/downloaded/json/file>"
 ```
+</details>
 
-## Usage Examples
-
-Run the `tw_gtasks_sync` to synchronise the Google Tasks list of your choice with
-the selected Taskwarrior tag(s). Run with `--help` for the list of options.
-
-```sh
-# Sync the +remindme Taskwarrior tag with the Google Tasks list named "TW Reminders"
-
-tw_gtasks_sync --help
-tw_gtasks_sync -t remindme -l "TW Reminders"
-```
-
-## Installation
-
-### Package Installation
-
-Install the `syncall` package from PyPI, enabling the `google` and `tw`
-extras:
-
-```sh
-pip3 install syncall[google,tw]
-```
-
-## Notes re this synchronization
-
-- Currently subtasks of a Google Tasks item are treated as completely
-  independent of the parent task when converted to Taskwarrior
-- It's not possible to get the time part of the "due" field of a task using the
-  Google Tasks API. Due to this restriction we currently do currently do sync
-  the date part (without the time) from Google Tasks to Taskwarrior, but in
-  order not to remove the time part when doing the inverse synchronization, we
-  don't sync the date at all from Taskwarrior to Google Tasks. More
-  information in [this ticket](https://issuetracker.google.com/u/1/issues/128979662)
