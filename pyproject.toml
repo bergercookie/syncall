@@ -52,7 +52,7 @@ tw_gtasks_sync = "syncall.scripts.tw_gtasks_sync:main"
 [tool.poetry.dependencies]
 python = "^3.8"
 
-PyYAML = "^5.3.1"
+PyYAML = "~5.3.1"
 bidict = "^0.21.2"
 click = "^8.0"
 
