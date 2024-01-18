@@ -2483,4 +2483,4 @@ tw = ["taskw", "xdg"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "cd9d39b0d818623c0b5cd01ca30de4216c35c25663f564ad0f0012c568e563a3"
+content-hash = "e5539e75d6e76cbcd008e49e0c6fac7e895b8d7cb0f0cfbfcb41160353098cb1"

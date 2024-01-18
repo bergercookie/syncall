@@ -101,5 +101,5 @@ To specify your custom credentials JSON file use the `--google-secret` flag as f
 ```sh
 tw_gtasks_sync -l "<list-name>" -t "<taskwarrior-tag>" --google-secret "<path/to/downloaded/json/file>"
 ```
-</details>
 
+</details>
