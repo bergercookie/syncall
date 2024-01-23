@@ -1549,13 +1549,13 @@ files = [
 
 [[package]]
 name = "pyright"
-version = "1.1.347"
+version = "1.1.348"
 description = "Command line wrapper for pyright"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pyright-1.1.347-py3-none-any.whl", hash = "sha256:14dd31b594aa3ec464894f66b8a2d206ebef1501e52789eb88cf2a79b0907fbe"},
-    {file = "pyright-1.1.347.tar.gz", hash = "sha256:17ea09322f60080f82abc4e622e43d1a5ebaa407ba86963b15b2bc01cca256e0"},
+    {file = "pyright-1.1.348-py3-none-any.whl", hash = "sha256:e7d4df504c4c082b5c3725a8c15fc3fda62da5d09fc77994baa77f359a1b62f2"},
+    {file = "pyright-1.1.348.tar.gz", hash = "sha256:1c6994546f7ab130b9da8c357f8b2a99bef268b6d8ae2eae292bde66923aa7af"},
 ]
 
 [package.dependencies]
@@ -1981,17 +1981,18 @@ files = [
 
 [[package]]
 name = "taskw-ng"
-version = "0.2.1"
+version = "0.2.2a0"
 description = "Next generation python bindings for your taskwarrior database"
 optional = true
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "taskw_ng-0.2.1-py3-none-any.whl", hash = "sha256:9b73d0a0379fe995379d6484e55a000688d36381200eb407ba8250f7bf0dd78e"},
-    {file = "taskw_ng-0.2.1.tar.gz", hash = "sha256:a7d02378c45bbb676c3957551558ed21ad3c5653c81782bff298263a0b72f013"},
+    {file = "taskw_ng-0.2.2a0-py3-none-any.whl", hash = "sha256:891504f574ca68843c233ae98dca508e40634f0522039d1aff505bbf5295517c"},
+    {file = "taskw_ng-0.2.2a0.tar.gz", hash = "sha256:a409e21aaf0ad2a2d624be1d0a5e6b557887769494af975bcdf19705c391ee3a"},
 ]
 
 [package.dependencies]
 kitchen = ">=1.2.6,<2.0.0"
+packaging = ">=23.2,<24.0"
 python-dateutil = ">=2.8.2,<3.0.0"
 pytz = ">=2023.3.post1,<2024.0"
 
@@ -2468,4 +2469,4 @@ tw = ["taskw-ng", "xdg"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "e63a3492bb7d6bf63cc5a6c75bd8cf63a5c8a2ef0c3940e277822e169be177f8"
+content-hash = "bae27dfa7bc747111640054563918dcdffe1e0032f3e71a6ab45f18bfae26645"
