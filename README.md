@@ -34,7 +34,7 @@ to introduce support for either a new service / synchronization side (e.g.,
 [`ClickUp`](https://clickup.com/)) or a new synchronization altogether (e.g.,
 ClickUp <-> Google Keep) given that you [implement the corresponding
 synchronization sides and conversion
-methods](implement-a-new-synchronization.md). See also the
+methods](docs/implement-a-new-synchronization.md). See also the
 [CONTRIBUTING](CONTRIBUTING.md) guide to get started.
 
 At the moment the list of supported synchronizations is the following:
@@ -49,37 +49,37 @@ At the moment the list of supported synchronizations is the following:
 </thead>
 <tbody>
   <tr>
-    <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-gtasks.md">README</a></td>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/docs/readme-tw-gtasks.md">README</a></td>
     <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://support.google.com/tasks/answer/7675772">Google Tasks</a></td>
     <td><tt>tw-gtasks-sync</tt></td>
   </tr>
   <tr>
-    <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-gcal.md">README</a></td>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/docs/readme-tw-gcal.md">README</a></td>
     <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://calendar.google.com/">Google Calendar</a></td>
     <td><tt>tw-gcal-sync</tt></td>
   </tr>
   <tr>
-    <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-notion.md">README</a></td>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/docs/readme-tw-notion.md">README</a></td>
     <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://notion.so">Notion Checkboxes</a></td>
     <td><tt>tw-notion-sync</tt></td>
   </tr>
   <tr>
-    <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-gkeep.md">README</a></td>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/docs/readme-tw-gkeep.md">README</a></td>
     <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://www.google.com/keep/">Google Keep Checkboxes</a></td>
     <td><tt>tw-gkeep-sync</tt></td>
   </tr>
   <tr>
-    <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-asana.md">README</a></td>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/docs/readme-tw-asana.md">README</a></td>
     <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ <a href="https://www.asana.com">Asana Tasks</a></td>
     <td><tt>tw-asana-sync</tt></td>
   </tr>
   <tr>
-    <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-tw-caldav.md">README</a></td>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/docs/readme-tw-caldav.md">README</a></td>
     <td> <a href="https://taskwarrior.org/">Taskwarrior</a> ⬄ Generic <a href="https://en.wikipedia.org/wiki/CalDAV">Caldav </a> server</td>
     <td><tt>tw-caldav-sync</tt></td>
   </tr>
   <tr>
-    <td><a href="https://github.com/bergercookie/syncall/blob/master/readme-fs-gkeep.md">README</a></td>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/docs/readme-fs-gkeep.md">README</a></td>
     <td>  Local Files ⬄  <a href="https://www.google.com/keep/">Google Keep Notes</a></td>
     <td><tt>fs-gkeep-sync</tt></td>
   </tr>
@@ -584,7 +584,7 @@ crontab -e
   <summary>I want to synchronize more than a single (Notion page / TW filter),  (Google Calendar / TW filter) etc. combination.</summary>
 
 See <a
-href="https://github.com/bergercookie/syncall/blob/master/combinations.md">combinations.md</a>.
+href="https://github.com/bergercookie/syncall/blob/master/docs/combinations.md">combinations.md</a>.
 
 </details>
 
@@ -595,8 +595,8 @@ for `bash`, `zsh` and `fish`. You can find them under `completions/`
 
 ## Miscellaneous
 
-- [Implement a New Synchronization Service](implement-a-new-synchronization.md)
-- [Using Multiple Combinations](combinations.md)
+- [Implement a New Synchronization Service](docs/implement-a-new-synchronization.md)
+- [Using Multiple Combinations](docs/combinations.md)
 - [Contributing Guide](CONTRIBUTING.md)
 
 ## Self Promotion

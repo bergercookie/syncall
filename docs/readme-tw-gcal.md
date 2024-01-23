@@ -5,7 +5,7 @@
 > new synchronization has been created which synchronizes your Taskwarrior items
 > with Google Tasks TODO items which in the majority of cases should be more
 > suitable for you to use. To use the latter, head over to the
-> [TW <> Google Tasks README](https://github.com/bergercookie/syncall/blob/master/readme-tw-gtasks.md)
+> [TW <> Google Tasks README](https://github.com/bergercookie/syncall/blob/master/docs/readme-tw-gtasks.md)
 
 ## Description
 
