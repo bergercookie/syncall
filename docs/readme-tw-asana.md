@@ -32,8 +32,8 @@ above
 
 First, generate a [personal access token](https://developers.asana.com/docs/personal-access-token)on Asana.
 
-![1](misc/asana/authentication/1.png) | ![2](misc/asana/authentication/2.png) | ![3](misc/asana/authentication/3.png) |
-|:---:|:---:|:---:|
+| ![1](misc/asana/authentication/1.png) | ![2](misc/asana/authentication/2.png) | ![3](misc/asana/authentication/3.png) |
+| :-----------------------------------: | :-----------------------------------: | :-----------------------------------: |
 
 Next, make this token available to `tw_sync_asana`. This can be done by either:
 
@@ -85,3 +85,7 @@ Install the `syncall` package from PyPI, enabling the `asana` and `tw` extras:
 ```sh
 pip3 install syncall[asana,tw]
 ```
+
+## See also
+
+- <a href="https://github.com/bergercookie/syncall/blob/master/docs/tw-filtering.md">Taskwarrior Filtering.md</a>.

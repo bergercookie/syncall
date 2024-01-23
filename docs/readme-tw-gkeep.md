@@ -58,3 +58,7 @@ password to your Google account and provide the paths to them (use
 If using the UNIX Password Manager, make sure that you also have the gpg-agent
 otherwise the tool will always prompt you for your GPG passphrase and will fail
 if that's not provided.
+
+## See also
+
+- <a href="https://github.com/bergercookie/syncall/blob/master/docs/tw-filtering.md">Taskwarrior Filtering.md</a>.

@@ -122,3 +122,7 @@ Taskwarrior reports, the user can also add the following section to their
 uda.twgcalsyncduration.type=duration
 uda.twgcalsyncduration.label=GCal duration
 ```
+
+## See also
+
+- <a href="https://github.com/bergercookie/syncall/blob/master/docs/tw-filtering.md">Taskwarrior Filtering.md</a>.

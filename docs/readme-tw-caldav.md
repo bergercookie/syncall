@@ -89,3 +89,7 @@ CALDAV_USER=myUser CALDAV_PASSWD=myPass tw_caldav_sync --caldav-url https://next
 
 - [ ] See if we can handle TW "waiting" tasks a little better (possibly by setting the caldav `start` field to when the wait expires)
 - [ ] Consider how to refactor out extra steps in conversion, and just store caldav items in their vTodo formats (though this will make test files much uglier)
+
+## See also
+
+- <a href="https://github.com/bergercookie/syncall/blob/master/docs/tw-filtering.md">Taskwarrior Filtering.md</a>.

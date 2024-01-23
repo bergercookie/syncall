@@ -63,3 +63,7 @@ There are two ways `tw_notion_sync` can read the aforementioned API token:
 
   The latter will run `gpg` on the background and assumes that you are using a
   gpg-agent, otherwise it will ask you for your GPG password.
+
+## See also
+
+- <a href="https://github.com/bergercookie/syncall/blob/master/docs/tw-filtering.md">Taskwarrior Filtering.md</a>.
