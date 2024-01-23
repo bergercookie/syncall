@@ -598,7 +598,7 @@ for `bash`, `zsh` and `fish`. You can find them under `completions/`
 - <a href="https://github.com/bergercookie/syncall/blob/master/docs/implement-a-new-synchronization.md">Implement a New Synchronization Service</a>.
 - <a href="https://github.com/bergercookie/syncall/blob/master/docs/combinations.md">Using Multiple Combinations</a>.
 - <a href="https://github.com/bergercookie/syncall/blob/master/CONTRIBUTING.md">CONTRIBUTING.md</a>.
-- <a href="https://github.com/bergercookie/syncall/blob/master/docs/tw-filtering.md">Taskwarrior Filtering.md</a>.
+- <a href="https://github.com/bergercookie/syncall/blob/master/docs/tw-filtering.md">Taskwarrior Filtering</a>.
 
 ## Self Promotion
 
