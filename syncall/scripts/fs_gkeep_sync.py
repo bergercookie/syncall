@@ -27,6 +27,8 @@ from syncall.app_utils import (
 from syncall.cli import (
     opt_filename_extension,
     opt_filesystem_root,
+    opt_gkeep_ignore_labels,
+    opt_gkeep_labels,
     opts_gkeep,
     opts_miscellaneous,
 )
@@ -38,11 +40,11 @@ from syncall.google.gkeep_note_side import GKeepNoteSide
 
 
 @click.command()
+@opt_gkeep_labels()
+@opt_gkeep_ignore_labels()
 @opts_gkeep()
-# filesystem options --------------------------------------------------------------------------
 @opt_filename_extension()
 @opt_filesystem_root()
-# misc options --------------------------------------------------------------------------------
 @opts_miscellaneous("Filesystem", "Google Keep")
 def main(
     filesystem_root: Optional[str],

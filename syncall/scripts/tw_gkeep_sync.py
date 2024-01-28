@@ -29,12 +29,13 @@ from syncall.app_utils import (
     register_teardown_handler,
     write_to_pass_manager,
 )
-from syncall.cli import opts_gkeep, opts_miscellaneous, opts_tw_filtering
+from syncall.cli import opt_gkeep_note, opts_gkeep, opts_miscellaneous, opts_tw_filtering
 from syncall.tw_gkeep_utils import convert_gkeep_todo_to_tw, convert_tw_to_gkeep_todo
 
 
 @click.command()
 @opts_gkeep()
+@opt_gkeep_note()
 @opts_tw_filtering()
 @opts_miscellaneous(side_A_name="TW", side_B_name="Google Keep")
 def main(
@@ -47,6 +48,7 @@ def main(
     tw_project: str,
     tw_only_modified_last_X_days: str,
     tw_sync_all_tasks: bool,
+    prefer_scheduled_date: bool,
     resolution_strategy: str,
     verbose: int,
     combination_name: str,

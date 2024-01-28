@@ -117,7 +117,11 @@ def main(
     asana_client = asana.Client.access_token(asana_token)
     asana_disable = asana_client.headers.get("Asana-Disable", "")
     asana_client.headers["Asana-Disable"] = ",".join(
-        [asana_client.headers.get("Asana-Disable", ""), "new_user_task_lists"]
+        [
+            asana_client.headers.get("Asana-Disable", ""),
+            "new_user_task_lists",
+            "new_goal_memberships",
+        ]
     )
     asana_client.options["client_name"] = "syncall"
 
@@ -139,7 +143,7 @@ def main(
 
         found_workspace = False
 
-        for workspace in asana_client.workspaces.find_all():
+        for workspace in asana_client.workspaces.find_all():  # type: ignore
             if workspace["gid"] == asana_workspace_gid:
                 asana_workspace_name = workspace["name"]
                 found_workspace = True
@@ -154,14 +158,11 @@ def main(
                     asana_workspace_gid = workspace["gid"]
                     found_workspace = True
         else:
-            if asana_workspace_gid:
-                error_and_exit(
-                    f"No Asana workspace was found with GID {asana_workspace_gid} ."
-                )
-            if asana_workspace_name:
-                error_and_exit(
-                    f"No Asana workspace was found with name {asana_workspace_name} ."
-                )
+            if not asana_workspace_gid:
+                li = [f"No Asana workspace was found with GID {asana_workspace_gid}"]
+                if asana_workspace_name:
+                    li.append(f" | Workspace Name: {asana_workspace_name}")
+                error_and_exit(f"{' '.join(li)}.")
 
     # more checks -----------------------------------------------------------------------------
     combination_of_tw_related_options = any([tw_filter_li, tw_tags, tw_project])

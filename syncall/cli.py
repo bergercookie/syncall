@@ -262,9 +262,6 @@ def opts_gkeep():
                 _opt_gkeep_user_pass_path,
                 _opt_gkeep_passwd_pass_path,
                 _opt_gkeep_token_pass_path,
-                _opt_gkeep_labels,
-                _opt_gkeep_ignore_labels,
-                _opt_gkeep_note,
             ]
         ):
             f = d()(f)
@@ -304,7 +301,7 @@ def _opt_gkeep_token_pass_path():
     )
 
 
-def _opt_gkeep_labels():
+def opt_gkeep_labels():
     return click.option(
         "-k",
         "--gkeep-labels",
@@ -314,7 +311,7 @@ def _opt_gkeep_labels():
     )
 
 
-def _opt_gkeep_ignore_labels():
+def opt_gkeep_ignore_labels():
     return click.option(
         "-i",
         "--gkeep-ignore-labels",
@@ -324,7 +321,7 @@ def _opt_gkeep_ignore_labels():
     )
 
 
-def _opt_gkeep_note():
+def opt_gkeep_note():
     return click.option(
         "-k",
         "--gkeep-note",
