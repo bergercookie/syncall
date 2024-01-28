@@ -92,4 +92,4 @@ CALDAV_USER=myUser CALDAV_PASSWD=myPass tw_caldav_sync --caldav-url https://next
 
 ## See also
 
-- <a href="https://github.com/bergercookie/syncall/blob/master/docs/tw-filtering.md">Taskwarrior Filtering.md</a>.
+- <a href="https://github.com/bergercookie/syncall/blob/master/docs/taskwarrior-filtering.md">Taskwarrior Filtering.md</a>.

@@ -88,4 +88,4 @@ pip3 install syncall[asana,tw]
 
 ## See also
 
-- <a href="https://github.com/bergercookie/syncall/blob/master/docs/tw-filtering.md">Taskwarrior Filtering.md</a>.
+- <a href="https://github.com/bergercookie/syncall/blob/master/docs/taskwarrior-filtering.md">Taskwarrior Filtering.md</a>.
