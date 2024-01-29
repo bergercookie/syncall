@@ -53,6 +53,9 @@ def convert_tw_to_gcal(
         i in tw_item.keys() for i in ("description", "status", "uuid")
     ), "Missing keys in tw_item"
 
+    if tw_duration_key not in tw_item.keys():
+        tw_item[tw_duration_key] = default_event_duration
+
     gcal_item = {}
 
     # Summary
