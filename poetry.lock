@@ -1982,13 +1982,13 @@ files = [
 
 [[package]]
 name = "taskw-ng"
-version = "0.2.4"
+version = "0.2.6"
 description = "Next generation python bindings for your taskwarrior database"
 optional = true
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "taskw_ng-0.2.4-py3-none-any.whl", hash = "sha256:b9b18cd09419d27a89726c6f754d80e78f5917c8426e9095a10ca6462978d966"},
-    {file = "taskw_ng-0.2.4.tar.gz", hash = "sha256:79c32956fea70e9cb80baf645ec76ee62d7c15c02e39cbcc6e2091645ff9d59e"},
+    {file = "taskw_ng-0.2.6-py3-none-any.whl", hash = "sha256:c1b10a71bd26d478c8f4ca285c67c8c2d803dc8b45d40e3b059306c5fb47dd95"},
+    {file = "taskw_ng-0.2.6.tar.gz", hash = "sha256:e6d3229c6f86a75622aa66ae6c18cb707f797661b6abf037f867444f6ae23efc"},
 ]
 
 [package.dependencies]
@@ -2470,4 +2470,4 @@ tw = ["taskw-ng", "xdg"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "76c2753e4b83cf29919d24095342e094aa8b1c7c32a7d9382ec708f439e4c6a3"
+content-hash = "a2272a96866415736675b132977e0a10beb4a297ecdb029bdc1dccf193aeed6d"
