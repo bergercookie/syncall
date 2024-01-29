@@ -9,12 +9,9 @@ from taskw_ng.warrior import TASKRC
 from xdg import xdg_config_home
 
 from syncall.sync_side import ItemType, SyncSide
-from syncall.taskwarrior.taskw_duration import (
-    convert_tw_duration_serialize,
-    convert_tw_duration_to_timedelta,
-    tw_duration_key,
-)
 from syncall.types import TaskwarriorRawItem
+
+tw_duration_key = "syncallduration"
 
 OrderByType = Literal[
     "description",
@@ -220,8 +217,6 @@ class TaskWarriorSide(SyncSide):
         description = item.pop("description")
         len_print = min(20, len(description))
 
-        convert_tw_duration_serialize(item=item)
-
         logger.trace(f'Adding task "{description[0:len_print]}" with properties:\n\n{item}')
         new_item = self._tw.task_add(description=description, **item)  # type: ignore
         new_id = new_item["id"]
@@ -296,7 +291,5 @@ class TaskWarriorSide(SyncSide):
             # convert datetime keys to actual datetime objects if they are not.
             if "modified" in item:
                 item["modified"] = parse_datetime_(item["modified"])
-
-            convert_tw_duration_to_timedelta(item)
 
         return SyncSide._items_are_identical(item1, item2, keys)

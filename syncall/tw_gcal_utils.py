@@ -5,11 +5,7 @@ from bubop import logger
 from item_synchronizer.types import Item
 
 from syncall.google.gcal_side import GCalSide
-from syncall.taskwarrior.taskw_duration import (
-    convert_tw_duration_to_timedelta,
-    taskw_duration_serialize,
-    tw_duration_key,
-)
+from syncall.taskwarrior.taskwarrior_side import tw_duration_key
 from syncall.tw_utils import (
     extract_tw_fields_from_string,
     get_tw_annotations_as_str,
@@ -71,10 +67,6 @@ def convert_tw_to_gcal(
     )
 
     date_keys = ["scheduled", "due"] if prefer_scheduled_date else ["due", "scheduled"]
-    # event duration --------------------------------------------------------------------------
-    # use the UDA field to fetch the duration of the event, otherwise fallback to the default
-    # duration
-    convert_tw_duration_to_timedelta(tw_item)
 
     # handle start, end datetimes -------------------------------------------------------------
     # walk through the date_keys using the first of them that's present in the item at hand.
@@ -167,10 +159,7 @@ def convert_gcal_to_tw(
 
     end_time = GCalSide.get_event_time(gcal_item, t="end")
 
-    tw_item[tw_duration_key] = taskw_duration_serialize(
-        end_time - GCalSide.get_event_time(gcal_item, t="start")
-    )
-
+    tw_item[tw_duration_key] = end_time - GCalSide.get_event_time(gcal_item, t="start")
     tw_item[date_key] = end_time
 
     # Note:
