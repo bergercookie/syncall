@@ -77,7 +77,7 @@ class FilesystemSide(SyncSide):
 
     def _get_item_refresh(self, item_id: ID) -> Optional[FilesystemFile]:
         """Search for the FilesystemFile in the root directory given its ID."""
-        fs_files = [FilesystemFile(path) for path in self._filesystem_root.iterdir()]
+        fs_files = self.get_all_items()
 
         matching_fs_files = [fs_file for fs_file in fs_files if fs_file.id == item_id]
         if len(matching_fs_files) > 1:
