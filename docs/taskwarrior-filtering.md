@@ -7,7 +7,7 @@ At the time of writing here's the relevant flags:
 ```text
 -f, --tw-filter TEXT            Taskwarrior filter for specifying the tasks
                                 to synchronize. These filters will be
-                                concatenated using OR  with potential tags
+                                concatenated using AND with potential tags
                                 and projects potentially specified.
 --all, --taskwarrior-all-tasks  Sync all taskwarrior tasks (potentially very
                                 slow).
