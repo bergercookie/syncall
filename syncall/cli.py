@@ -163,7 +163,7 @@ def _opt_tw_filter():
         type=str,
         help=(
             "Taskwarrior filter for specifying the tasks to synchronize. These filters will be"
-            " concatenated using OR  with potential tags and projects potentially specified."
+            " concatenated using AND with potential tags and projects potentially specified."
         ),
     )
 
@@ -463,6 +463,7 @@ def opts_miscellaneous(side_A_name: str, side_B_name: str):
             [
                 (_opt_list_resolution_strategies,),
                 (_opt_resolution_strategy,),
+                (_opt_confirm,),
                 (
                     click.version_option,
                     __version__,
@@ -481,6 +482,17 @@ def opts_miscellaneous(side_A_name: str, side_B_name: str):
         return f
 
     return decorator
+
+
+def _opt_confirm():
+    return click.option(
+        "--confirm",
+        "confirm",
+        is_flag=True,
+        default=False,
+        expose_value=True,
+        help="Confirm app configuration before proceeding with the actual execution",
+    )
 
 
 def opt_default_duration_event_mins():

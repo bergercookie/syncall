@@ -11,7 +11,7 @@ from bubop import (
     loguru_tqdm_sink,
 )
 
-from syncall.app_utils import inform_about_app_extras
+from syncall.app_utils import confirm_before_proceeding, inform_about_app_extras
 
 try:
     from syncall.google.gcal_side import GCalSide
@@ -61,6 +61,7 @@ def main(
     custom_combination_savename: str,
     default_event_duration_mins: int,
     pdb_on_error: bool,
+    confirm: bool,
 ):
     """Synchronize calendars from your Google Calendar with filters from Taskwarrior.
 
@@ -159,6 +160,8 @@ def main(
             suffix="\n",
         )
     )
+    if confirm:
+        confirm_before_proceeding()
 
     # initialize sides ------------------------------------------------------------------------
     tw_side = TaskWarriorSide(

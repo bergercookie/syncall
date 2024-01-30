@@ -49,6 +49,20 @@ name_to_resolution_strategy_type: Mapping[str, Type[ResolutionStrategy]] = {
 }
 
 
+def confirm_before_proceeding():
+    """
+    Confirm that the user wants to go forward with this configuration before actually
+    proceeding. Exit if the user doesn't want to proceed.
+    """
+
+    while True:
+        ans = input("Continue [Y/n] ? ").lower()
+        if ans in ["y", "yes", ""]:
+            break
+        elif ans in ["n", "no"]:
+            error_and_exit("Exiting.")
+
+
 def get_resolution_strategy(
     resolution_strategy_name: str, side_A_type: Type[SyncSide], side_B_type: Type[SyncSide]
 ) -> ResolutionStrategy:

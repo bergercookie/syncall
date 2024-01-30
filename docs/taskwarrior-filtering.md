@@ -59,7 +59,7 @@ Tasks to be added to Taskwarrior will be assigned the said project/tags when the
 
 For example in the following execution, `tw_gtasks_sync` will pick up the tasks
 that are tagged via `mytag`, it will join them with tasks that are `+OVERDUE
-description.startswith:myprefix +mytag2` (OR condition) and it will sync them
+description.startswith:myprefix +mytag2` (AND condition) and it will sync them
 with the tasks in the `reminders` Google Tasks list. Any tasks newly added from
 Google Tasks to Taskwarrior _will_ be assigned the `mytag` tag, however they
 won't be assigned the `mytag2` tag since the latter is part of the filter.

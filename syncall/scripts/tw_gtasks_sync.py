@@ -9,7 +9,7 @@ from bubop import (
     loguru_tqdm_sink,
 )
 
-from syncall.app_utils import inform_about_app_extras
+from syncall.app_utils import confirm_before_proceeding, inform_about_app_extras
 
 try:
     from syncall.google.gtasks_side import GTasksSide
@@ -57,6 +57,7 @@ def main(
     combination_name: str,
     custom_combination_savename: str,
     pdb_on_error: bool,
+    confirm: bool,
 ):
     """Synchronize lists from your Google Tasks with filters from Taskwarrior.
 
@@ -152,6 +153,8 @@ def main(
             suffix="\n",
         )
     )
+    if confirm:
+        confirm_before_proceeding()
 
     # initialize sides ------------------------------------------------------------------------
     # NOTE: We don't explicitly pass the tw_sync_all_tasks boolean. However we implicitly do by

@@ -12,7 +12,7 @@ from bubop import (
     loguru_tqdm_sink,
 )
 
-from syncall.app_utils import inform_about_app_extras
+from syncall.app_utils import confirm_before_proceeding, inform_about_app_extras
 
 try:
     from syncall.caldav.caldav_side import CaldavSide
@@ -55,6 +55,7 @@ def main(
     combination_name: str,
     custom_combination_savename: str,
     pdb_on_error: bool,
+    confirm: bool,
 ):
     """Synchronize lists of tasks from your caldav Calendar with filters from Taskwarrior.
 
@@ -145,6 +146,8 @@ def main(
             suffix="\n",
         )
     )
+    if confirm:
+        confirm_before_proceeding()
 
     # initialize sides ------------------------------------------------------------------------
     # tw

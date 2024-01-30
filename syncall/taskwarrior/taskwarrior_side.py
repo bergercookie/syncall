@@ -119,7 +119,7 @@ class TaskWarriorSide(SyncSide):
             filter_.append(self._tw_filter)
         if self._project:
             filter_.append(f"pro:{self._project}")
-        filter_ = f'( {" or ".join(filter_)} )'
+        filter_ = f'( {" and ".join(filter_)} )'
         logger.debug(f"Using the following filter to fetch TW tasks: {filter_}")
         tasks = self._tw.load_tasks_and_filter(command="all", filter_=filter_)
 

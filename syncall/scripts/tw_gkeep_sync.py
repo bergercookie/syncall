@@ -10,7 +10,7 @@ from bubop import (
     loguru_tqdm_sink,
 )
 
-from syncall.app_utils import inform_about_app_extras
+from syncall.app_utils import confirm_before_proceeding, inform_about_app_extras
 
 try:
     from syncall.google.gkeep_todo_side import GKeepTodoSide
@@ -54,6 +54,7 @@ def main(
     combination_name: str,
     custom_combination_savename: str,
     pdb_on_error: bool,
+    confirm: bool,
 ):
     """Synchronize Notes from your Google Keep with filters from Taskwarrior.
 
@@ -154,6 +155,8 @@ def main(
             suffix="\n",
         )
     )
+    if confirm:
+        confirm_before_proceeding()
 
     # initialize sides ------------------------------------------------------------------------
     gkeep_user, gkeep_passwd, gkeep_token = gkeep_read_username_password_token(

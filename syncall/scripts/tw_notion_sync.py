@@ -12,7 +12,11 @@ from bubop import (
     verbosity_int_to_std_logging_lvl,
 )
 
-from syncall.app_utils import fetch_from_pass_manager, inform_about_app_extras
+from syncall.app_utils import (
+    confirm_before_proceeding,
+    fetch_from_pass_manager,
+    inform_about_app_extras,
+)
 
 try:
     from syncall.notion.notion_side import NotionSide
@@ -60,6 +64,7 @@ def main(
     combination_name: str,
     custom_combination_savename: str,
     pdb_on_error: bool,
+    confirm: bool,
 ):
     """Synchronise filters of TW tasks with the to_do items of Notion pages.
 
@@ -153,6 +158,8 @@ def main(
             suffix="\n",
         )
     )
+    if confirm:
+        confirm_before_proceeding()
 
     # find token to connect to notion ---------------------------------------------------------
     api_key_env_var = "NOTION_API_KEY"

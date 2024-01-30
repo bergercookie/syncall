@@ -11,7 +11,7 @@ from bubop import (
     loguru_tqdm_sink,
 )
 
-from syncall.app_utils import inform_about_app_extras
+from syncall.app_utils import confirm_before_proceeding, inform_about_app_extras
 
 try:
     from syncall.asana.asana_side import AsanaSide
@@ -56,6 +56,7 @@ def main(
     combination_name: str,
     custom_combination_savename: str,
     pdb_on_error: bool,
+    confirm: bool,
 ):
     """Synchronize your tasks in Asana with filters from Taskwarrior."""
     loguru_tqdm_sink(verbosity=verbose)
@@ -190,6 +191,8 @@ def main(
             suffix="\n",
         )
     )
+    if confirm:
+        confirm_before_proceeding()
 
     # initialize sides ------------------------------------------------------------------------
     tw_side = TaskWarriorSide(
