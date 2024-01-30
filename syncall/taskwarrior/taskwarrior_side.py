@@ -23,7 +23,10 @@ OrderByType = Literal[
     "urgency",
 ]
 
-tw_config_default_overrides = {"context": "none", f"uda.{tw_duration_key}.type": "duration"}
+tw_config_default_overrides = {
+    "context": "none",
+    "uda": {tw_duration_key: {"type": "duration", "label": "Syncall Duration"}},
+}
 
 
 def parse_datetime_(dt: Union[str, datetime.datetime]) -> datetime.datetime:
