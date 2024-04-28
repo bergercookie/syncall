@@ -46,6 +46,7 @@ def map_ics_to_item(vtodo) -> dict:
         todo_item[name] = _convert_one(name).lower()
     for name in ["description", "summary"]:
         todo_item[name] = _convert_one(name)
+    todo_item["uuid"] = _convert_one("x-syncall-tw-uuid")
 
     for date_field in ("due", "created", "completed", "last-modified"):
         if vtodo.get(date_field):
