@@ -82,7 +82,7 @@ tw_caldav_sync --caldav-url https://nextcloud.example.com/remote.php/dav --calda
 With environment variables:
 
 ```sh
-CALDAV_USER=myUser CALDAV_PASSWD=myPass tw_caldav_sync --caldav-url https://nextcloud.example.com/remote.php/dav --caldav-calendar MyCalendar --taskwarrior-tags sync
+CALDAV_USERNAME=myUser CALDAV_PASSWD=myPass tw_caldav_sync --caldav-url https://nextcloud.example.com/remote.php/dav --caldav-calendar MyCalendar --taskwarrior-tags sync
 ```
 
 ## Future Work
