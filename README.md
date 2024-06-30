@@ -181,6 +181,27 @@ Here's some of the available options for installing it:
   # re-installation ...
   ```
 
+- Install on NixOS using Flakes
+
+  Add syncall inputs to your flake config
+
+  ```
+    syncall = {
+      url = "github:bergercookie/syncall";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  ```
+  Add the `syncall` package to the list of packages
+
+  ```
+    environment.systemPackages = with pkgs; [
+        ...
+        syncall.syncall;
+        taskwarrior
+    ];
+  ```
+  It will install `syncall` with all optional dependencies.
+
 ### Sample Usage Instructions
 
 Here's the CLI help page for the synchronizations available.
