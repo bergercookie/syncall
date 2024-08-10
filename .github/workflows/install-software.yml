@@ -1,0 +1,50 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  install_main_only_with_pip3:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install with pip3 - no extras
+        run: |
+          pip3 install .
+          pip3 show syncall
+
+  install_extras_with_pip3:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+        # use python-extra AND executable to tests its imports
+        # https://stackoverflow.com/questions/66025220/paired-values-in-github-actions-matrix
+        python-extra:
+          [
+            "tw,google,notion,gkeep,asana,caldav",
+            "tw",
+            "google",
+            "notion",
+            "gkeep",
+            "asana",
+            "caldav",
+          ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install with pip3 - with ${{ matrix.python-extra }}
+        run: |
+          pip install .[${{ matrix.python-extra }}]
+          pip3 show syncall
