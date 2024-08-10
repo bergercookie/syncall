@@ -90,3 +90,4 @@ test-tw-gcal-sync.json
 /.task
 /.task_backup
 /.envrc
+.tool-versions

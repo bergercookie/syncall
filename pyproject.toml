@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "syncall"
-version = "0.0.0"
+version = "1.8.6"
 description = "Versatile bi-directional synchronization tool"
 license = "MIT"
 authors = ["Nikos Koukis <nickkouk@gmail.com>"]
@@ -50,38 +50,38 @@ tw_gtasks_sync = "syncall.scripts.tw_gtasks_sync:main"
 
 # end-user dependencies --------------------------------------------------------
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8,<=3.12.5"
 
 PyYAML = "~5.3.1"
-bidict = "^0.21.2"
-click = "^8.0"
+bidict = "^0.21.4"
+click = "^8.1.7"
 
-google-api-python-client = { version = "^2.1.0", optional = true }
-google-auth-httplib2 = { version = "^0.1.0", optional = true }
-google-auth-oauthlib = { version = "^0.4.4", optional = true }
+google-api-python-client = { version = "^2.140.0", optional = true }
+google-auth-oauthlib = { version = "^0.4.6", optional = true }
 notion-client = { version = "^0.7.1", optional = true }
-gkeepapi = { version = "^0.13.7", optional = true }
+gkeepapi = [
+  { version = "^0.13.7", optional = true, python = "<3.12" },
+  { version = "^0.16.0", optional = true, python = ">3.12" },
+]
 asana = { version = "^1.0.0", optional = true }
 caldav = { version = "^0.11.0", optional = true }
-icalendar = { version = "^5.0.3", optional = true }
+icalendar = { version = "^5.0.13", optional = true }
 taskw-ng = { version = "0.2.7", optional = true }
 xattr = { version = "^0.9.9", optional = true }
 xdg = { version = "^6.0.0", optional = true }
 
 loguru = "^0.5.3"
-python-dateutil = "^2.8.1"
+python-dateutil = "^2.9.0.post0"
 rfc3339 = "^6.2"
-typing = "^3.7.4"
 item-synchronizer = "^1.1.5"
 bubop = { version = "0.1.12", allow-prereleases = true }
-# item-synchronizer = {path="/home/berger/src/item_synchronizer", develop=true}
-# bubop = {path="/home/berger/src/bubop", develop=true}
+setuptools = { version = "^72.1.0", optional = true, python = ">=3.12" }
 
 [tool.poetry.extras]
 google = [
   "google-api-python-client",
   "google-auth-oauthlib",
-  "google-auth-httplib2",
+  "setuptools",
 ]
 gkeep = ["gkeepapi"]
 notion = ["notion-client"]
@@ -93,26 +93,24 @@ fs = ["xattr"]
 # dev dependencies -------------------------------------------------------------
 [tool.poetry.dev-dependencies]
 black = { version = "22.3.0", allow-prereleases = true }
-identify = "^2.4.0"
-isort = "^5.10.1"
+identify = "^2.6.0"
+isort = "^5.13.2"
 mock = "*"
 mypy = "*"
 pdbpp = "^0.10.3"
-pre-commit = "^2.16.0"
-pyfakefs = "^4.5.3"
-pylint = "^2.12.2"
+pre-commit = "^2.21.0"
+pyfakefs = "^4.7.0"
+pylint = "^2.17.7"
 pyright = "*"
 pytest = "*"
-types-PyYAML = "^5.4.1"
-types-python-dateutil = "^2.8.3"
-types-setuptools = "^57.4.4"
-google-api-python-client-stubs = "^1.9.0"
-coverage = { version = "^6.2", extras = ["toml"] }
+types-PyYAML = "^5.4.12"
+types-setuptools = "^57.4.18"
+google-api-python-client-stubs = "^1.26.0"
+coverage = { version = "^6.5.0", extras = ["toml"] }
 coveralls = "^3.3.1"
-pycln = "^1.3.1"
 check-jsonschema = "^0.14.3"
 # readline = "6.2.4.1"
-ruff = "^0.1.5"
+ruff = "^0.1.15"
 
 # isort ------------------------------------------------------------------------
 [tool.isort]
@@ -184,7 +182,20 @@ pythonPlatform = "Linux"
 # ruff -------------------------------------------------------------------------
 [tool.ruff]
 line-length = 95
-target-version = "py38"
+target-version = "py310"
+force-exclude = true
+
+exclude = [ ]
+
+[tool.ruff.lint]
+
+select = ["ALL"]
+ignore = [ ]
+exclude = [ ]
+
+[tool.ruff.lint.flake8-annotations]
+# No need for -> None in __init__ methods
+mypy-init-return = true
 
 # coverage.py ------------------------------------------------------------------
 [tool.coverage]
@@ -203,7 +214,7 @@ addopts = ["--ignore-glob=quickstart*", "--doctest-modules"]
 
 # build-system -----------------------------------------------------------------
 [tool.poetry-dynamic-versioning]
-enable = true
+enable = false
 metadata = false
 dirty = false
 style = "pep440"
