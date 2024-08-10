@@ -1,0 +1,39 @@
+name: Check Coverage
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python Poetry Action
+        uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: "1.6.1"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+      - name: Install prerequisites
+        run: |
+          sudo ./scripts/install-taskwarrior.sh
+          poetry install --all-extras
+          poetry self add "poetry-dynamic-versioning[plugin]"
+          task --version
+      - name: Coverage
+        run: |
+          poetry run coverage run -m pytest --doctest-modules
+          poetry run coverage report
+      # Using --service=github + secrets.GITHUB_TOKEN for builds originating from PRs to work
+      # Not sure if both are required
+      # https://github.com/TheKevJames/coveralls-python/issues/252
+      - name: Coveralls
+        run: poetry run coveralls --service=github || poetry run coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,25 @@
+name: Style and Linters
+on:
+  push:
+  pull_request:
+jobs:
+  style_and_linters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python Poetry Action
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: "1.6.1"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+      - name: Install prerequisites
+        run: |
+          poetry install --all-extras
+          poetry self add "poetry-dynamic-versioning[plugin]"
+      - name: "Run pre-commit hooks"
+        uses: slamcore/pre-commit-action@v0.2.0
+        with:
+          command_prefix: "poetry run"
