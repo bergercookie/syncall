@@ -21,9 +21,9 @@ jobs:
           cache: "poetry"
       - name: Install prerequisites
         run: |
-          sudo ./scripts/install-taskwarrior.sh
           poetry install --all-extras
           poetry self add "poetry-dynamic-versioning[plugin]"
+          sudo ./scripts/install-taskwarrior.sh
           task --version
       - name: Coverage
         run: |
