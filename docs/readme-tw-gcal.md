@@ -5,7 +5,7 @@
 > new synchronization has been created which synchronizes your Taskwarrior items
 > with Google Tasks TODO items which in the majority of cases should be more
 > suitable for you to use. To use the latter, head over to the
-> [TW <> Google Tasks README](https://github.com/bergercookie/syncall/blob/master/docs/readme-tw-gtasks.md)
+> [TW ⬄  Google Tasks README](https://github.com/bergercookie/syncall/blob/master/docs/readme-tw-gtasks.md)
 
 ## Description
 
@@ -97,15 +97,15 @@ If the item was created from Taskwarrior then there should be a
 
 ### How do i modify the default event duration / How do I change the duration of a said event from Taskwarrior
 
-`syncall` is aware of the `twgcalsyncduration` UDA:
-
-You can assign a custom duration to a Taskwarrior task using something like the following:
+`syncall` is aware of the `syncallduration` Taskwarrior
+[`UDA`](https://taskwarrior.org/docs/udas/). This means you can assign a custom
+duration to a Taskwarrior task using something like the following:
 
 ```sh
 # create a task ...
 
 # Make this a 15min task
-task <id> mod twgcalsyncduration:15M
+task <id> mod syncallduration:15M
 ```
 
 Then on subsequent runs, it will create an event of the said duration in Google
@@ -119,8 +119,8 @@ Taskwarrior reports, the user can also add the following section to their
 `.taskrc`:
 
 ```sh
-uda.twgcalsyncduration.type=duration
-uda.twgcalsyncduration.label=GCal duration
+uda.syncallduration.type=duration
+uda.syncallduration.label=GCal duration
 ```
 
 ## See also
