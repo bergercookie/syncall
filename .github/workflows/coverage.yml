@@ -22,7 +22,6 @@ jobs:
       - name: Install prerequisites
         run: |
           poetry install --all-extras
-          poetry self add "poetry-dynamic-versioning[plugin]"
           sudo ./scripts/install-taskwarrior.sh
           task --version
       - name: Coverage
