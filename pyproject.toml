@@ -78,11 +78,7 @@ bubop = { version = "0.1.12", allow-prereleases = true }
 setuptools = { version = "^72.1.0", optional = true, python = ">=3.12" }
 
 [tool.poetry.extras]
-google = [
-  "google-api-python-client",
-  "google-auth-oauthlib",
-  "setuptools",
-]
+google = ["google-api-python-client", "google-auth-oauthlib", "setuptools"]
 gkeep = ["gkeepapi"]
 notion = ["notion-client"]
 asana = ["asana"]
@@ -99,7 +95,10 @@ mock = "*"
 mypy = "*"
 pdbpp = "^0.10.3"
 pre-commit = "^2.21.0"
-pyfakefs = "^4.7.0"
+pyfakefs = [
+  { version = "^4.7.0", python = "<3.12" },
+  { version = "^5.4", python = ">3.12" },
+]
 pylint = "^2.17.7"
 pyright = "*"
 pytest = "*"
@@ -185,13 +184,13 @@ line-length = 95
 target-version = "py310"
 force-exclude = true
 
-exclude = [ ]
+exclude = []
 
 [tool.ruff.lint]
 
 select = ["ALL"]
-ignore = [ ]
-exclude = [ ]
+ignore = []
+exclude = []
 
 [tool.ruff.lint.flake8-annotations]
 # No need for -> None in __init__ methods

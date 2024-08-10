@@ -1630,6 +1630,17 @@ files = [
 ]
 
 [[package]]
+name = "pyfakefs"
+version = "5.6.0"
+description = "pyfakefs implements a fake file system that mocks the Python file system modules."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyfakefs-5.6.0-py3-none-any.whl", hash = "sha256:1a45bba8615323ec29d65929d32dc66d7b59a1e60a02109950440edb0486c539"},
+    {file = "pyfakefs-5.6.0.tar.gz", hash = "sha256:7a549b32865aa97d8ba6538285a93816941d9b7359be2954ac60ec36b277e879"},
+]
+
+[[package]]
 name = "pygments"
 version = "2.18.0"
 description = "Pygments is a syntax highlighting package written in Python."
@@ -2620,4 +2631,4 @@ tw = ["taskw-ng", "xdg"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<=3.12.5"
-content-hash = "dcd094d05469b89a956c32fc31d350cd5c4a0e999b5ddca240bbd5dfdfa7b746"
+content-hash = "b2918815b3d67291ea021df2a1ae56824a488d6879b0c49bcd0d2c5bbb2d89f4"
