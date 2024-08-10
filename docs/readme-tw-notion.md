@@ -56,7 +56,7 @@ sync from the URL and paste it when running the `tw_notion_sync` script.
 There are two ways `tw_notion_sync` can read the aforementioned API token:
 
 - Via the `NOTION_API_KEY` environment variable or,
-- Via the [UNIX Password Manager](https://www.passwordstore.org/). You can
+- Via the [UNIX Password Manager](https://wiki.archlinux.org/title/Pass). You can
   specify the path in the Pass manager to read the encrypted token from. The
   default path is `notion.so/dev/integration/taskwarrior/token` under the
   password store.

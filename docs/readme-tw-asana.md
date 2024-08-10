@@ -32,13 +32,13 @@ above
 
 First, generate a [personal access token](https://developers.asana.com/docs/personal-access-token)on Asana.
 
-| ![1](misc/asana/authentication/1.png) | ![2](misc/asana/authentication/2.png) | ![3](misc/asana/authentication/3.png) |
-| :-----------------------------------: | :-----------------------------------: | :-----------------------------------: |
+| ![1](../misc/asana/authentication/1.png) | ![2](../misc/asana/authentication/2.png) | ![3](../misc/asana/authentication/3.png) |
+| :--------------------------------------: | :--------------------------------------: | :--------------------------------------: |
 
 Next, make this token available to `tw_sync_asana`. This can be done by either:
 
 - Storing the token in environment variable `ASANA_PERSONAL_ACCESS_TOKEN`.
-- Storing the token with [password store](https://www.passwordstore.org/),
+- Storing the token with [password store](https://wiki.archlinux.org/title/Pass),
   and telling Asana to load the token with `--token-pass-path`.
 
 ### Find IDs of available workspace
@@ -69,7 +69,7 @@ tw_asana_sync --taskwarrior-tags asana --asana-workspace-name my-workspace --tok
 ### Pass the Access Token via environment variable
 
 If you haven't installed or don't want to install [password
-store](https://www.passwordstore.org/) you can pass the access token via an
+store](https://wiki.archlinux.org/title/Pass) you can pass the access token via an
 environment variable
 
 ```sh

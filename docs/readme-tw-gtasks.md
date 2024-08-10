@@ -1,6 +1,6 @@
 # [Taskwarrior](https://taskwarrior.org/) ⬄ [Google Tasks](https://support.google.com/tasks/answer/7675772)
 
-![logo](misc/meme-tw-gtasks.png)
+![logo](../misc/meme-tw-gtasks.png)
 
 ## Description
 
@@ -10,7 +10,7 @@ modification / deletion events between them.
 
 ## Demo - populating a list in Google Tasks (view from Google Calendar)
 
-![demo_gif](misc/tw_gtasks_sync.gif)
+![demo_gif](../misc/tw_gtasks_sync.gif)
 
 ## Motivation
 
@@ -73,7 +73,7 @@ that will be reused if found by the app.
 
 For creating your own Google Cloud Developer App:
 
-- Go to the [Google Cloud developer console](tw-gtasks-integration-test)
+- Go to the [Google Cloud developer console](https://console.cloud.google.com/)
 - Make a new project
 - From the sidebar go to `API & Services` and once there click the `ENABLE APIS AND SERVICES` button
 - Look for and Enable the `Tasks API`
@@ -94,7 +94,7 @@ and download the credentials:
   as shown below. This is the file you need to point to when running
   `tw_gtasks_sync`.
 
-  ![download-btn](misc/gcal-json-btn.png)
+  ![download-btn](../misc/gcal-json-btn.png)
 
 To specify your custom credentials JSON file use the `--google-secret` flag as follows:
 

@@ -15,7 +15,7 @@ addition/modification/deletion events between them.
 
 ## Demo - first run - populating calendar in GCal
 
-![demo_gif](misc/demo.gif)
+![demo_gif](../misc/demo.gif)
 
 ## Motivation
 
@@ -56,7 +56,7 @@ and download the credentials:
   as shown below. This is the file you need to point to when running
   `tw_gcal_sync`.
 
-  ![download-btn](misc/gcal-json-btn.png)
+  ![download-btn](../misc/gcal-json-btn.png)
 
 To specify your custom credentials JSON file use the `--google-secret` flag as follows:
 
