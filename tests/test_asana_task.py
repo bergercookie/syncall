@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import datetime
+from typing import Any, ClassVar
 
-from bubop import format_datetime_tz, parse_datetime
-
+import pytest
+from bubop import parse_datetime
 from syncall.asana.asana_task import AsanaTask
-from syncall.types import AsanaRawTask
 
 from .generic_test_case import GenericTestCase
 
@@ -11,7 +13,7 @@ from .generic_test_case import GenericTestCase
 class TestAsanaTask(GenericTestCase):
     """Test AsanaTask."""
 
-    BASE_VALID_RAW_TASK = {
+    BASE_VALID_RAW_TASK: ClassVar[dict[str, Any]] = {
         "completed": False,
         "completed_at": None,
         "created_at": "2022-07-10T20:42:00Z",
@@ -22,19 +24,12 @@ class TestAsanaTask(GenericTestCase):
         "name": "First Asana Task",
     }
 
-    @classmethod
-    def setUpClass(cls):
-        pass
-
-    def setUp(self):
-        super(TestAsanaTask, self).setUp()
-
     def test_from_raw(self):
         valid_raw_task = self.BASE_VALID_RAW_TASK.copy()
         asana_task = AsanaTask.from_raw_task(valid_raw_task)
 
         for key in ["completed", "gid", "name"]:
-            self.assertEqual(asana_task[key], valid_raw_task[key])
+            assert asana_task[key] == valid_raw_task[key]
 
     def test_from_raw_task_asserts_keys(self):
         valid_raw_task = self.BASE_VALID_RAW_TASK.copy()
@@ -45,7 +40,7 @@ class TestAsanaTask(GenericTestCase):
             copy = valid_raw_task.copy()
             copy.pop(key, None)
 
-            with self.assertRaises(AssertionError):
+            with pytest.raises(AssertionError):
                 AsanaTask.from_raw_task(copy)
 
     def test_from_raw_task_parses_date_and_datetime_fields(self):
@@ -54,23 +49,21 @@ class TestAsanaTask(GenericTestCase):
         asana_task = AsanaTask.from_raw_task(valid_raw_task)
 
         for key in ["created_at", "modified_at"]:
-            self.assertIsInstance(asana_task[key], datetime.datetime)
-            self.assertEqual(asana_task[key], parse_datetime(valid_raw_task[key]))
+            assert isinstance(asana_task[key], datetime.datetime)
+            assert asana_task[key] == parse_datetime(valid_raw_task[key])
 
         for key in ["completed_at", "due_at"]:
-            self.assertIsNone(asana_task[key])
+            assert asana_task[key] is None
             valid_raw_task[key] = "2022-07-10T20:55:00Z"
             asana_task = AsanaTask.from_raw_task(valid_raw_task)
-            self.assertIsInstance(asana_task[key], datetime.datetime)
-            self.assertEqual(asana_task[key], parse_datetime(valid_raw_task[key]))
+            assert isinstance(asana_task[key], datetime.datetime)
+            assert asana_task[key] == parse_datetime(valid_raw_task[key])
 
         valid_raw_task["due_on"] = "2022-07-10"
         asana_task = AsanaTask.from_raw_task(valid_raw_task)
 
-        self.assertIsInstance(asana_task.due_on, datetime.date)
-        self.assertEqual(
-            asana_task.due_on, datetime.date.fromisoformat(valid_raw_task["due_on"])
-        )
+        assert isinstance(asana_task.due_on, datetime.date)
+        assert asana_task.due_on == datetime.date.fromisoformat(valid_raw_task["due_on"])
 
     def test_to_raw_task(self):
         valid_raw_task = self.BASE_VALID_RAW_TASK.copy()
@@ -78,15 +71,15 @@ class TestAsanaTask(GenericTestCase):
         raw_task = asana_task.to_raw_task()
 
         for key in ["completed", "gid", "name"]:
-            self.assertEqual(raw_task[key], asana_task[key])
+            assert raw_task[key] == asana_task[key]
 
         for key in ["created_at", "modified_at"]:
-            self.assertEqual(raw_task[key], asana_task[key].isoformat(timespec="milliseconds"))
+            assert raw_task[key] == asana_task[key].isoformat(timespec="milliseconds")
 
         for key in ["completed_at", "due_at", "due_on"]:
             kwargs = {}
 
-            self.assertIsNone(raw_task[key])
+            assert raw_task[key] is None
 
             if key == "due_on":
                 valid_raw_task[key] = "2022-07-10"
@@ -97,6 +90,6 @@ class TestAsanaTask(GenericTestCase):
             asana_task = AsanaTask.from_raw_task(valid_raw_task)
 
             raw_task = asana_task.to_raw_task()
-            self.assertIsNotNone(raw_task[key])
+            assert raw_task[key] is not None
 
-            self.assertEqual(raw_task[key], asana_task[key].isoformat(**kwargs))
+            assert raw_task[key] == asana_task[key].isoformat(**kwargs)

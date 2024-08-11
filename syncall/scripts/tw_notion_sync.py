@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 import sys
-from typing import List
 
 import click
 from bubop import (
@@ -54,7 +55,7 @@ def main(
     notion_page_id: str,
     token_pass_path: str,
     tw_filter: str,
-    tw_tags: List[str],
+    tw_tags: list[str],
     tw_project: str,
     tw_only_modified_last_X_days: str,
     tw_sync_all_tasks: bool,
@@ -96,16 +97,19 @@ def main(
             tw_project,
             tw_sync_all_tasks,
             notion_page_id,
-        ]
+        ],
     )
     check_optional_mutually_exclusive(
-        combination_name, combination_of_tw_filters_and_notion_page
+        combination_name,
+        combination_of_tw_filters_and_notion_page,
     )
 
     # existing combination name is provided ---------------------------------------------------
     if combination_name is not None:
         app_config = fetch_app_configuration(
-            side_A_name="Taskwarrior", side_B_name="Notion", combination=combination_name
+            side_A_name="Taskwarrior",
+            side_B_name="Notion",
+            combination=combination_name,
         )
         tw_filter_li = app_config["tw_filter_li"]
         tw_tags = app_config["tw_tags"]
@@ -139,7 +143,7 @@ def main(
     if notion_page_id is None:
         error_and_exit(
             "You have to provide the page ID of the Notion page for synchronization. You can"
-            " do so either via CLI arguments or by specifying an existing saved combination"
+            " do so either via CLI arguments or by specifying an existing saved combination",
         )
 
     # announce configuration ------------------------------------------------------------------
@@ -156,7 +160,7 @@ def main(
             },
             prefix="\n\n",
             suffix="\n",
-        )
+        ),
     )
     if confirm:
         confirm_before_proceeding()
@@ -171,7 +175,7 @@ def main(
             logger.error(
                 "You have to provide the Notion API key, either via the"
                 f" {api_key_env_var} environment variable or via the UNIX Passowrdr Manager"
-                ' and the "--token-pass-path" CLI parameter'
+                ' and the "--token-pass-path" CLI parameter',
             )
             sys.exit(1)
         token_v2 = fetch_from_pass_manager(token_pass_path)
@@ -189,14 +193,17 @@ def main(
     # initialize sides ------------------------------------------------------------------------
     # tw
     tw_side = TaskWarriorSide(
-        tw_filter=" ".join(tw_filter_li), tags=tw_tags, project=tw_project
+        tw_filter=" ".join(tw_filter_li),
+        tags=tw_tags,
+        project=tw_project,
     )
 
     # notion
     # client is a bit too verbose by default.
     client_verbosity = max(verbose - 1, 0)
     client = Client(
-        auth=token_v2, log_level=verbosity_int_to_std_logging_lvl(client_verbosity)
+        auth=token_v2,
+        log_level=verbosity_int_to_std_logging_lvl(client_verbosity),
     )
     notion_side = NotionSide(client=client, page_id=notion_page_id)
 
@@ -207,7 +214,9 @@ def main(
         converter_B_to_A=convert_tw_to_notion,
         converter_A_to_B=convert_notion_to_tw,
         resolution_strategy=get_resolution_strategy(
-            resolution_strategy, side_A_type=type(notion_side), side_B_type=type(tw_side)
+            resolution_strategy,
+            side_A_type=type(notion_side),
+            side_B_type=type(tw_side),
         ),
         config_fname=combination_name,
         ignore_keys=(

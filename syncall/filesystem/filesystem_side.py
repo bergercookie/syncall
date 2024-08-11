@@ -54,6 +54,8 @@ class FilesystemSide(SyncSide):
 
     def get_all_items(self, **kargs) -> Sequence[FilesystemFile]:
         """Read all items again from storage."""
+        del kargs
+
         all_items = tuple(
             FilesystemFile(path=p)
             for p in self._filesystem_root.iterdir()
@@ -62,7 +64,7 @@ class FilesystemSide(SyncSide):
 
         logger.opt(lazy=True).debug(
             f"Found {len(all_items)} matching files under {self._filesystem_root} using"
-            f" extension {self._filename_extension}"
+            f" extension {self._filename_extension}",
         )
 
         return all_items
@@ -83,7 +85,7 @@ class FilesystemSide(SyncSide):
         if len(matching_fs_files) > 1:
             logger.warning(
                 f"Found {len(matching_fs_files)} paths with the item ID [{item_id}]."
-                "Arbitrarily returning the first item."
+                "Arbitrarily returning the first item.",
             )
         elif len(matching_fs_files) == 0:
             return None
@@ -123,7 +125,10 @@ class FilesystemSide(SyncSide):
 
     @classmethod
     def items_are_identical(
-        cls, item1: ConcreteItem, item2: ConcreteItem, ignore_keys: Sequence[str] = []
+        cls,
+        item1: ConcreteItem,
+        item2: ConcreteItem,
+        ignore_keys: Sequence[str] = [],
     ) -> bool:
         ignore_keys_ = [cls.last_modification_key()]
         ignore_keys_.extend(ignore_keys)

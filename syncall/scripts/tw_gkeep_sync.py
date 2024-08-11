@@ -67,6 +67,8 @@ def main(
     each one of the tasks in the Taskwarrior filter. You have to first "Show checkboxes" in the
     Google Keep Note in order to use it with this service.
     """
+    del prefer_scheduled_date
+
     # setup logger ----------------------------------------------------------------------------
     loguru_tqdm_sink(verbosity=verbose)
     app_log_to_syslog()
@@ -92,16 +94,19 @@ def main(
             tw_project,
             tw_sync_all_tasks,
             gkeep_note,
-        ]
+        ],
     )
     check_optional_mutually_exclusive(
-        combination_name, combination_of_tw_filters_and_gkeep_note
+        combination_name,
+        combination_of_tw_filters_and_gkeep_note,
     )
 
     # existing combination name is provided ---------------------------------------------------
     if combination_name is not None:
         app_config = fetch_app_configuration(
-            side_A_name="Taskwarrior", side_B_name="Google Keep", combination=combination_name
+            side_A_name="Taskwarrior",
+            side_B_name="Google Keep",
+            combination=combination_name,
         )
         tw_filter_li = app_config["tw_filter_li"]
         tw_tags = app_config["tw_tags"]
@@ -136,7 +141,7 @@ def main(
         logger.error(
             "You have to provide the name of a Google Keep note to synchronize items"
             " to/from. You can do so either via CLI arguments or by specifying an existing"
-            " saved combination"
+            " saved combination",
         )
         sys.exit(1)
 
@@ -153,7 +158,7 @@ def main(
             },
             prefix="\n\n",
             suffix="\n",
-        )
+        ),
     )
     if confirm:
         confirm_before_proceeding()
@@ -176,7 +181,9 @@ def main(
 
     # initialize taskwarrior ------------------------------------------------------------------
     tw_side = TaskWarriorSide(
-        tw_filter=" ".join(tw_filter_li), tags=tw_tags, project=tw_project
+        tw_filter=" ".join(tw_filter_li),
+        tags=tw_tags,
+        project=tw_project,
     )
 
     # teardown function and exception handling ------------------------------------------------
@@ -194,7 +201,9 @@ def main(
         converter_B_to_A=convert_tw_to_gkeep_todo,
         converter_A_to_B=convert_gkeep_todo_to_tw,
         resolution_strategy=get_resolution_strategy(
-            resolution_strategy, side_A_type=type(gkeep_side), side_B_type=type(tw_side)
+            resolution_strategy,
+            side_A_type=type(gkeep_side),
+            side_B_type=type(tw_side),
         ),
         config_fname=combination_name,
         ignore_keys=(

@@ -5,7 +5,8 @@
 </p>
 
 <a href="https://github.com/bergercookie/syncall/actions" alt="master">
-<img src="https://github.com/bergercookie/syncall/actions/workflows/ci.yml/badge.svg?branch=master" /></a>
+<img src="https://github.com/bergercookie/syncall/actions/workflows/tests.yml/badge.svg?branch=master" /></a>
+<img src="https://github.com/bergercookie/syncall/actions/workflows/linters.yml/badge.svg?branch=master" /></a>
 <a href='https://coveralls.io/github/bergercookie/syncall?branch=master'>
 <img src='https://coveralls.io/repos/github/bergercookie/syncall/badge.svg?branch=master' alt='Coverage Status' /></a>
 <a href="https://github.com/pre-commit/pre-commit">

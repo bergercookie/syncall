@@ -15,6 +15,8 @@ classifiers = [
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
   "Intended Audience :: End Users/Desktop",
   "Natural Language :: English",
@@ -50,7 +52,7 @@ tw_gtasks_sync = "syncall.scripts.tw_gtasks_sync:main"
 
 # end-user dependencies --------------------------------------------------------
 [tool.poetry.dependencies]
-python = ">=3.8,<=3.12.5"
+python = ">=3.8.1,<=3.12.5"
 
 PyYAML = "~5.3.1"
 bidict = "^0.21.4"
@@ -109,7 +111,8 @@ coverage = { version = "^6.5.0", extras = ["toml"] }
 coveralls = "^3.3.1"
 check-jsonschema = "^0.14.3"
 # readline = "6.2.4.1"
-ruff = "^0.1.15"
+ruff = "^0.5"
+pyupgrade = "3.16"
 
 # isort ------------------------------------------------------------------------
 [tool.isort]
@@ -181,7 +184,7 @@ pythonPlatform = "Linux"
 # ruff -------------------------------------------------------------------------
 [tool.ruff]
 line-length = 95
-target-version = "py310"
+target-version = "py38"
 force-exclude = true
 
 exclude = []
@@ -189,7 +192,41 @@ exclude = []
 [tool.ruff.lint]
 
 select = ["ALL"]
-ignore = []
+ignore = [
+  "ANN201",
+  "S101",
+  "D102",
+  "D103",
+  "ANN001",
+  "ANN202",
+  "D100",
+  "FBT001",
+  "ANN003",
+  "PGH003",
+  "N803",
+  "FBT002",
+  "FA100",
+  "TRY003",
+  "SLF001",
+  "EM102",
+  "D105",
+  "D107",
+  "D213",
+  "D203",
+  "EM101",
+  "D205",
+  "D400",
+  "D415",
+  "INP001",
+  "E501",
+  "SIM118",
+  "N806",
+  "ANN002",
+  "ANN204",
+  "N802",
+  "PLR0913",
+  "ANN206",
+]
 exclude = []
 
 [tool.ruff.lint.flake8-annotations]

@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 import datetime
 from dataclasses import dataclass
-from typing import Any, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Mapping
 
 from bubop import parse_datetime
 
-from syncall.types import AsanaGID, AsanaRawTask
+if TYPE_CHECKING:
+    from syncall.types import AsanaGID, AsanaRawTask
 
 
 @dataclass
 class AsanaTask(Mapping):
+    """Represent an Asana task."""
+
     completed: bool
     completed_at: datetime.datetime
     created_at: datetime.datetime
@@ -16,31 +21,32 @@ class AsanaTask(Mapping):
     due_on: datetime.date
     name: str
     modified_at: datetime.datetime
-    gid: Optional[AsanaGID] = None
+    gid: AsanaGID | None = None
 
-    _key_names = {
-        "completed",
-        "completed_at",
-        "created_at",
-        "due_at",
-        "due_on",
-        "gid",
-        "name",
-        "modified_at",
-    }
+    _key_names: frozenset[str] = frozenset(
+        {
+            "completed",
+            "completed_at",
+            "created_at",
+            "due_at",
+            "due_on",
+            "gid",
+            "name",
+            "modified_at",
+        },
+    )
 
-    def __getitem__(self, key) -> Any:
+    def __getitem__(self, key) -> Any:  # noqa: ANN401
         return getattr(self, key)
 
     def __iter__(self):
-        for k in self._key_names:
-            yield k
+        yield from self._key_names
 
     def __len__(self):
         return len(self._key_names)
 
     @classmethod
-    def from_raw_task(cls, raw_task: AsanaRawTask) -> "AsanaTask":
+    def from_raw_task(cls, raw_task: AsanaRawTask) -> AsanaTask:
         assert "completed" in raw_task
         assert "completed_at" in raw_task
         assert "created_at" in raw_task

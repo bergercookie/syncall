@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 import subprocess
-from typing import List, Optional
 
 import caldav
 import click
@@ -41,11 +42,11 @@ from syncall.tw_caldav_utils import convert_caldav_to_tw, convert_tw_to_caldav
 def main(
     caldav_calendar: str,
     caldav_url: str,
-    caldav_user: Optional[str],
+    caldav_user: str | None,
     caldav_passwd_pass_path: str,
     caldav_passwd_cmd: str,
     tw_filter: str,
-    tw_tags: List[str],
+    tw_tags: list[str],
     tw_project: str,
     tw_only_modified_last_X_days: str,
     tw_sync_all_tasks: bool,
@@ -90,16 +91,19 @@ def main(
             tw_project,
             tw_sync_all_tasks,
             caldav_calendar,
-        ]
+        ],
     )
     check_optional_mutually_exclusive(
-        combination_name, combination_of_tw_filters_and_caldav_calendar
+        combination_name,
+        combination_of_tw_filters_and_caldav_calendar,
     )
 
     # existing combination name is provided ---------------------------------------------------
     if combination_name is not None:
         app_config = fetch_app_configuration(
-            side_A_name="Taskwarrior", side_B_name="Caldav", combination=combination_name
+            side_A_name="Taskwarrior",
+            side_B_name="Caldav",
+            combination=combination_name,
         )
         tw_filter_li = app_config["tw_filter_li"]
         tw_tags = app_config["tw_tags"]
@@ -144,7 +148,7 @@ def main(
             },
             prefix="\n\n",
             suffix="\n",
-        )
+        ),
     )
     if confirm:
         confirm_before_proceeding()
@@ -152,7 +156,9 @@ def main(
     # initialize sides ------------------------------------------------------------------------
     # tw
     tw_side = TaskWarriorSide(
-        tw_filter=" ".join(tw_filter_li), tags=tw_tags, project=tw_project
+        tw_filter=" ".join(tw_filter_li),
+        tags=tw_tags,
+        project=tw_project,
     )
 
     # caldav
@@ -160,7 +166,7 @@ def main(
         logger.debug(caldav_url)
         logger.debug(caldav_calendar)
         error_and_exit(
-            "You must provide a URL and calendar in order to synchronize via caldav"
+            "You must provide a URL and calendar in order to synchronize via caldav",
         )
 
     # fetch username
@@ -168,7 +174,7 @@ def main(
         caldav_user = os.environ.get("CALDAV_USERNAME")
     if caldav_user is None:
         error_and_exit(
-            "You must provide a username in order to synchronize via caldav, either "
+            "You must provide a username in order to synchronize via caldav, either ",
         )
 
     # fetch password
@@ -176,7 +182,13 @@ def main(
     if caldav_passwd is not None:
         logger.debug("Reading the caldav password from environment variable...")
     elif caldav_passwd_cmd is not None:
-        proc = subprocess.run(caldav_passwd_cmd, shell=True, text=True, capture_output=True)
+        proc = subprocess.run(  # noqa: S602
+            caldav_passwd_cmd,
+            shell=True,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
         if proc.returncode != 0:
             error_and_exit(f"Password command failed: {proc.stderr}")
 
@@ -202,7 +214,9 @@ def main(
         converter_B_to_A=convert_tw_to_caldav,
         converter_A_to_B=convert_caldav_to_tw,
         resolution_strategy=get_resolution_strategy(
-            resolution_strategy, side_A_type=type(caldav_side), side_B_type=type(tw_side)
+            resolution_strategy,
+            side_A_type=type(caldav_side),
+            side_B_type=type(tw_side),
         ),
         config_fname=combination_name,
         ignore_keys=(

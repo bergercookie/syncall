@@ -2,7 +2,6 @@ from copy import deepcopy
 from typing import cast, no_type_check
 
 import pytest
-
 from syncall.types import NotionPageContents, NotionTodoBlockItem
 
 
@@ -15,7 +14,7 @@ def notion_todo(request: pytest.FixtureRequest) -> NotionTodoBlockItem:
 
 @pytest.fixture()
 def notion_simple_todo() -> NotionTodoBlockItem:
-    """Simple to_do block returned by Notion Python SDK.
+    """Get simple to_do block returned by Notion Python SDK.
 
     - Unarchived (not deleted)
     - Unchecked (not completed)
@@ -43,7 +42,7 @@ def notion_simple_todo() -> NotionTodoBlockItem:
                     },
                     "plain_text": "Lacinato kale",
                     "href": None,
-                }
+                },
             ],
             "checked": False,
         },
@@ -62,7 +61,7 @@ def notion_simple_checked_todo(notion_simple_todo: NotionTodoBlockItem) -> Notio
 def notion_simple_diff_edited_time_todo(
     notion_simple_todo: NotionTodoBlockItem,
 ) -> NotionTodoBlockItem:
-    """Completed Notion todo block."""
+    """Get completed Notion todo block."""
     item = deepcopy(notion_simple_todo)
     item["last_edited_time"] = "2022-01-04T10:01:00.000Z"
     return item
@@ -72,7 +71,7 @@ def notion_simple_diff_edited_time_todo(
 def notion_simple_archived_todo(
     notion_simple_todo: NotionTodoBlockItem,
 ) -> NotionTodoBlockItem:
-    """Archived Notion todo block."""
+    """Get archived Notion todo block."""
     item = deepcopy(notion_simple_todo)
     item["archived"] = True
     return item
@@ -80,8 +79,7 @@ def notion_simple_archived_todo(
 
 @pytest.fixture()
 def notion_chained_todo() -> NotionTodoBlockItem:
-    """
-    More complex to_do block returned by Notion Python SDK.
+    """Get more complex to_do block returned by Notion Python SDK.
 
     Represents a todo with the following text (markdown notation in use):
 
@@ -190,8 +188,7 @@ def notion_chained_todo() -> NotionTodoBlockItem:
 @no_type_check
 @pytest.fixture()
 def page_contents() -> NotionPageContents:
-    """
-    Full example contents of a notion page.
+    """Full example contents of a notion page.
 
     Fetched using the query: "notion.blocks.children.list(block_id=page_id)"
     """
@@ -221,8 +218,8 @@ def page_contents() -> NotionPageContents:
                             },
                             "plain_text": "👋 Welcome to Notion!",
                             "href": None,
-                        }
-                    ]
+                        },
+                    ],
                 },
             },
             {
@@ -248,8 +245,8 @@ def page_contents() -> NotionPageContents:
                             },
                             "plain_text": "Here are the basics:",
                             "href": None,
-                        }
-                    ]
+                        },
+                    ],
                 },
             },
             {
@@ -275,7 +272,7 @@ def page_contents() -> NotionPageContents:
                             },
                             "plain_text": "Lacinato kale",
                             "href": None,
-                        }
+                        },
                     ],
                     "checked": True,
                 },
@@ -401,8 +398,8 @@ def page_contents() -> NotionPageContents:
                             },
                             "plain_text": "a list item",
                             "href": None,
-                        }
-                    ]
+                        },
+                    ],
                 },
             },
             {
@@ -820,8 +817,8 @@ def page_contents() -> NotionPageContents:
                                 " useful tips!"
                             ),
                             "href": None,
-                        }
-                    ]
+                        },
+                    ],
                 },
             },
             {
@@ -857,8 +854,8 @@ def page_contents() -> NotionPageContents:
                             },
                             "plain_text": "See it in action:",
                             "href": None,
-                        }
-                    ]
+                        },
+                    ],
                 },
             },
             {
@@ -884,7 +881,7 @@ def page_contents() -> NotionPageContents:
                             },
                             "plain_text": "1 minute",
                             "href": None,
-                        }
+                        },
                     ],
                     "type": "external",
                     "external": {"url": "https://youtu.be/TL_N2pmh9O0"},
@@ -923,7 +920,7 @@ def page_contents() -> NotionPageContents:
                             },
                             "plain_text": "4 minutes",
                             "href": None,
-                        }
+                        },
                     ],
                     "type": "external",
                     "external": {"url": "https://youtu.be/FXIrojSK3Jo"},
@@ -962,7 +959,7 @@ def page_contents() -> NotionPageContents:
                             },
                             "plain_text": "2 minutes",
                             "href": None,
-                        }
+                        },
                     ],
                     "type": "external",
                     "external": {"url": "https://youtu.be/2Pwzff-uffU"},
@@ -1001,7 +998,7 @@ def page_contents() -> NotionPageContents:
                             },
                             "plain_text": "2 minutes",
                             "href": None,
-                        }
+                        },
                     ],
                     "type": "external",
                     "external": {"url": "https://youtu.be/O8qdvSxDYNY"},
@@ -1062,7 +1059,7 @@ def page_contents() -> NotionPageContents:
                             "plain_text": " to watch 50+ more tutorials",
                             "href": None,
                         },
-                    ]
+                    ],
                 },
             },
             {
@@ -1164,7 +1161,7 @@ def page_contents() -> NotionPageContents:
                             ),
                             "href": None,
                         },
-                    ]
+                    ],
                 },
             },
             {

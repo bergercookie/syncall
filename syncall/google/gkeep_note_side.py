@@ -1,10 +1,16 @@
-from typing import Optional, Sequence, Set
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Sequence
 
 from gkeepapi.node import Label, Note, TopLevelNode
-from item_synchronizer.types import ID
+
+if TYPE_CHECKING:
+    from item_synchronizer.types import ID
+
+    from syncall.concrete_item import ConcreteItem
+
 from loguru import logger
 
-from syncall.concrete_item import ConcreteItem
 from syncall.google.gkeep_note import GKeepNote
 from syncall.google.gkeep_side import GKeepSide
 
@@ -26,20 +32,19 @@ class GKeepNoteSide(GKeepSide):
 
     def __init__(
         self,
-        gkeep_labels: Sequence[str] = tuple(),
-        gkeep_ignore_labels: Sequence[str] = tuple(),
+        gkeep_labels: Sequence[str] = (),
+        gkeep_ignore_labels: Sequence[str] = (),
         **kargs,
     ) -> None:
         super().__init__(name="GKeep", fullname="Google Keep Notes", **kargs)
         self._gkeep_labels_strs = gkeep_labels or []
-        self._gkeep_labels: Set[Label] = set()
+        self._gkeep_labels: set[Label] = set()
         self._gkeep_ignore_labels_strs = gkeep_ignore_labels or []
-        self._gkeep_ignore_labels: Set[Label] = set()
+        self._gkeep_ignore_labels: set[Label] = set()
 
     def start(self):
         super().start()
 
-        # TODO Test this
         # Label management --------------------------------------------------------------------
         # Create given labels if they don't already exist,
         # Get the concrete classes from strings
@@ -58,10 +63,12 @@ class GKeepNoteSide(GKeepSide):
                     self._gkeep_labels.add(label)
 
     def get_all_items(self, **kargs) -> Sequence[GKeepNote]:
-        def note_contains_labels(node: TopLevelNode, labels: Set[Label]) -> bool:
+        del kargs
+
+        def note_contains_labels(node: TopLevelNode, labels: set[Label]) -> bool:
             return labels.issubset(node.labels.all())
 
-        def note_does_not_contain_labels(node: TopLevelNode, labels: Set[Label]) -> bool:
+        def note_does_not_contain_labels(node: TopLevelNode, labels: set[Label]) -> bool:
             return labels.isdisjoint(node.labels.all())
 
         def node_is_of_type_note(node: TopLevelNode) -> bool:
@@ -73,16 +80,19 @@ class GKeepNoteSide(GKeepSide):
                 and note_does_not_contain_labels(node, self._gkeep_ignore_labels)
                 and node_is_of_type_note(node)
                 and not node.deleted
-                and not node.archived
-            )
+                and not node.archived,
+            ),
         )
 
         return tuple(GKeepNote.from_gkeep_note(m) for m in matching)
 
-    def get_item(self, item_id: str, use_cached: bool = True) -> Optional[GKeepNote]:
+    def get_item(self, item_id: str, use_cached: bool = True) -> GKeepNote | None:
+        del use_cached
         for item in self.get_all_items():
             if item.id == item_id:
                 return item
+
+        return None
 
     def _get_item_by_id(self, item_id: ID) -> GKeepNote:
         item = self.get_item(item_id=item_id)
@@ -97,7 +107,7 @@ class GKeepNoteSide(GKeepSide):
     def update_item(self, item_id: ID, **updated_properties):
         if not {"plaintext", "title"}.issubset(updated_properties.keys()):
             logger.warning(
-                f"Invalid changes provided to GKeepNoteSide -> {updated_properties}"
+                f"Invalid changes provided to GKeepNoteSide -> {updated_properties}",
             )
             return
         new_plaintext = updated_properties["plaintext"]
@@ -115,7 +125,10 @@ class GKeepNoteSide(GKeepSide):
 
     @classmethod
     def items_are_identical(
-        cls, item1: ConcreteItem, item2: ConcreteItem, ignore_keys: Sequence[str] = []
+        cls,
+        item1: ConcreteItem,
+        item2: ConcreteItem,
+        ignore_keys: Sequence[str] = [],
     ) -> bool:
         ignore_keys_ = [cls.last_modification_key()]
         ignore_keys_.extend(ignore_keys)

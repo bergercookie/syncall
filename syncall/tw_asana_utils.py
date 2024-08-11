@@ -3,7 +3,7 @@
 import datetime
 
 import dateutil
-from bubop import format_datetime_tz, format_dict, logger, parse_datetime
+from bubop import parse_datetime
 
 from syncall.asana.asana_task import AsanaTask
 from syncall.types import TwItem
@@ -47,10 +47,8 @@ def convert_tw_to_asana(tw_item: TwItem) -> AsanaTask:
         as_created_at = tw_entry
 
     if tw_due is not None:
-        if isinstance(tw_due, datetime.datetime):
-            as_due_at = tw_due
-        else:
-            as_due_at = parse_datetime(tw_due)
+        as_due_at = tw_due if isinstance(tw_due, datetime.datetime) else parse_datetime(tw_due)
+
         as_due_on = as_due_at.date()
 
     if isinstance(tw_modified, datetime.datetime):
@@ -72,7 +70,7 @@ def convert_tw_to_asana(tw_item: TwItem) -> AsanaTask:
     )
 
 
-def convert_asana_to_tw(asana_task: AsanaTask) -> TwItem:
+def convert_asana_to_tw(asana_task: AsanaTask) -> TwItem:  # noqa: C901, PLR0912
     # Extract Asana fields
     as_completed = asana_task["completed"]
     as_completed_at = asana_task["completed_at"]
@@ -83,8 +81,7 @@ def convert_asana_to_tw(asana_task: AsanaTask) -> TwItem:
     as_name = asana_task["name"]
 
     # Declare Taskwarrior fields
-    tw_completed = None
-    tw_due = tw_item = None
+    tw_due = None
     tw_end = None
     tw_entry = None
     tw_modified = None
@@ -119,7 +116,9 @@ def convert_asana_to_tw(asana_task: AsanaTask) -> TwItem:
     elif as_due_on is not None:
         if isinstance(as_due_on, datetime.date):
             tw_due = datetime.datetime.combine(
-                as_due_on, datetime.time(0, 0, 0), dateutil.tz.tzlocal()
+                as_due_on,
+                datetime.time(0, 0, 0),
+                dateutil.tz.tzlocal(),
             )
         else:
             tw_due = parse_datetime(as_due_on)

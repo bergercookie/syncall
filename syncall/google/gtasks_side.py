@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import datetime
-import os
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Union, cast
+from typing import TYPE_CHECKING, Sequence, cast
 
 import dateutil
 import pkg_resources
@@ -12,10 +13,13 @@ from googleapiclient.http import HttpError
 
 from syncall.google.google_side import GoogleSide
 from syncall.sync_side import SyncSide
-from syncall.types import GTasksItem, GTasksList
+
+if TYPE_CHECKING:
+    from syncall.types import GTasksItem, GTasksList
 
 DEFAULT_CLIENT_SECRET = pkg_resources.resource_filename(
-    "syncall", os.path.join("res", "gtasks_client_secret.json")
+    "syncall",
+    "res/gtasks_client_secret.json",
 )
 
 # API Reference: https://googleapis.github.io/google-api-python-client/docs/dyn/tasks_v1.html
@@ -27,7 +31,6 @@ DEFAULT_CLIENT_SECRET = pkg_resources.resource_filename(
 class GTasksSide(GoogleSide):
     """GTasksSide interacts with the Google Tasks API.
 
-
     Adds, removes, and updates events on Google Tasks. Also handles the
     OAuth2 user authentication workflow.
     """
@@ -35,20 +38,20 @@ class GTasksSide(GoogleSide):
     ID_KEY = "id"
     TITLE_KEY = "title"
     LAST_MODIFICATION_KEY = "updated"
-    _date_keys = ["updated"]
+    _date_keys: tuple[str] = ("updated",)
 
     # don't put the "due" key for comparison
     # due key holds the date but not the time that the use has set from the UI so we cannot
     # really use it for bi-synchronization.
     #
     # https://stackoverflow.com/questions/65956873/google-task-api-due-field
-    _identical_comparison_keys = ["title", "notes", "status", *_date_keys]
+    _identical_comparison_keys: tuple[str] = ("title", "notes", "status", *_date_keys)
 
     def __init__(
         self,
         *,
         task_list_title="TaskWarrior Reminders",
-        client_secret,
+        client_secret: str | None,
         **kargs,
     ):
         if client_secret is None:
@@ -59,13 +62,13 @@ class GTasksSide(GoogleSide):
             fullname="Google Tasks",
             scopes=["https://www.googleapis.com/auth/tasks"],
             credentials_cache=Path.home() / ".gtasks_credentials.pickle",
-            client_secret=client_secret,  # type: ignore
+            client_secret=client_secret,
             **kargs,
         )
 
         self._task_list_title = task_list_title
-        self._task_list_id: Optional[str] = None
-        self._items_cache: Dict[str, dict] = {}
+        self._task_list_id: str | None = None
+        self._items_cache: dict[str, dict] = {}
 
     def start(self):
         logger.debug("Connecting to Google Tasks...")
@@ -85,26 +88,29 @@ class GTasksSide(GoogleSide):
 
         logger.debug("Connected to Google Tasks.")
 
-    def _fetch_task_list_id(self) -> Optional[str]:
+    def _fetch_task_list_id(self) -> str | None:
         """Return the id of the task list based on the given Title.
 
         :returns: id or None if that was not found
         """
         res = self._service.tasklists().list().execute()  # type: ignore
-        task_lists_list: List[GTasksList] = res["items"]  # type: ignore
+        task_lists_list: list[GTasksList] = res["items"]  # type: ignore
 
         matching_task_lists = [
-            list["id"] for list in task_lists_list if list["title"] == self._task_list_title
+            task_list["id"]
+            for task_list in task_lists_list
+            if task_list["title"] == self._task_list_title
         ]
 
         if len(matching_task_lists) == 0:
             return None
-        elif len(matching_task_lists) == 1:
+
+        if len(matching_task_lists) == 1:
             return cast(str, matching_task_lists[0])
-        else:
-            raise RuntimeError(
-                f'Multiple matching task lists for title -> "{self._task_list_title}"'
-            )
+
+        raise RuntimeError(
+            f'Multiple matching task lists for title -> "{self._task_list_title}"',
+        )
 
     def _clear_all_task_list_entries(self):
         """Clear all tasks from the current task list."""
@@ -116,6 +122,8 @@ class GTasksSide(GoogleSide):
 
         :param kargs: Extra options for the call
         """
+        del kargs
+
         # Get the ID of the task list of interest
         tasks = []
 
@@ -150,7 +158,7 @@ class GTasksSide(GoogleSide):
                     t
                     for t in response.get("items", [])
                     if t["status"] != "deleted" and len(t["title"]) > 0
-                ]
+                ],
             )
 
             # Get the next request object by passing the previous request
@@ -163,14 +171,14 @@ class GTasksSide(GoogleSide):
 
         return tasks
 
-    def get_item(self, item_id: str, use_cached: bool = True) -> Optional[dict]:
+    def get_item(self, item_id: str, use_cached: bool = True) -> dict | None:
         item = self._items_cache.get(item_id)
         if not use_cached or item is None:
             item = self._get_item_refresh(item_id=item_id)
 
         return item
 
-    def _get_item_refresh(self, item_id: str) -> Optional[dict]:
+    def _get_item_refresh(self, item_id: str) -> dict | None:
         ret = None
         try:
             ret = (
@@ -183,15 +191,17 @@ class GTasksSide(GoogleSide):
                 self._items_cache[item_id] = ret
         except HttpError:
             pass
-        finally:
-            return ret
+
+        return ret
 
     def update_item(self, item_id, **changes):
         # Check if item is there
         task = self._service.tasks().get(tasklist=self._task_list_id, task=item_id).execute()  # type: ignore
         task.update(changes)
         self._service.tasks().update(  # type: ignore
-            tasklist=self._task_list_id, task=task["id"], body=task
+            tasklist=self._task_list_id,
+            task=task["id"],
+            body=task,
         ).execute()
 
     def add_item(self, item) -> dict:
@@ -216,22 +226,22 @@ class GTasksSide(GoogleSide):
         return cls.LAST_MODIFICATION_KEY
 
     @staticmethod
-    def _parse_dt_or_none(item: GTasksItem, field: str) -> Optional[datetime.datetime]:
+    def _parse_dt_or_none(item: GTasksItem, field: str) -> datetime.datetime | None:
         """Return the datetime on which task was completed in datetime format."""
         if (dt := item.get(field)) is not None:
             dt_dt = GTasksSide.parse_datetime(dt)
             assert isinstance(dt_dt, datetime.datetime)
             return dt_dt
-        else:
-            return None
+
+        return None
 
     @staticmethod
-    def get_task_due_time(item: GTasksItem) -> Optional[datetime.datetime]:
+    def get_task_due_time(item: GTasksItem) -> datetime.datetime | None:
         """Return the datetime on which task is due in datetime format."""
         return GTasksSide._parse_dt_or_none(item=item, field="due")
 
     @staticmethod
-    def get_task_completed_time(item: GTasksItem) -> Optional[datetime.datetime]:
+    def get_task_completed_time(item: GTasksItem) -> datetime.datetime | None:
         """Return the datetime on which task was completed in datetime format."""
         return GTasksSide._parse_dt_or_none(item=item, field="completed")
 
@@ -241,9 +251,8 @@ class GTasksSide(GoogleSide):
         return format_datetime_tz(dt)
 
     @classmethod
-    def parse_datetime(cls, dt: Union[str, dict, datetime.datetime]) -> datetime.datetime:
-        """
-        Parse datetime given in the GTasks format(s):
+    def parse_datetime(cls, dt: str | dict | datetime.datetime) -> datetime.datetime:
+        """Parse datetime given in the GTasks format(s):
         - string with ('T', 'Z' separators).
         - (dateTime, dateZone) dictionary
         - datetime object
@@ -274,10 +283,10 @@ class GTasksSide(GoogleSide):
         >>> GTasksSide.parse_datetime(a).isoformat() == a.isoformat()
         True
         """
-
         if isinstance(dt, str):
             return dateutil.parser.parse(dt).replace(tzinfo=None)  # type: ignore
-        elif isinstance(dt, dict):
+
+        if isinstance(dt, dict):
             date_time = dt.get("dateTime")
             if date_time is None:
                 raise RuntimeError(f"Invalid structure dict: {dt}")
@@ -288,12 +297,13 @@ class GTasksSide(GoogleSide):
                 dt_dt = timezone.localize(dt_dt)
 
             return dt_dt
-        elif isinstance(dt, datetime.datetime):
+
+        if isinstance(dt, datetime.datetime):
             return dt
-        else:
-            raise RuntimeError(
-                f"Unexpected type of a given date item, type: {type(dt)}, contents: {dt}"
-            )
+
+        raise TypeError(
+            f"Unexpected type of a given date item, type: {type(dt)}, contents: {dt}",
+        )
 
     @classmethod
     def items_are_identical(cls, item1, item2, ignore_keys: Sequence[str] = []) -> bool:

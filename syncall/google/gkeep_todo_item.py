@@ -15,7 +15,7 @@ class GKeepTodoItem(ConcreteItem):
                 ItemKey("is_checked", KeyType.String),
                 ItemKey("last_modified_date", KeyType.Date),
                 ItemKey("plaintext", KeyType.String),
-            )
+            ),
         )
 
         # Embedding the ListItem as a member variable of this. The alternative of inheriting

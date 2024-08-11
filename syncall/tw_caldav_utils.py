@@ -30,7 +30,7 @@ aliases_caldav_tw_priority = {v: k for k, v in aliases_tw_caldav_priority.items(
 
 def convert_tw_to_caldav(tw_item: Item) -> Item:
     assert all(
-        i in tw_item.keys() for i in ("description", "status", "uuid")
+        i in tw_item for i in ("description", "status", "uuid")
     ), "Missing keys in tw_item"
 
     caldav_item: Item = {}
@@ -38,7 +38,7 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
     caldav_item["summary"] = tw_item["description"]
     # description
     caldav_item["description"] = "IMPORTED FROM TASKWARRIOR\n"
-    if "annotations" in tw_item.keys():
+    if "annotations" in tw_item:
         for i, annotation in enumerate(tw_item["annotations"]):
             caldav_item["description"] += f"\n* Annotation {i + 1}: {annotation}"
 
@@ -49,28 +49,28 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
     caldav_item["status"] = aliases_tw_caldav_status[tw_item["status"]]
 
     # Priority
-    if "priority" in tw_item.keys():
+    if "priority" in tw_item:
         caldav_item["priority"] = aliases_tw_caldav_priority[tw_item["priority"].lower()]
 
     # Timestamps
-    if "entry" in tw_item.keys():
+    if "entry" in tw_item:
         caldav_item["created"] = tw_item["entry"]
-    if "end" in tw_item.keys():
+    if "end" in tw_item:
         caldav_item["completed"] = tw_item["end"]
-    if "modified" in tw_item.keys():
+    if "modified" in tw_item:
         caldav_item["last-modified"] = tw_item["modified"]
 
     # Start/due dates
     # - If given due date -> (start=due-1, end=due)
-    if "due" in tw_item.keys():
+    if "due" in tw_item:
         caldav_item["start"] = tw_item["due"] - timedelta(hours=1)
         caldav_item["due"] = tw_item["due"]
 
-    if "tags" in tw_item.keys():
+    if "tags" in tw_item:
         caldav_item["categories"] = tw_item["tags"]
 
     # if start-ed, override the status appropriately
-    if "start" in tw_item.keys():
+    if "start" in tw_item:
         caldav_item["status"] = "in-process"
 
     return caldav_item
@@ -103,18 +103,18 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
         tw_item["priority"] = prio
 
     # Timestamps
-    if "created" in caldav_item.keys():
+    if "created" in caldav_item:
         tw_item["entry"] = caldav_item["created"]
-    if "completed" in caldav_item.keys():
+    if "completed" in caldav_item:
         tw_item["end"] = caldav_item["completed"]
-    if "last-modified" in caldav_item.keys():
+    if "last-modified" in caldav_item:
         tw_item["modified"] = caldav_item["last-modified"]
 
     # Start/due dates
-    if "due" in caldav_item.keys():
+    if "due" in caldav_item:
         tw_item["due"] = caldav_item["due"]
 
-    if "categories" in caldav_item.keys():
+    if "categories" in caldav_item:
         tw_item["tags"] = caldav_item["categories"]
 
     if caldav_item["status"] == "in-process" and "last-modified" in caldav_item:

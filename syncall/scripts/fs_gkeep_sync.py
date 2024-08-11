@@ -61,8 +61,7 @@ def main(
     pdb_on_error: bool,
     confirm: bool,
 ):
-    """
-    Synchronize Notes from your Google Keep with text files in a directory on your filesystem.
+    """Synchronize Notes from your Google Keep with text files in a directory on your filesystem.
 
     You can only synchronize a subset of your Google Keep notes based on a set of provided
     labels and you can specify where to create the files by specifying the path to a local
@@ -88,7 +87,7 @@ def main(
             filesystem_root,
             gkeep_labels,
             gkeep_ignore_labels,
-        ]
+        ],
     )
     check_optional_mutually_exclusive(
         combination_name,
@@ -101,7 +100,7 @@ def main(
         if not filesystem_root_path.is_dir():
             logger.error(
                 "An existing directory must be provided for the synchronization ->"
-                f" {filesystem_root_path}"
+                f" {filesystem_root_path}",
             )
             return 1
 
@@ -112,7 +111,9 @@ def main(
     # existing combination name is provided ---------------------------------------------------
     if combination_name is not None:
         app_config = fetch_app_configuration(
-            side_A_name="Filesystem", side_B_name="Google Keep", combination=combination_name
+            side_A_name="Filesystem",
+            side_B_name="Google Keep",
+            combination=combination_name,
         )
         filesystem_root_path = Path(app_config["filesystem_root"])
         gkeep_labels = app_config["gkeep_labels"]
@@ -138,14 +139,14 @@ def main(
         logger.error(
             "You have to provide at least one valid filesystem root path to use for "
             " synchronization. You can do so either via CLI arguments or by specifying an"
-            " existing saved combination"
+            " existing saved combination",
         )
         sys.exit(1)
 
     if not gkeep_labels and not gkeep_ignore_labels:
         logger.error(
             "Refusing to run without any Google Keep labels to keep or remove - please provide"
-            " at least one of these two to continue"
+            " at least one of these two to continue",
         )
         sys.exit(1)
 
@@ -161,7 +162,7 @@ def main(
             },
             prefix="\n\n",
             suffix="\n",
-        )
+        ),
     )
     if confirm:
         confirm_before_proceeding()
@@ -182,7 +183,8 @@ def main(
     )
 
     filesystem_side = FilesystemSide(
-        filesystem_root=filesystem_root_path, filename_extension=filename_extension
+        filesystem_root=filesystem_root_path,
+        filename_extension=filename_extension,
     )
 
     # teardown function and exception handling ------------------------------------------------

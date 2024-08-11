@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import sys
-from typing import List
 
 import asana
 import click
@@ -39,14 +40,14 @@ from syncall.tw_asana_utils import convert_asana_to_tw, convert_tw_to_asana
 @opts_asana(hidden_gid=False)
 @opts_tw_filtering()
 @opts_miscellaneous("TW", "Asana")
-def main(
+def main(  # noqa: PLR0915, C901, PLR0912
     asana_task_gid: str,
     asana_token: str,
     asana_workspace_gid: str,
     asana_workspace_name: str,
     do_list_asana_workspaces: bool,
     tw_filter: str,
-    tw_tags: List[str],
+    tw_tags: list[str],
     tw_project: str,
     tw_only_modified_last_X_days: str,
     tw_sync_all_tasks: bool,
@@ -59,6 +60,8 @@ def main(
     confirm: bool,
 ):
     """Synchronize your tasks in Asana with filters from Taskwarrior."""
+    del prefer_scheduled_date
+
     loguru_tqdm_sink(verbosity=verbose)
     app_log_to_syslog()
     logger.debug("Initialising...")
@@ -84,16 +87,19 @@ def main(
             tw_sync_all_tasks,
             asana_workspace_gid,
             asana_workspace_name,
-        ]
+        ],
     )
     check_optional_mutually_exclusive(
-        combination_name, combination_of_tw_filters_and_asana_workspace
+        combination_name,
+        combination_of_tw_filters_and_asana_workspace,
     )
 
     # existing combination name is provided ---------------------------------------------------
     if combination_name is not None:
         app_config = fetch_app_configuration(
-            side_A_name="Taskwarrior", side_B_name="Asana", combination=combination_name
+            side_A_name="Taskwarrior",
+            side_B_name="Asana",
+            combination=combination_name,
         )
         tw_tags = app_config["tw_tags"]
         tw_project = app_config["tw_project"]
@@ -116,13 +122,12 @@ def main(
 
     # initialize asana -----------------------------------------------------------------------
     asana_client = asana.Client.access_token(asana_token)
-    asana_disable = asana_client.headers.get("Asana-Disable", "")
     asana_client.headers["Asana-Disable"] = ",".join(
         [
             asana_client.headers.get("Asana-Disable", ""),
             "new_user_task_lists",
             "new_goal_memberships",
-        ]
+        ],
     )
     asana_client.options["client_name"] = "syncall"
 
@@ -138,9 +143,8 @@ def main(
         if asana_workspace_gid is None:
             if asana_workspace_name is None:
                 error_and_exit("Provide either an Asana workspace name or GID to sync.")
-        else:
-            if asana_workspace_name is not None:
-                error_and_exit("Provide either Asana workspace GID or name, but not both.")
+        elif asana_workspace_name is not None:
+            error_and_exit("Provide either Asana workspace GID or name, but not both.")
 
         found_workspace = False
 
@@ -153,7 +157,7 @@ def main(
                 if found_workspace:
                     error_and_exit(
                         f"Found multiple workspaces with name {asana_workspace_name}. Please"
-                        " specify workspace GID instead."
+                        " specify workspace GID instead.",
                     )
                 else:
                     asana_workspace_gid = workspace["gid"]
@@ -189,18 +193,22 @@ def main(
             },
             prefix="\n\n",
             suffix="\n",
-        )
+        ),
     )
     if confirm:
         confirm_before_proceeding()
 
     # initialize sides ------------------------------------------------------------------------
     tw_side = TaskWarriorSide(
-        tw_filter=" ".join(tw_filter_li), tags=tw_tags, project=tw_project
+        tw_filter=" ".join(tw_filter_li),
+        tags=tw_tags,
+        project=tw_project,
     )
 
     asana_side = AsanaSide(
-        client=asana_client, task_gid=asana_task_gid, workspace_gid=asana_workspace_gid
+        client=asana_client,
+        task_gid=asana_task_gid,
+        workspace_gid=asana_workspace_gid,
     )
 
     # teardown function and exception handling ------------------------------------------------
@@ -218,7 +226,9 @@ def main(
         converter_A_to_B=convert_asana_to_tw,
         converter_B_to_A=convert_tw_to_asana,
         resolution_strategy=get_resolution_strategy(
-            resolution_strategy, side_A_type=type(asana_side), side_B_type=type(tw_side)
+            resolution_strategy,
+            side_A_type=type(asana_side),
+            side_B_type=type(tw_side),
         ),
         config_fname=combination_name,
         ignore_keys=(

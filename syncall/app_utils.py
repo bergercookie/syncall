@@ -4,16 +4,17 @@ Use these functions only in top-level executables. In case of errors they may di
 `sys.exit()` to avoid dumping stack traces to the user.
 """
 
+from __future__ import annotations
+
 import atexit
 import inspect
 import logging
 import os
 import subprocess
 import sys
-from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Mapping, NoReturn, Optional, Sequence, Tuple, Type, cast
+from typing import TYPE_CHECKING, Any, Iterable, Mapping, NoReturn, Sequence, cast
 from urllib.parse import quote
 
 from bubop import (
@@ -37,11 +38,14 @@ from item_synchronizer.resolution_strategy import (
 )
 
 from syncall.constants import COMBINATION_FLAGS, ISSUES_URL
-from syncall.sync_side import SyncSide
+
+if TYPE_CHECKING:
+    from syncall.sync_side import SyncSide
+    from syncall.types import SupportsStr
 
 # Various resolution strategies with their respective names so that the user can choose which
 # one they want. ------------------------------------------------------------------------------
-name_to_resolution_strategy_type: Mapping[str, Type[ResolutionStrategy]] = {
+name_to_resolution_strategy_type: Mapping[str, type[ResolutionStrategy]] = {
     "MostRecentRS": MostRecentRS,
     "LeastRecentRS": LeastRecentRS,
     "AlwaysFirstRS": AlwaysFirstRS,
@@ -50,56 +54,58 @@ name_to_resolution_strategy_type: Mapping[str, Type[ResolutionStrategy]] = {
 
 
 def confirm_before_proceeding():
-    """
-    Confirm that the user wants to go forward with this configuration before actually
+    """Confirm that the user wants to go forward with this configuration before actually
     proceeding. Exit if the user doesn't want to proceed.
     """
-
     while True:
         ans = input("Continue [Y/n] ? ").lower()
         if ans in ["y", "yes", ""]:
             break
-        elif ans in ["n", "no"]:
+
+        if ans in ["n", "no"]:
             error_and_exit("Exiting.")
 
 
 def get_resolution_strategy(
-    resolution_strategy_name: str, side_A_type: Type[SyncSide], side_B_type: Type[SyncSide]
+    resolution_strategy_name: str,
+    side_A_type: type[SyncSide],
+    side_B_type: type[SyncSide],
 ) -> ResolutionStrategy:
-    """
+    """Get the resolution strategy in use.
+
     Given the name of the resolution strategy and the types of the 2 synchronization sides, get
     an instance of the resolution strategy in use.
     """
-    RS = name_to_resolution_strategy_type[resolution_strategy_name]
-    if issubclass(RS, RecencyRS):
-        instance = RS(
+    rs_class = name_to_resolution_strategy_type[resolution_strategy_name]
+    if issubclass(rs_class, RecencyRS):
+        instance = rs_class(
             date_getter_A=lambda item: cast(
-                datetime, item[side_A_type.last_modification_key()]
+                datetime,
+                item[side_A_type.last_modification_key()],
             ),
             date_getter_B=lambda item: cast(
-                datetime, item[side_B_type.last_modification_key()]
+                datetime,
+                item[side_B_type.last_modification_key()],
             ),
         )
     else:
-        instance = RS()
+        instance = rs_class()
 
     return instance
 
 
 def app_name():
-    """
-    Return the name of the application which defines the config, cache, and share directories
+    """Return the name of the application which defines the config, cache, and share directories
     of this app.
     """
     if "SYNCALL_TESTENV" in os.environ:
         return "test_syncall"
-    else:
-        return "syncall"
+
+    return "syncall"
 
 
 def get_config_name_for_args(*args) -> str:
-    """
-    Get a name string by concatenating the given args. Encodes the non-ascii
+    """Get a name string by concatenating the given args. Encodes the non-ascii
     characters using the urllib parse method
 
     Usage::
@@ -116,7 +122,6 @@ def get_config_name_for_args(*args) -> str:
     Traceback (most recent call last):
     RuntimeError: ...
     """
-
     # sanity check
     if len(args) == 1:
         raise RuntimeError("get_config_name_for_args requires more > 1 arguments")
@@ -124,11 +129,13 @@ def get_config_name_for_args(*args) -> str:
     def quote_(obj: str) -> str:
         return quote(obj, safe="+,")
 
-    def format_(obj: Any) -> str:
+    def format_(obj: SupportsStr) -> str:
         if isinstance(obj, str):
             return quote_(obj)
-        elif isinstance(obj, Iterable):
+
+        if isinstance(obj, Iterable):
             return ",".join(quote_(str(o)) for o in obj)
+
         return str(obj)
 
     return "__".join(map(format_, args))
@@ -139,16 +146,19 @@ def get_named_combinations(config_fname: str) -> Sequence[str]:
     dummy_logger = logging.getLogger("dummy")
     dummy_logger.setLevel(logging.CRITICAL + 1)
     with PrefsManager(
-        app_name=app_name(), config_fname=config_fname, logger=dummy_logger
+        app_name=app_name(),
+        config_fname=config_fname,
+        logger=dummy_logger,
     ) as prefs_manager:
         return list(prefs_manager.keys())
 
 
 def fetch_app_configuration(
-    side_A_name: str, side_B_name: str, combination: str
+    side_A_name: str,
+    side_B_name: str,
+    combination: str,
 ) -> Mapping[str, Any]:
-    """
-    Fetch the configuration of a top-level synchronization app.
+    """Fetch the configuration of a top-level synchronization app.
 
     This function is useful for parsing a previously cached configuration of a synchronization
     app. The configuration file is managed by a bubop.PrefsManager instance and the
@@ -167,7 +177,7 @@ def fetch_app_configuration(
                 format_list(
                     header="\n\nNo such configuration found - existing configurations are",
                     items=existing_keys,
-                )
+                ),
             )
 
         # config combination found ------------------------------------------------------------
@@ -178,13 +188,11 @@ def fetch_app_configuration(
 def cache_or_reuse_cached_combination(
     config_args: Mapping[str, Any],
     config_fname: str,
-    custom_combination_savename: Optional[str],
+    custom_combination_savename: str | None,
 ):
-    """
-    App utility function that either retrieves the configuration for the app at hand based on
+    """App utility function that either retrieves the configuration for the app at hand based on
     the given arguments or retrieves it based on the custom configuration name specified.
     """
-
     if custom_combination_savename is None:
         config_name = get_config_name_for_args(*config_args.values())
     else:
@@ -231,7 +239,7 @@ def inform_about_combination_name_usage(combination_name: str):
     logger.success(
         "Sync completed successfully. You can now use the"
         f" {'/'.join(COMBINATION_FLAGS)} option to refer to this particular combination\n\n "
-        f" {exec_name} {COMBINATION_FLAGS[1]} {combination_name}"
+        f" {exec_name} {COMBINATION_FLAGS[1]} {combination_name}",
     )
 
 
@@ -243,7 +251,7 @@ def inform_about_app_extras(extras: Sequence[str]) -> NoReturn:
         "\nYou have to install the"
         f" {extras_str} {'extra' if len(extras) == 1 else 'extras'} for {exec_name} to"
         ' work.\nWith pip, you can do it with something like: "pip3 install'
-        f' syncall[{extras_str}]"\nExiting.'
+        f' syncall[{extras_str}]"\nExiting.',
     )
     sys.exit(1)
 
@@ -270,7 +278,7 @@ def write_to_pass_manager(password_path: str, passwd: str) -> None:
         logger.error(
             f"Cannot find .gpg-id file under the password store - {pass_dir}\n"
             "Cannot write to the provided password path "
-            f"in the password store -> {pass_full_path}"
+            f"in the password store -> {pass_full_path}",
         )
         sys.exit(1)
     pass_owner = gpg_id_file.read_text().rstrip()
@@ -278,15 +286,14 @@ def write_to_pass_manager(password_path: str, passwd: str) -> None:
     write_gpg_token(p=pass_full_path, token=passwd, recipient=pass_owner)
 
 
-def fetch_from_pass_manager(password_path: str, allow_fail=False) -> Optional[str]:
-    """
-    Gpg-decrypt and read the contents of a password file. The path should be either relative
-    to the password store directory or fullpath.
+def fetch_from_pass_manager(password_path: str, allow_fail=False) -> str | None:
+    """Gpg-decrypt and read the contents of a password file.
+
+    The path should be either relative to the password store directory or fullpath.
 
     If allow_fail=False, and it indeed fails, it will return None. otherwise, allow_fail=True
     and it fails, it will log an error with the logger and will `sys.exit`.
     """
-
     logger.debug(f"Attempting to read {password_path} from UNIX Password Store...")
     pass_dir = valid_path(os.environ.get("PASSWORD_STORE_DIR", "~/.password-store"))
     if str(password_path).startswith(str(pass_dir)):
@@ -307,8 +314,8 @@ def fetch_from_pass_manager(password_path: str, allow_fail=False) -> Optional[st
                         f" {pass_full_path}",
                         non_empty("stdout", err.stdout.decode("utf-8"), join_with=": "),
                         non_empty("stderr", err.stderr.decode("utf-8"), join_with=": "),
-                    ]
-                )
+                    ],
+                ),
             )
             sys.exit(1)
 
@@ -316,11 +323,11 @@ def fetch_from_pass_manager(password_path: str, allow_fail=False) -> Optional[st
 
 
 def gkeep_read_username_password_token(
-    gkeep_user_pass_path: str, gkeep_passwd_pass_path: str, gkeep_token_pass_path: str
-) -> Tuple[Optional[str], Optional[str], Optional[str]]:
-    """
-    Helper method for reading the username, password and application token for applications
-    that connect to Google Keep using the gkeepapi python module.
+    gkeep_user_pass_path: str,
+    gkeep_passwd_pass_path: str,
+    gkeep_token_pass_path: str,
+) -> tuple[str | None, str | None, str | None]:
+    """Read the username, password and application token for apps that use  gkeepapi.
 
     For all three of the variables above, it will first try reading them from environment
     variables, then if empty will resort to reading them from the UNIX Password manager.
@@ -351,7 +358,8 @@ def gkeep_read_username_password_token(
     return gkeep_user, gkeep_passwd, gkeep_token
 
 
-def app_log_to_syslog():
+def app_log_to_syslog() -> None:
+    """Enable logging to syslog for the application."""
     caller_frame = inspect.stack()[1]
     calling_file = Path(caller_frame[1])
     fname = calling_file.stem
@@ -359,7 +367,10 @@ def app_log_to_syslog():
 
 
 def register_teardown_handler(
-    pdb_on_error: bool, inform_about_config: bool, combination_name: str, verbose: int
+    pdb_on_error: bool,
+    inform_about_config: bool,
+    combination_name: str,
+    verbose: int,
 ) -> ExitHooks:
     """Shortcut for registering the teardown logic in a top-level sync application.
 
@@ -379,10 +390,12 @@ def register_teardown_handler(
         if inform_about_config:
             inform_about_combination_name_usage(combination_name)
 
+        return 0
+
     if pdb_on_error:
         logger.warning(
             "pdb_on_error is enabled. Disabling exit hooks / not taking actions at the end "
-            "of the run."
+            "of the run.",
         )
     else:
         hooks.register()
@@ -391,16 +404,14 @@ def register_teardown_handler(
     return hooks
 
 
-def determine_app_config_fname(side_A_name: str, side_B_name: str):
-    """
-    Get the configuration name for the app at hand given the names of the sides involved.
+def determine_app_config_fname(side_A_name: str, side_B_name: str) -> str:
+    """Get the configuration name for the app at hand given the names of the sides involved.
 
     >>> assert determine_app_config_fname("TW", "Google Tasks") == 'tw__google_tasks__configs.yaml'
     >>> assert determine_app_config_fname("TW", "Google Calendar") == 'tw__google_calendar__configs.yaml'
     """
-    config_fname = (
+    return (
         f'{side_A_name.replace(" ", "_").lower()}'
         "__"
         f'{side_B_name.replace(" ", "_").lower()}__configs.yaml'
     )
-    return config_fname

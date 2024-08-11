@@ -10,7 +10,8 @@ from syncall.google.gkeep_note import GKeepNote
 
 
 def test_convert_fs_file_to_gkeep_note_from_empty(
-    fs_file_empty: FilesystemFile, fs_file_default_name: str
+    fs_file_empty: FilesystemFile,
+    fs_file_default_name: str,
 ):
     os.chdir(fs_file_empty.root)
     out = convert_filesystem_file_to_gkeep_note(fs_file_empty)
@@ -20,7 +21,8 @@ def test_convert_fs_file_to_gkeep_note_from_empty(
 
 
 def test_convert_fs_file_to_gkeep_note_with_existing_content(
-    fs_file_with_content: FilesystemFile, fs_file_default_name: str
+    fs_file_with_content: FilesystemFile,
+    fs_file_default_name: str,
 ):
     os.chdir(fs_file_with_content.root)
     out = convert_filesystem_file_to_gkeep_note(fs_file_with_content)
@@ -30,7 +32,8 @@ def test_convert_fs_file_to_gkeep_note_with_existing_content(
 
 
 def test_convert_gkeep_note_to_fs_file_from_empty(
-    gkeep_note_empty_instance: GKeepNote, tmpdir
+    gkeep_note_empty_instance: GKeepNote,
+    tmpdir,
 ):
     os.chdir(tmpdir)
 

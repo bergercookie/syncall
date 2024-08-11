@@ -1,11 +1,14 @@
-from typing import List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pytest
-
 from syncall.notion.notion_side import NotionSide
 from syncall.notion.notion_todo_block import NotionTodoBlock
 from syncall.tw_notion_utils import convert_notion_to_tw, convert_tw_to_notion
-from syncall.types import NotionPageContents, NotionTodoBlockItem, TwItem
+
+if TYPE_CHECKING:
+    from syncall.types import NotionPageContents, NotionTodoBlockItem, TwItem
 
 
 # test conversions ----------------------------------------------------------------------------
@@ -42,9 +45,9 @@ def test_convert_tw_to_notion(tw_task: TwItem):
 def test_find_todos_in_page(page_contents: NotionPageContents):
     todos = NotionSide.find_todos(page_contents)
     assert len(todos) == 6
-    is_checked: List[bool] = [True, False, False, False, False, False]
-    is_archived: List[bool] = [False for _ in range(6)]
-    plaintext: List[str] = [
+    is_checked: list[bool] = [True, False, False, False, False, False]
+    is_archived: list[bool] = [False for _ in range(6)]
+    plaintext: list[str] = [
         "Lacinato kale",
         "Bringing it back with style and glamour",
         "Highlight any text, and use the menu that pops up to style your writing however you"

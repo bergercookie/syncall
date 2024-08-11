@@ -23,6 +23,8 @@ from syncall.pdb_cli_utils import run_pdb_on_error as _run_pdb_on_error
 
 
 def _set_own_excepthook(ctx, param, value):
+    del param
+
     if not value or ctx.resilient_parsing:
         return value
 
@@ -51,15 +53,13 @@ def opts_asana(hidden_gid: bool):
                 _opt_asana_workspace_gid,
                 _opt_asana_workspace_name,
                 _opt_list_asana_workspaces,
-            ]
+            ],
         ):
             f = d()(f)
 
         # --asana-task-gid is used to ease development and debugging. It is not currently
         # suitable for regular use.
-        f = _opt_asana_task_gid(hidden=hidden_gid)(f)
-
-        return f
+        return _opt_asana_task_gid(hidden=hidden_gid)(f)
 
     return decorator
 
@@ -77,6 +77,8 @@ def _opt_asana_task_gid(**kwargs):
 
 def _opt_asana_token_pass_path():
     def callback(ctx, param, value):
+        del ctx
+
         api_token_pass_path = value
 
         # fetch API token to connect to asana -------------------------------------------------
@@ -85,12 +87,12 @@ def _opt_asana_token_pass_path():
         if asana_token is None and api_token_pass_path is None:
             error_and_exit(
                 "You must provide an Asana Personal Access asana_token, using the"
-                f" {'/'.join(param.opts)} option"
+                f" {'/'.join(param.opts)} option",
             )
         if asana_token is not None:
             logger.debug(
                 "Reading the Asana Personal Access asana_token (PAT) from environment"
-                " variable..."
+                " variable...",
             )
         else:
             asana_token = fetch_from_pass_manager(api_token_pass_path)
@@ -147,7 +149,7 @@ def opts_tw_filtering():
                 _opt_tw_project,
                 _opt_tw_only_tasks_modified_X_days,
                 _opt_prefer_scheduled_date,
-            ]
+            ],
         ):
             f = d()(f)
         return f
@@ -204,8 +206,10 @@ def _opt_tw_project():
 
 def _opt_tw_only_tasks_modified_X_days():
     def callback(ctx, param, value):
+        del param
+
         if value is None or ctx.resilient_parsing:
-            return
+            return None
 
         return f"modified.after:-{value}d"
 
@@ -262,7 +266,7 @@ def opts_gkeep():
                 _opt_gkeep_user_pass_path,
                 _opt_gkeep_passwd_pass_path,
                 _opt_gkeep_token_pass_path,
-            ]
+            ],
         ):
             f = d()(f)
 
@@ -382,7 +386,7 @@ def opts_caldav():
                 _opt_caldav_user,
                 _opt_caldav_passwd_pass_path,
                 _opt_caldav_passwd_cmd,
-            ]
+            ],
         ):
             f = d()(f)
 
@@ -472,14 +476,13 @@ def opts_miscellaneous(side_A_name: str, side_B_name: str):
                 (_opt_list_combinations, side_A_name, side_B_name),
                 (_opt_combination, side_A_name, side_B_name),
                 (_opt_custom_combination_savename, side_A_name, side_B_name),
-            ]
+            ],
         ):
             fn = d[0]
             fn_args = d[1:]
             f = fn(*fn_args)(f)  # type: ignore
 
-        f = click.option("-v", "--verbose", count=True)(f)
-        return f
+        return click.option("-v", "--verbose", count=True)(f)
 
     return decorator
 
@@ -511,17 +514,19 @@ def _list_named_combinations(config_fname: str) -> None:
         format_list(
             header="\n\nNamed configurations currently available",
             items=get_named_combinations(config_fname=config_fname),
-        )
+        ),
     )
 
 
 def _opt_list_combinations(side_A_name: str, side_B_name: str):
     def callback(ctx, param, value):
+        del ctx, param
         if value is True:
             _list_named_combinations(
                 config_fname=determine_app_config_fname(
-                    side_A_name=side_A_name, side_B_name=side_B_name
-                )
+                    side_A_name=side_A_name,
+                    side_B_name=side_B_name,
+                ),
             )
             sys.exit(0)
 
@@ -547,11 +552,17 @@ def _opt_resolution_strategy():
 
 def _opt_list_resolution_strategies():
     def _list_resolution_strategies(ctx, param, value):
+        del ctx, param
+
         if value is not True:
             return
 
         strs = name_to_resolution_strategy_type.keys()
-        click.echo("\n".join([f"{a}. {b}" for a, b in zip(range(1, len(strs) + 1), strs)]))
+        click.echo(
+            "\n".join(
+                [f"{a}. {b}" for a, b in zip(range(1, len(strs) + 1), strs, strict=False)],
+            ),
+        )
         sys.exit(0)
 
     return click.option(

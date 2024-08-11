@@ -14,7 +14,7 @@ class SideHelper:
     summary_key: str
     # Handy way to refer to the counterpart side
     other: Optional["SideHelper"] = None
-    ignore_keys: Sequence[str] = tuple()
+    ignore_keys: Sequence[str] = ()
 
     def __str__(self):
         return str(self.name)

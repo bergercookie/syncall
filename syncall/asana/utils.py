@@ -8,11 +8,11 @@ def list_asana_workspaces(client: asana.Client) -> None:
 
     workspaces = client.workspaces.find_all()
     for workspace in workspaces:
-        items[workspace["name"]] = "gid=%s" % workspace["gid"]
+        items[workspace["name"]] = f'gid={workspace["gid"]}'
 
     logger.success(
         format_dict(
             header="\n\nAsana workspaces",
             items=items,
-        )
+        ),
     )

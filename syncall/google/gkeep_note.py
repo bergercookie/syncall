@@ -20,7 +20,7 @@ class GKeepNote(ConcreteItem):
                 ItemKey("title", KeyType.String),
                 ItemKey("last_modified_date", KeyType.Date),
                 ItemKey("is_deleted", KeyType.Boolean),
-            )
+            ),
         )
 
         self._inner: Note = Note()

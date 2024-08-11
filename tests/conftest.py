@@ -2,16 +2,17 @@ import logging
 from pathlib import Path
 
 import pytest
-from _pytest.logging import caplog as _caplog  # type: ignore
+from _pytest.logging import caplog as _caplog  # noqa: F401
 from bubop import PrefsManager
 from loguru import logger
 
-from .conftest_fs import *
-from .conftest_gcal import *
-from .conftest_gkeep import *
-from .conftest_gtasks import *
-from .conftest_notion import *
-from .conftest_tw import *
+from .conftest_fs import *  # noqa: F403
+from .conftest_gcal import *  # noqa: F403
+from .conftest_gkeep import *  # noqa: F403
+from .conftest_gtasks import *  # noqa: F403
+from .conftest_helpers import *  # noqa: F403
+from .conftest_notion import *  # noqa: F403
+from .conftest_tw import *  # noqa: F403
 
 
 @pytest.fixture()
@@ -19,10 +20,9 @@ def test_data() -> Path:
     return Path(__file__).absolute().parent / "test_data"
 
 
-@pytest.fixture
-def caplog(_caplog):
-    """
-    Fixture that forwards loguru's output to std logging's output so that you can use caplog
+@pytest.fixture()
+def caplog(_caplog):  # noqa: F811
+    """Fixture that forwards loguru's output to std logging's output so that you can use caplog
     as usual
     """
 
@@ -31,10 +31,12 @@ def caplog(_caplog):
             logging.getLogger(record.name).handle(record)
 
     logger.add(PropagateHandler(), format="{message}")
-    yield _caplog
+    return _caplog
 
 
 class MockPrefsManager(PrefsManager):
+    """Mock the PrefsManager class."""
+
     def __init__(self):
         self._conts = {
             "kalimera": {"a": 1, "b": 2, "c": [1, 2, 3]},

@@ -50,6 +50,15 @@ repos:
         minimum_pre_commit_version: 2.9.2
         require_serial: true
         types_or: [python, pyi]
+
+      - id: pyupgrade
+        name: Pyupgrade
+        description: Automatically upgrade syntax for newer versions.
+        entry: pyupgrade
+        args: ["--py38-plus"]
+        types_or: [python]
+        language: system
+
       # - id: mypy
       #   name: Mypy check
       #   entry: mypy
@@ -70,19 +79,12 @@ repos:
       #   types: [python]
       #   exclude: ^tests/
 
-      - id: isort
-        name: Isort check
-        entry: isort
+      - id: ruff
+        name: Ruff Linter
+        entry: ruff
+        args: ["check", "--fix"]
         language: system
-        pass_filenames: true
-        types: [python]
-
-      # - id: ruff
-      #   name: Ruff Linter
-      #   entry: ruff
-      #   args: ["check", "--fix"]
-      #   language: system
-      #   types_or: [python, pyi]
+        types_or: [python, pyi]
 
       - id: poetry-check
         name: Poetry check

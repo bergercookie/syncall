@@ -1,19 +1,24 @@
+# ruff: noqa: PLR2004
+
+from __future__ import annotations
+
 import traceback
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Sequence
 from uuid import UUID
 
-import caldav
 from bubop import logger
-from icalendar.prop import vCategory
-from item_synchronizer.resolution_strategy import Item
+
+if TYPE_CHECKING:
+    import caldav
+    from icalendar.prop import vCategory
+    from item_synchronizer.resolution_strategy import Item
 
 
 def icalendar_component(obj: caldav.CalendarObjectResource):
-    """The .icalendar_component isn't picked up by linters
+    """Get the .icalendar_component isn't picked up by linters
 
     Ignore the warning when accessing it.
     """
-
     return obj.icalendar_component  # type: ignore
 
 
@@ -25,11 +30,8 @@ def _parse_vcategory(vcategory: vCategory) -> Sequence[str]:
     return [str(category) for category in vcategory.cats]
 
 
-def map_ics_to_item(vtodo) -> Dict:
-    """
-    Utility function that extracts the relevant info from an icalendar_component into a python
-    dict
-    """
+def map_ics_to_item(vtodo) -> dict:
+    """Extract the relevant info from an icalendar_component into a python dict."""
     todo_item = {}
     todo_item["id"] = str(vtodo.get("uid"))
 
@@ -55,13 +57,13 @@ def map_ics_to_item(vtodo) -> Dict:
         # return a List[vCategory], each vCategory with a single name
         # Option 1:
         #
-        # CATEGORIES:bugwarrior
-        # CATEGORIES:github_working_on_it
-        # CATEGORIES:programming
-        # CATEGORIES:remindme
+        # | CATEGORIES:bugwarrior
+        # | CATEGORIES:github_working_on_it
+        # | CATEGORIES:programming
+        # | CATEGORIES:remindme
         #
         # Option 2:
-        # CATEGORIES:bugwarrior,github_bug,github_help_wanted,github_tw_gcal_sync,pro
+        # | CATEGORIES:bugwarrior,github_bug,github_help_wanted,github_tw_gcal_sync,pro
         all_categories = []
         if isinstance(vcategories, Sequence):
             for vcategory in vcategories:
@@ -75,13 +77,12 @@ def map_ics_to_item(vtodo) -> Dict:
 
 def parse_caldav_item_desc(
     caldav_item: Item,
-) -> Tuple[List[str], Optional[UUID]]:
-    """
-    Parse and return the necessary TW fields off a caldav Item.
+) -> tuple[list[str], UUID | None]:
+    """Parse and return the necessary TW fields off a caldav Item.
 
     Pretty much directly copied from tw_gcal_utils, however we handle status differently, so only return annotations/uuid
     """
-    annotations: List[str] = []
+    annotations: list[str] = []
     uuid = None
 
     if "description" not in caldav_item.keys():
@@ -92,19 +93,19 @@ def parse_caldav_item_desc(
     lines = [line.strip() for line in caldav_desc.split("\n") if line][1:]
 
     # annotations
-    i = 0
-    for i, line in enumerate(lines):
+    _i = 0
+    for _i, line in enumerate(lines):
         parts = line.split(":", maxsplit=1)
         if len(parts) == 2 and parts[0].lower().startswith("* annotation"):
             annotations.append(parts[1].strip())
         else:
             break
 
-    if i == len(lines):
+    if _i == len(lines):
         return annotations, uuid
 
     # Iterate through rest of lines, find only the uuid
-    for line in lines[i:]:
+    for line in lines[_i:]:
         parts = line.split(":", maxsplit=1)
         if len(parts) == 2 and parts[0].lower().startswith("* uuid"):
             try:
@@ -112,7 +113,7 @@ def parse_caldav_item_desc(
             except ValueError as err:
                 logger.error(
                     f'Invalid UUID "{err}" provided during caldav -> TW conversion,'
-                    f" Using None...\n\n{traceback.format_exc()}"
+                    f" Using None...\n\n{traceback.format_exc()}",
                 )
 
     return annotations, uuid

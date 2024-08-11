@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, cast
+from typing import Any, Literal, Mapping, Sequence, cast
 from uuid import UUID
 
 from bubop import logger, parse_datetime
@@ -29,11 +31,11 @@ tw_config_default_overrides = {
 }
 
 
-def parse_datetime_(dt: Union[str, datetime.datetime]) -> datetime.datetime:
+def parse_datetime_(dt: str | datetime.datetime) -> datetime.datetime:
     if isinstance(dt, datetime.datetime):
         return dt
-    else:
-        return parse_datetime(dt)
+
+    return parse_datetime(dt)
 
 
 class TaskWarriorSide(SyncSide):
@@ -45,15 +47,14 @@ class TaskWarriorSide(SyncSide):
 
     def __init__(
         self,
-        tags: Sequence[str] = tuple(),
-        project: Optional[str] = None,
+        tags: Sequence[str] = (),
+        project: str | None = None,
         tw_filter: str = "",
-        config_file_override: Optional[Path] = None,
+        config_file_override: Path | None = None,
         config_overrides: Mapping[str, Any] = {},
         **kargs,
     ):
-        """
-        Constructor.
+        """Init.
 
         :param tags: Only include tasks that have are tagged using *all* the specified tags.
                      Also assign these tags to newly added items
@@ -66,7 +67,7 @@ class TaskWarriorSide(SyncSide):
                                  tw_config_default_overrides
         """
         super().__init__(name="Tw", fullname="Taskwarrior", **kargs)
-        self._tags: Set[str] = set(tags)
+        self._tags: set[str] = set(tags)
         self._project: str = project or ""
         self._tw_filter: str = tw_filter
 
@@ -92,16 +93,18 @@ class TaskWarriorSide(SyncSide):
             raise RuntimeError(
                 "Could not determine a valid taskwarrior config file and no override config"
                 " file was specified - candidates:"
-                f" {', '.join([str(p) for p in candidate_config_files])}"
+                f" {', '.join([str(p) for p in candidate_config_files])}",
             )
         logger.debug(f"Initializing Taskwarrior instance using config file: {config_file}")
 
         self._tw = TaskWarrior(
-            marshal=True, config_filename=str(config_file), config_overrides=config_overrides_
+            marshal=True,
+            config_filename=str(config_file),
+            config_overrides=config_overrides_,
         )
 
         # All TW tasks
-        self._items_cache: Dict[str, TaskwarriorRawItem] = {}
+        self._items_cache: dict[str, TaskwarriorRawItem] = {}
 
         # Whether to refresh the cached list of items
         self._reload_items = True
@@ -127,7 +130,7 @@ class TaskWarriorSide(SyncSide):
         tasks = self._tw.load_tasks_and_filter(command="all", filter_=filter_)
 
         items = [*tasks["completed"], *tasks["pending"]]
-        self._items_cache: Dict[str, TaskwarriorRawItem] = {  # type: ignore
+        self._items_cache: dict[str, TaskwarriorRawItem] = {  # type: ignore
             str(item["uuid"]): item for item in items
         }
         self._reload_items = False
@@ -135,12 +138,11 @@ class TaskWarriorSide(SyncSide):
     def get_all_items(
         self,
         skip_completed=False,
-        order_by: Optional[OrderByType] = None,
+        order_by: OrderByType | None = None,
         use_ascending_order: bool = True,
         **kargs,
-    ) -> List[TaskwarriorRawItem]:
-        """
-        Fetch the tasks off the local taskw db, taking into account the filters set in the
+    ) -> list[TaskwarriorRawItem]:
+        """Fetch the tasks off the local taskw db, taking into account the filters set in the
         during the instance construction.
 
         :param skip_completed: Skip completed tasks
@@ -162,7 +164,7 @@ class TaskWarriorSide(SyncSide):
 
         return tasks
 
-    def get_item(self, item_id: str, use_cached: bool = True) -> Optional[TaskwarriorRawItem]:
+    def get_item(self, item_id: str, use_cached: bool = True) -> TaskwarriorRawItem | None:
         item = self._items_cache.get(item_id)
         if not use_cached or item is None:
             item = self._tw.get_task(id=item_id)[-1]
@@ -226,10 +228,10 @@ class TaskWarriorSide(SyncSide):
         logger.debug(f'Task "{new_id}" created - "{description[0:len_print]}"...')
 
         # explicitly mark as deleted - taskw doesn't like task_add(`status:deleted`) so we have
-        # todo it in two steps
+        # to do it in two steps
         if curr_status == "deleted":
             logger.debug(
-                f'Task "{new_id}" marking as deleted - "{description[0:len_print]}"...'
+                f'Task "{new_id}" marking as deleted - "{description[0:len_print]}"...',
             )
             self._tw.task_delete(id=new_id)
 
@@ -252,7 +254,10 @@ class TaskWarriorSide(SyncSide):
 
     @classmethod
     def items_are_identical(
-        cls, item1: dict, item2: dict, ignore_keys: Sequence[str] = []
+        cls,
+        item1: dict,
+        item2: dict,
+        ignore_keys: Sequence[str] = [],
     ) -> bool:
         keys = [
             k

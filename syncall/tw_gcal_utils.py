@@ -66,7 +66,7 @@ def convert_tw_to_gcal(
     # description
     gcal_item["description"] = "IMPORTED FROM TASKWARRIOR\n"
     gcal_item["description"] += "\n".join(
-        [get_tw_annotations_as_str(tw_item), get_tw_status_and_uuid_as_str(tw_item)]
+        [get_tw_annotations_as_str(tw_item), get_tw_status_and_uuid_as_str(tw_item)],
     )
 
     date_keys = ["scheduled", "due"] if prefer_scheduled_date else ["due", "scheduled"]
@@ -82,19 +82,20 @@ def convert_tw_to_gcal(
         if date_key in tw_item.keys():
             logger.trace(
                 f'Using "{date_key}" date for {tw_item["uuid"]} for setting the end date of'
-                " the event"
+                " the event",
             )
             dt_gcal = GCalSide.format_datetime(tw_item[date_key])
             gcal_item["start"] = {
                 "dateTime": GCalSide.format_datetime(
-                    tw_item[date_key] - tw_item[tw_duration_key]
-                )
+                    tw_item[date_key] - tw_item[tw_duration_key],
+                ),
             }
             gcal_item["end"] = {"dateTime": dt_gcal}
             break
     else:
         logger.trace(
-            f'Using "entry" date for {tw_item["uuid"]} for setting the start date of the event'
+            f'Using "entry" date for {tw_item["uuid"]} for setting the start date of the'
+            " event",
         )
         entry_dt = tw_item["entry"]
         entry_dt_gcal_str = GCalSide.format_datetime(entry_dt)
@@ -102,7 +103,7 @@ def convert_tw_to_gcal(
         gcal_item["start"] = {"dateTime": entry_dt_gcal_str}
 
         gcal_item["end"] = {
-            "dateTime": GCalSide.format_datetime(entry_dt + tw_item[tw_duration_key])
+            "dateTime": GCalSide.format_datetime(entry_dt + tw_item[tw_duration_key]),
         }
 
     return gcal_item
@@ -117,7 +118,6 @@ def convert_gcal_to_tw(
     If set_scheduled_date, then it will set the "scheduled" date of the produced TW task
     instead of the "due" date
     """
-
     # Parse the description
     annotations = []
     status = "pending"
@@ -139,7 +139,7 @@ def convert_gcal_to_tw(
     # Status
     if status not in ["pending", "completed", "deleted", "waiting", "recurring"]:
         logger.error(
-            f"Invalid status {status} in GCal->TW conversion of item. Skipping status:"
+            f"Invalid status {status} in GCal->TW conversion of item. Skipping status:",
         )
     else:
         tw_item["status"] = status
@@ -153,13 +153,7 @@ def convert_gcal_to_tw(
     if gcal_summary.startswith(_prefix_title_success_str):
         gcal_summary = gcal_summary[len(_prefix_title_success_str) :]
     tw_item["description"] = gcal_summary
-
-    # don't meddle with the 'entry' field
-    if set_scheduled_date:
-        date_key = "scheduled"
-    else:
-        date_key = "due"
-
+    date_key = "scheduled" if set_scheduled_date else "due"
     end_time = GCalSide.get_event_time(gcal_item, t="end")
 
     tw_item[tw_duration_key] = end_time - GCalSide.get_event_time(gcal_item, t="start")

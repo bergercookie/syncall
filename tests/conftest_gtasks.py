@@ -1,7 +1,6 @@
 from typing import cast
 
 import pytest
-
 from syncall.types import GTasksItem
 
 # API Reference: https://googleapis.github.io/google-api-python-client/docs/dyn/tasks_v1.html

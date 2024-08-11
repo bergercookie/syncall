@@ -1,6 +1,5 @@
 import pytest
-from gkeepapi.node import List, Note
-
+from gkeepapi.node import List
 from syncall.google.gkeep_note import GKeepNote as MyGKeepNote
 
 
@@ -126,7 +125,7 @@ def gkeep_list1():
                 {
                     "id": "f4c1a837-0f6f-4b3f-a34c-b163817f9259",
                     "topicCategory": {"category": "FOOD"},
-                }
+                },
             ],
         },
         "color": "RED",
@@ -168,7 +167,7 @@ def gkeep_note_empty():
             {
                 "labelId": "tag.qr30ughe2zk6.1630840458798",
                 "deleted": "1970-01-01T00:00:00.000000Z",
-            }
+            },
         ],
         "collaborators": [],
     }
@@ -187,8 +186,7 @@ def gkeep_list_instance0(gkeep_list0: List) -> List:
 
 @pytest.fixture()
 def gkeep_note_empty_instance(gkeep_note_empty: dict) -> MyGKeepNote:
-    note = MyGKeepNote.from_raw_item(gkeep_note_empty)
-    return note
+    return MyGKeepNote.from_raw_item(gkeep_note_empty)
 
 
 @pytest.fixture()

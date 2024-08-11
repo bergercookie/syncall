@@ -1,19 +1,28 @@
 from __future__ import annotations
 
-from functools import partial
-from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING
 
-from bidict import bidict  # type: ignore
+from typing_extensions import Self
+
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Iterable, Sequence
+
+    from item_synchronizer.types import ID, ConverterFn, Item
+
+    from syncall.sync_side import SyncSide
+
+from functools import partial
+from typing import Any
+
+from bidict import bidict  # pyright: ignore[reportPrivateImportUsage]
 from bubop import PrefsManager, logger, pickle_dump, pickle_load
 from item_synchronizer import Synchronizer
 from item_synchronizer.helpers import SideChanges
 from item_synchronizer.resolution_strategy import AlwaysSecondRS, ResolutionStrategy
-from item_synchronizer.types import ID, ConverterFn, Item
 
 from syncall.app_utils import app_name
 from syncall.side_helper import SideHelper
-from syncall.sync_side import SyncSide
 
 
 class Aggregator:
@@ -30,9 +39,9 @@ class Aggregator:
         side_B: SyncSide,
         converter_B_to_A: ConverterFn,
         converter_A_to_B: ConverterFn,
-        resolution_strategy: ResolutionStrategy = AlwaysSecondRS(),
-        config_fname: Optional[str] = None,
-        ignore_keys: Tuple[Sequence[str], Sequence[str]] = tuple(),
+        resolution_strategy: ResolutionStrategy | None = None,
+        config_fname: str | None = None,
+        ignore_keys: tuple[Sequence[str], Sequence[str]] = (),
         catch_exceptions: bool = True,
     ):
         # Preferences manager
@@ -49,10 +58,13 @@ class Aggregator:
         else:
             logger.debug(f"Using a custom configuration file ... -> {config_fname}")
 
+        if resolution_strategy is None:
+            resolution_strategy = AlwaysSecondRS()
+
         self.prefs_manager = PrefsManager(app_name=app_name(), config_fname=config_fname)
 
         # Own config
-        self.config: Dict[str, Any] = {}
+        self.config: dict[str, Any] = {}
 
         self._side_A: SyncSide = side_A
         self._side_B: SyncSide = side_B
@@ -119,15 +131,18 @@ class Aggregator:
 
         self.cleaned_up = False
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
+        """Enter context manager."""
         self.start()
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
+        """Exit context manager."""
         self.finish()
 
-    def detect_changes(self, helper: SideHelper, items: Dict[ID, Item]) -> SideChanges:
-        """
+    def detect_changes(self, helper: SideHelper, items: dict[ID, Item]) -> SideChanges:
+        """Detect changes between the two sides.
+
         Given a fresh list of items from the SyncSide, determine which of them are new,
         modified, or have been deleted since the last run.
         """
@@ -165,7 +180,7 @@ class Aggregator:
 
         return side_changes
 
-    def sync(self):
+    def sync(self) -> None:
         """Entrypoint method."""
         items_A = {
             str(item[self._helper_A.id_key]): item for item in self._side_A.get_all_items()
@@ -199,19 +214,18 @@ class Aggregator:
         # synchronize
         self._synchronizer.sync(changes_A=changes_A, changes_B=changes_B)
 
-    def start(self):
-        """Initialization actions."""
+    def start(self) -> None:
+        """Initialize the aggregator."""
         self._side_A.start()
         self._side_B.start()
 
-    def finish(self):
-        """Finalization actions."""
+    def finish(self) -> None:
+        """Finalize the aggregator."""
         self._side_A.finish()
         self._side_B.finish()
 
-    # InserterFn = Callable[[Item], ID]
     def inserter_to(self, item: Item, helper: SideHelper) -> ID:
-        """Inserter.
+        """Insert an item using the given side helper.
 
         Other side already has the item, and I'm also inserting it at this side.
         """
@@ -219,7 +233,7 @@ class Aggregator:
         serdes_dir, _ = self._get_serdes_dirs(helper)
         logger.info(
             f"[{helper.other}] Inserting item [{self._summary_of(item, helper):10}] at"
-            f" {helper}..."
+            f" {helper}...",
         )
 
         item_created = item_side.add_item(item)
@@ -232,19 +246,19 @@ class Aggregator:
         return item_created_id
 
     def updater_to(self, item_id: ID, item: Item, helper: SideHelper):
-        """Updater."""
+        """Update an item using the given side helper."""
         side, _ = self._get_side_instances(helper)
         serdes_dir, _ = self._get_serdes_dirs(helper)
         logger.info(
             f"[{helper.other}] Updating item [{self._summary_of(item, helper):10}] at"
-            f" {helper}..."
+            f" {helper}...",
         )
 
         side.update_item(item_id, **item)
         pickle_dump(item, serdes_dir / item_id)
 
     def deleter_to(self, item_id: ID, helper: SideHelper):
-        """Deleter."""
+        """Delete an item using the given side helper."""
         logger.info(f"[{helper}] Synchronising deleted item, id -> {item_id}...")
         side, _ = self._get_side_instances(helper)
         side.delete_single_item(item_id)
@@ -255,27 +269,28 @@ class Aggregator:
         """Item Getter."""
         logger.debug(f"Fetching {helper} item for id -> {item_id}")
         side, _ = self._get_side_instances(helper)
-        item = side.get_item(item_id)
-        return item
+        return side.get_item(item_id)
 
     def _item_has_update(self, prev_item: Item, new_item: Item, helper: SideHelper) -> bool:
         """Determine whether the item has been updated."""
         side, _ = self._get_side_instances(helper)
 
         return not side.items_are_identical(
-            prev_item, new_item, ignore_keys=[helper.id_key, *helper.ignore_keys]
+            prev_item,
+            new_item,
+            ignore_keys=[helper.id_key, *helper.ignore_keys],
         )
 
     def _get_ids_map(self, helper: SideHelper):
         return self._B_to_A_map if helper is self._helper_B else self._B_to_A_map.inverse
 
-    def _get_serdes_dirs(self, helper: SideHelper) -> Tuple[Path, Path]:
+    def _get_serdes_dirs(self, helper: SideHelper) -> tuple[Path, Path]:
         serdes_dir = self.config[f"{helper}_serdes"]
         other_serdes_dir = self.config[f"{helper.other}_serdes"]
 
         return serdes_dir, other_serdes_dir
 
-    def _get_side_instances(self, helper: SideHelper) -> Tuple[SyncSide, SyncSide]:
+    def _get_side_instances(self, helper: SideHelper) -> tuple[SyncSide, SyncSide]:
         side = self._side_B if helper is self._helper_B else self._side_A
         other_side = self._side_A if helper is self._helper_B else self._side_B
 
@@ -294,7 +309,7 @@ class Aggregator:
             except FileNotFoundError:
                 logger.warning(f"File doesn't exist, this may indicate an error -> {p}")
                 logger.opt(exception=True).debug(
-                    f"File doesn't exist, this may indicate an error -> {p}"
+                    f"File doesn't exist, this may indicate an error -> {p}",
                 )
 
     def _summary_of(self, item: Item, helper: SideHelper, short=True) -> str:

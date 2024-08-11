@@ -15,16 +15,14 @@ def convert_filesystem_file_to_gkeep_note(filesystem_file: FilesystemFile) -> GK
 def convert_gkeep_note_to_filesystem_file(
     gkeep_note: GKeepNote,
     filename_extension=FilesystemFile.default_ext,
-    filesystem_root: Path = Path("."),
+    filesystem_root: Path = Path(),
 ) -> FilesystemFile:
-    """
-    GKeep Note -> Filesystemm File
+    """GKeep Note -> Filesystemm File
 
     :param gkeep_note: The note to convert
     :param filename_extension: The extension to use for the created file.
     :return: The newly created FilesystemFile
     """
-
     # determine note title with the following order
     # 1. Original GKeep note title (unless empty)
     # 2. First line of GKeep note (unless empty file)

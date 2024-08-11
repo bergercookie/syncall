@@ -7,7 +7,8 @@ from syncall.types import TwItem
 
 def convert_tw_to_gkeep_todo(tw_item: TwItem) -> GKeepTodoItem:
     return GKeepTodoItem(
-        is_checked=(tw_item["status"] == "completed"), plaintext=tw_item["description"]
+        is_checked=(tw_item["status"] == "completed"),
+        plaintext=tw_item["description"],
     )
 
 

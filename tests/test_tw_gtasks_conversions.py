@@ -1,7 +1,6 @@
 import pytest
-
 from syncall.tw_gtasks_utils import convert_gtask_to_tw, convert_tw_to_gtask
-from syncall.types import GTasksItem, TwItem, TwRawItem
+from syncall.types import GTasksItem, TwItem
 
 
 # test conversions ----------------------------------------------------------------------------

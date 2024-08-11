@@ -1,28 +1,22 @@
 import datetime
-from typing import Any
-
-from bubop import is_same_datetime
-from dateutil.tz import gettz, tzutc
 
 import syncall.google.gcal_side as side
+from bubop import is_same_datetime
+from dateutil.tz import gettz, tzutc
+from syncall.types import GoogleDateT
 
 localzone = gettz("Europe/Athens")
 
 
 # Monkeypatch the function to always return Eruope/Athens for UT determinism
 def assume_local_tz_if_none_(dt: datetime.datetime):
-    if dt.tzinfo is None:
-        out = dt.replace(tzinfo=localzone)
-    else:
-        out = dt
-
-    return out
+    return dt if dt.tzinfo is not None else dt.replace(tzinfo=localzone)
 
 
 side.assume_local_tz_if_none = assume_local_tz_if_none_
 
 
-def assert_dt(dt_given: Any, dt_expected: datetime.datetime):
+def assert_dt(dt_given: GoogleDateT, dt_expected: datetime.datetime):
     parse_datetime = side.GCalSide.parse_datetime
     dt_dt_given = parse_datetime(dt_given)
 

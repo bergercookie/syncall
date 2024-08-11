@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import datetime
-import os
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Sequence, Union, cast
+from typing import TYPE_CHECKING, Literal, Sequence, cast
 
 import dateutil
 import pkg_resources
@@ -12,14 +13,17 @@ from googleapiclient.http import HttpError
 from syncall.google.google_side import GoogleSide
 from syncall.sync_side import SyncSide
 
+if TYPE_CHECKING:
+    from syncall.types import GoogleDateT
+
 DEFAULT_CLIENT_SECRET = pkg_resources.resource_filename(
-    "syncall", os.path.join("res", "gcal_client_secret.json")
+    "syncall",
+    "res/gcal_client_secret.json",
 )
 
 
 class GCalSide(GoogleSide):
     """GCalSide interacts with the Google Calendar API.
-
 
     Adds, removes, and updates events on Google Calendar. Also handles the
     OAuth2 user authentication workflow.
@@ -28,20 +32,20 @@ class GCalSide(GoogleSide):
     ID_KEY = "id"
     SUMMARY_KEY = "summary"
     LAST_MODIFICATION_KEY = "updated"
-    _identical_comparison_keys = [
+    _identical_comparison_keys: tuple[str] = (
         "description",
         "end",
         "start",
         "summary",
-    ]
+    )
 
-    _date_keys = ["end", "start", "updated"]
+    _date_keys: tuple[str] = ("end", "start", "updated")
 
     def __init__(
         self,
         *,
         calendar_summary="TaskWarrior Reminders",
-        client_secret,
+        client_secret: str | None,
         **kargs,
     ):
         if client_secret is None:
@@ -52,13 +56,13 @@ class GCalSide(GoogleSide):
             fullname="Google Calendar",
             scopes=["https://www.googleapis.com/auth/calendar"],
             credentials_cache=Path.home() / ".gcal_credentials.pickle",
-            client_secret=Path(client_secret),
+            client_secret=client_secret,
             **kargs,
         )
 
         self._calendar_summary = calendar_summary
         self._calendar_id: str
-        self._items_cache: Dict[str, dict] = {}
+        self._items_cache: dict[str, dict] = {}
 
     def start(self):
         logger.debug("Connecting to Google Calendar...")
@@ -80,13 +84,13 @@ class GCalSide(GoogleSide):
 
         logger.debug("Connected to Google Calendar.")
 
-    def _fetch_cal_id(self) -> Optional[str]:
+    def _fetch_cal_id(self) -> str | None:
         """Return the id of the Calendar based on the given Summary.
 
         :returns: id or None if that was not found
         """
         res = self._service.calendarList().list().execute()  # type: ignore
-        calendars_list: List[dict] = res["items"]
+        calendars_list: list[dict] = res["items"]
 
         matching_calendars = [
             c["id"] for c in calendars_list if c["summary"] == self._calendar_summary
@@ -94,18 +98,21 @@ class GCalSide(GoogleSide):
 
         if len(matching_calendars) == 0:
             return None
-        elif len(matching_calendars) == 1:
+
+        if len(matching_calendars) == 1:
             return cast(str, matching_calendars[0])
-        else:
-            raise RuntimeError(
-                f'Multiple matching calendars for name -> "{self._calendar_summary}"'
-            )
+
+        raise RuntimeError(
+            f'Multiple matching calendars for name -> "{self._calendar_summary}"',
+        )
 
     def get_all_items(self, **kargs):
         """Get all the events for the calendar that we use.
 
         :param kargs: Extra options for the call
         """
+        del kargs
+
         # Get the ID of the calendar of interest
         events = []
         request = self._service.events().list(calendarId=self._calendar_id)
@@ -128,14 +135,14 @@ class GCalSide(GoogleSide):
 
         return events
 
-    def get_item(self, item_id: str, use_cached: bool = True) -> Optional[dict]:
+    def get_item(self, item_id: str, use_cached: bool = True) -> dict | None:
         item = self._items_cache.get(item_id)
         if not use_cached or item is None:
             item = self._get_item_refresh(item_id=item_id)
 
         return item
 
-    def _get_item_refresh(self, item_id: str) -> Optional[dict]:
+    def _get_item_refresh(self, item_id: str) -> dict | None:
         ret = None
         try:
             ret = (
@@ -150,8 +157,8 @@ class GCalSide(GoogleSide):
                 self._items_cache[item_id] = ret
         except HttpError:
             pass
-        finally:
-            return ret
+
+        return ret
 
     def update_item(self, item_id, **changes):
         # Check if item is there
@@ -160,7 +167,9 @@ class GCalSide(GoogleSide):
         )
         event.update(changes)
         self._service.events().update(
-            calendarId=self._calendar_id, eventId=event["id"], body=event
+            calendarId=self._calendar_id,
+            eventId=event["id"],
+            body=event,
         ).execute()
 
     def add_item(self, item) -> dict:
@@ -187,29 +196,27 @@ class GCalSide(GoogleSide):
         return cls.LAST_MODIFICATION_KEY
 
     @staticmethod
-    def get_date_key(d: dict) -> Union[Literal["date"], Literal["dateTime"]]:
+    def get_date_key(d: dict) -> Literal["date", "dateTime"]:
         """Get key corresponding to the date field."""
-        if "dateTime" not in d.keys() and "date" not in d.keys():
+        if "dateTime" not in d and "date" not in d:
             raise RuntimeError("None of the required keys is in the dictionary")
 
-        return "date" if d.get("date", None) else "dateTime"
+        return "date" if d.get("date") else "dateTime"
 
     @staticmethod
     def get_event_time(item: dict, t: str) -> datetime.datetime:
-        """
-        Return the start/end datetime in datetime format.
+        """Return the start/end datetime in datetime format.
 
         :param t: Time to query, 'start' or 'end'
         """
         assert t in ["start", "end"]
-        assert t in item.keys(), "'end' key not found in item"
+        assert t in item, "'end' key not found in item"
 
         # sometimes the google calendar api returns this as a datetime
         if isinstance(item[t], datetime.datetime):
             return item[t]
 
-        dt = GCalSide.parse_datetime(item[t][GCalSide.get_date_key(item[t])])
-        return dt
+        return GCalSide.parse_datetime(item[t][GCalSide.get_date_key(item[t])])
 
     @staticmethod
     def format_datetime(dt: datetime.datetime) -> str:
@@ -217,31 +224,31 @@ class GCalSide(GoogleSide):
         return format_datetime_tz(dt)
 
     @classmethod
-    def parse_datetime(cls, dt: Union[str, dict, datetime.datetime]) -> datetime.datetime:
-        """
-        Parse datetime given in the GCal format(s):
+    def parse_datetime(cls, dt: GoogleDateT) -> datetime.datetime:
+        """Parse datetime given in the GCal format(s):
         - string with ('T', 'Z' separators).
         - (dateTime, dateZone) dictionary
         - datetime object
 
         The output datetime is always in local timezone.
         """
-
         if isinstance(dt, str):
             dt_dt = dateutil.parser.parse(dt)  # type: ignore
             return cls.parse_datetime(dt_dt)
-        elif isinstance(dt, dict):
+
+        if isinstance(dt, dict):
             date_time = dt.get("dateTime")
             if date_time is None:
                 raise RuntimeError(f"Invalid structure dict: {dt}")
 
             return cls.parse_datetime(date_time)
-        elif isinstance(dt, datetime.datetime):
+
+        if isinstance(dt, datetime.datetime):
             return assume_local_tz_if_none(dt)
-        else:
-            raise RuntimeError(
-                f"Unexpected type of a given date item, type: {type(dt)}, contents: {dt}"
-            )
+
+        raise TypeError(
+            f"Unexpected type of a given date item, type: {type(dt)}, contents: {dt}",
+        )
 
     @classmethod
     def items_are_identical(cls, item1, item2, ignore_keys: Sequence[str] = []) -> bool:

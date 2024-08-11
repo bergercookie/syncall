@@ -1,21 +1,29 @@
-import datetime
-from typing import Optional
+from __future__ import annotations
 
-from bubop import is_same_datetime, logger, parse_datetime
-from item_synchronizer.types import ID
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import datetime
+
+    from item_synchronizer.types import ID
+
+    from syncall.types import NotionRawItem, NotionTodoBlockItem, NotionTodoSection
+
+from bubop import logger, parse_datetime
 
 from syncall.concrete_item import ConcreteItem, ItemKey, KeyType
-from syncall.types import NotionRawItem, NotionTodoBlockItem, NotionTodoSection
 
 
 class NotionTodoBlock(ConcreteItem):
+    """Represent a todo block in Notion."""
+
     def __init__(
         self,
         is_archived: bool,
         is_checked: bool,
         last_modified_date: datetime.datetime,
         plaintext: str,
-        id: Optional[ID] = None,
+        id: ID | None = None,  # noqa: A002
     ):
         super().__init__(
             keys=(
@@ -23,7 +31,7 @@ class NotionTodoBlock(ConcreteItem):
                 ItemKey("is_checked", KeyType.Boolean),
                 ItemKey("last_modified_date", KeyType.Date),
                 ItemKey("plaintext", KeyType.String),
-            )
+            ),
         )
 
         self._is_archived = is_archived
@@ -56,11 +64,11 @@ class NotionTodoBlock(ConcreteItem):
     def last_modified_date(self, val: datetime.datetime):
         self._last_modified_date = val
 
-    def _id(self) -> Optional[ID]:
+    def _id(self) -> ID | None:
         return self._id_val
 
     @classmethod
-    def from_raw_item(cls, block_item: NotionTodoBlockItem) -> "NotionTodoBlock":
+    def from_raw_item(cls, block_item: NotionTodoBlockItem) -> NotionTodoBlock:
         """Create a NotionTodoBlock given the raw item at hand."""
         assert "archived" in block_item
         assert "id" in block_item

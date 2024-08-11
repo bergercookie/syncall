@@ -10,6 +10,8 @@ from loguru import logger
 
 
 class KeyType(Enum):
+    """Possible types of keys in an item."""
+
     String = auto()
     Date = auto()
     Boolean = auto()
@@ -18,6 +20,8 @@ class KeyType(Enum):
 
 @dataclass
 class ItemKey:
+    """Key of an item."""
+
     name: str
     type: KeyType
 
@@ -45,7 +49,7 @@ class ConcreteItem(_ConcreteItemMeta):
     def _id(self) -> Optional[str]:
         pass
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: str) -> Any:  # noqa: ANN401
         return getattr(self, key)
 
     def __iter__(self) -> Iterator[str]:
@@ -81,19 +85,20 @@ class ConcreteItem(_ConcreteItemMeta):
         for key in keys_to_check:
             if key.type is KeyType.Date:
                 if not is_same_datetime(
-                    self[key.name], other[key.name], tol=datetime.timedelta(minutes=10)
+                    self[key.name],
+                    other[key.name],
+                    tol=datetime.timedelta(minutes=10),
                 ):
                     logger.opt(lazy=True).trace(
                         f"\n\nItems differ\n\nItem1\n\n{self}\n\nItem2\n\n{other}\n\nKey"
-                        f" [{key.name}] is different - [{repr(self[key.name])}] |"
-                        f" [{repr(other[key.name])}]"
+                        f" [{key.name}] is different - [{self[key.name]!r}] |"
+                        f" [{other[key.name]!r}]",
                     )
                     return False
-            else:
-                if self[key.name] != other[key.name]:
-                    logger.opt(lazy=True).trace(
-                        f"Items differ [{key.name}]\n\n{self}\n\n{other}"
-                    )
-                    return False
+            elif self[key.name] != other[key.name]:
+                logger.opt(lazy=True).trace(
+                    f"Items differ [{key.name}]\n\n{self}\n\n{other}",
+                )
+                return False
 
         return True

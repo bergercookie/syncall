@@ -50,9 +50,9 @@ class FilesystemFile(ConcreteItem):
                 ItemKey("last_modified_date", KeyType.Date),
                 ItemKey("contents", KeyType.String),
                 ItemKey("title", KeyType.String),
-            )
+            ),
         )
-        if not filetype is FileType.FILE:
+        if filetype is not FileType.FILE:
             raise NotImplementedError("Only supporting synchronization for raw files.")
 
         path_ = Path(path)
@@ -83,7 +83,7 @@ class FilesystemFile(ConcreteItem):
             self._id_str = _generate_id()
             logger.trace(
                 f"File [{self._title}] doesn't have an ID yet, assigning new ID ->"
-                f" {self._id_str}"
+                f" {self._id_str}",
             )
             self._set_id_on_flush = True
             if self._flush_on_instantiation:
@@ -114,7 +114,6 @@ class FilesystemFile(ConcreteItem):
 
     def flush(self) -> None:
         """Teardown method - call this to make changes to the file persistent."""
-
         # delete if it's for deletion
         if self._set_for_deletion:
             self._path.unlink()
@@ -130,7 +129,7 @@ class FilesystemFile(ConcreteItem):
         if self._set_title_on_flush:
             self._set_title_on_flush = False
             self._path = self._path.rename(
-                self._path.with_name(self.title).with_suffix(self._ext)
+                self._path.with_name(self.title).with_suffix(self._ext),
             )
             logger.trace(f"Renaming file on disk, new name -> {self._path.name}")
 
@@ -148,14 +147,13 @@ class FilesystemFile(ConcreteItem):
 
     @classmethod
     def get_id_of_path(cls, path: Path) -> ID:
-        """
-        .. raises AttributeNotSetError in case the path doesn't have the expected attribute
-           set.
+        """.. raises AttributeNotSetError in case the path doesn't have the expected attribute
+        set.
         """
         try:
             with path.open() as fd:
                 return _from_b(xattr.getxattr(fd, _to_b(cls._attr)))
-        except IOError as err:
+        except OSError as err:
             raise AttributeNotSetError(attr_name=cls._attr, path=path) from err
 
     def _id(self) -> Optional[ID]:
@@ -181,11 +179,14 @@ class FilesystemFile(ConcreteItem):
 
     @property
     def last_modified_date(self) -> datetime.datetime:
-        # TODO Amend this.
+        tzinfo = datetime.datetime.now().astimezone().tzinfo
         try:
-            return datetime.datetime.fromtimestamp(self._path.stat().st_mtime)
+            return datetime.datetime.fromtimestamp(
+                self._path.stat().st_mtime,
+                tz=tzinfo,
+            )
         except FileNotFoundError:
-            return datetime.datetime.utcfromtimestamp(0)
+            return datetime.datetime.fromtimestamp(0, tz=tzinfo)
 
     def delete(self) -> None:
         """Mark this file for deletion."""

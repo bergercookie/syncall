@@ -1,4 +1,4 @@
-from typing import List
+from __future__ import annotations
 
 import click
 from bubop import (
@@ -44,10 +44,10 @@ from syncall.tw_gtasks_utils import convert_gtask_to_tw, convert_tw_to_gtask
 @opts_miscellaneous(side_A_name="TW", side_B_name="Google Tasks")
 def main(
     gtasks_list: str,
-    google_secret: str,
+    google_secret: str | None,
     oauth_port: int,
     tw_filter: str,
-    tw_tags: List[str],
+    tw_tags: list[str],
     tw_project: str,
     tw_only_modified_last_X_days: str,
     tw_sync_all_tasks: bool,
@@ -90,16 +90,19 @@ def main(
             tw_project,
             tw_sync_all_tasks,
             gtasks_list,
-        ]
+        ],
     )
     check_optional_mutually_exclusive(
-        combination_name, combination_of_tw_filters_and_gtasks_list
+        combination_name,
+        combination_of_tw_filters_and_gtasks_list,
     )
 
     # existing combination name is provided ---------------------------------------------------
     if combination_name is not None:
         app_config = fetch_app_configuration(
-            side_A_name="TW", side_B_name="Google Tasks", combination=combination_name
+            side_A_name="TW",
+            side_B_name="Google Tasks",
+            combination=combination_name,
         )
         tw_filter_li = app_config["tw_filter_li"]
         tw_tags = app_config["tw_tags"]
@@ -134,7 +137,7 @@ def main(
         error_and_exit(
             "You have to provide the name of a Google Tasks list to synchronize events"
             " to/from. You can do so either via CLI arguments or by specifying an existing"
-            " saved combination"
+            " saved combination",
         )
 
     # announce configuration ------------------------------------------------------------------
@@ -151,7 +154,7 @@ def main(
             },
             prefix="\n\n",
             suffix="\n",
-        )
+        ),
     )
     if confirm:
         confirm_before_proceeding()
@@ -161,11 +164,15 @@ def main(
     # verifying beforehand that if this flag is specified the user cannot specify any of the
     # other `tw_filter_li`, `tw_tags`, `tw_project` options.
     tw_side = TaskWarriorSide(
-        tw_filter=" ".join(tw_filter_li), tags=tw_tags, project=tw_project
+        tw_filter=" ".join(tw_filter_li),
+        tags=tw_tags,
+        project=tw_project,
     )
 
     gtasks_side = GTasksSide(
-        task_list_title=gtasks_list, oauth_port=oauth_port, client_secret=google_secret
+        task_list_title=gtasks_list,
+        oauth_port=oauth_port,
+        client_secret=google_secret,
     )
 
     # teardown function and exception handling ------------------------------------------------
@@ -201,7 +208,9 @@ def main(
         converter_B_to_A=convert_B_to_A,
         converter_A_to_B=convert_A_to_B,
         resolution_strategy=get_resolution_strategy(
-            resolution_strategy, side_A_type=type(gtasks_side), side_B_type=type(tw_side)
+            resolution_strategy,
+            side_A_type=type(gtasks_side),
+            side_B_type=type(tw_side),
         ),
         config_fname=combination_name,
         ignore_keys=(

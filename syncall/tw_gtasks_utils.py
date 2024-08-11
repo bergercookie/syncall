@@ -29,7 +29,7 @@ def convert_tw_to_gtask(
     # update time
     if "modified" in tw_item.keys():
         gtasks_item["updated"] = GTasksSide.format_datetime(
-            GTasksSide.parse_datetime(tw_item["modified"])
+            GTasksSide.parse_datetime(tw_item["modified"]),
         )
 
     return gtasks_item
@@ -44,7 +44,6 @@ def convert_gtask_to_tw(
     If set_scheduled_date, then it will set the "scheduled" date of the produced TW task
     instead of the "due" date
     """
-
     # Parse the description
     annotations = []
     uuid = None
@@ -65,7 +64,7 @@ def convert_gtask_to_tw(
     if status_tw is None:
         logger.error(
             f"Unknown Google Task status {status_gtask} for google task item {gtasks_item}."
-            " Setting it to pending"
+            " Setting it to pending",
         )
         status_tw = "pending"
 
@@ -79,11 +78,7 @@ def convert_gtask_to_tw(
     # Description
     tw_item["description"] = gtasks_item["title"]
 
-    # don't meddle with the 'entry' field
-    if set_scheduled_date:
-        date_key = "scheduled"
-    else:
-        date_key = "due"
+    date_key = "scheduled" if set_scheduled_date else "due"
 
     # due/scheduled date
     due_date = GTasksSide.get_task_due_time(gtasks_item)

@@ -3,7 +3,6 @@ from typing import Mapping
 
 import pytest
 from dateutil.tz import tzutc
-
 from syncall.tw_gcal_utils import convert_gcal_to_tw, convert_tw_to_gcal
 from syncall.types import GCalItem, TwItem
 

@@ -1,18 +1,13 @@
-"""
-Test the basic conversions between Google Calendar and TaskWarrior items.
-"""
+"""Test the basic conversions between Google Calendar and TaskWarrior items."""
 
-import os
 import unittest
+from pathlib import Path
 
 
 class GenericTestCase(unittest.TestCase):
-    """
+    """Generic unittest class for the project."""
 
-    :ivar DATA_FILES_PATH: Path to the directory holding data files for testing.
-    """
-
-    DATA_FILES_PATH = os.path.join(os.path.dirname(__file__), "test_data")
+    DATA_FILES_PATH = Path(__file__).parent / "test_data"
 
     @classmethod
     def setUpClass(cls):

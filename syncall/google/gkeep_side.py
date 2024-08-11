@@ -1,17 +1,17 @@
 from typing import Optional
 
 from bubop import logger
-from bubop.exceptions import AuthenticationError
 from gkeepapi import Keep
 from gkeepapi.exception import LoginException
-from gkeepapi.node import Label
+from gkeepapi.node import Label, TopLevelNode
 from gkeepapi.node import List as GKeepList
-from gkeepapi.node import TopLevelNode
 
 from syncall.sync_side import SyncSide
 
 
 class GKeepSide(SyncSide):
+    """Wrapper class to add/modify/delete todo entries from Google Keep."""
+
     def __init__(
         self,
         gkeep_user: str,
@@ -19,6 +19,7 @@ class GKeepSide(SyncSide):
         gkeep_token: Optional[str] = None,
         **kargs,
     ):
+        """Init."""
         self._keep: Keep
         self._gkeep_user = gkeep_user
         self._gkeep_passwd = gkeep_passwd
@@ -27,8 +28,7 @@ class GKeepSide(SyncSide):
         super().__init__(**kargs)
 
     def get_master_token(self) -> Optional[str]:
-        """
-        Return a master token. Use it to authenticate in place of a password on subsequent
+        """Return a master token. Use it to authenticate in place of a password on subsequent
         runs.
         """
         return self._gkeep_token
@@ -56,25 +56,19 @@ class GKeepSide(SyncSide):
         self._keep.sync()
 
     def _note_has_label(self, note: TopLevelNode, label: Label) -> bool:
-        """True if the given Google Keep note has the given label."""
-        for la in note.labels.all():
-            if label == la:
-                return True
-
-        return False
+        """Return true if the Google Keep note has the said label."""
+        return any(label == la for la in note.labels.all())
 
     def _note_has_label_str(self, note: TopLevelNode, label_str: str) -> bool:
-        """True if the given Google Keep note has the given label."""
-        for la in note.labels.all():
-            if label_str == la.name:
-                return True
-
-        return False
+        """Return true if the Google Keep note has the said label."""
+        return any(label_str == la.name for la in note.labels.all())
 
     def _get_label_by_name(self, label: str) -> Optional[Label]:
         for la in self._keep.labels():
             if la.name == label:
                 return la
+
+        return None
 
     def _create_list(self, title: str, label: Optional[Label] = None) -> GKeepList:
         """Create a new list of items in Google Keep.

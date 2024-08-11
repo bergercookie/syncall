@@ -4,7 +4,7 @@ import asana
 
 from syncall.asana.asana_task import AsanaTask
 from syncall.sync_side import SyncSide
-from syncall.types import AsanaGID, AsanaRawTask
+from syncall.types import AsanaGID
 
 # Request up to 100 tasks at a time in GET /tasks API call.
 # The API doesn't allow page sizes larger than 100.
@@ -12,11 +12,10 @@ GET_TASKS_PAGE_SIZE = 100
 
 
 class AsanaSide(SyncSide):
-    """
-    Wrapper class to add/modify/delete asana tasks, etc.
-    """
+    """Wrapper class to add/modify/delete asana tasks, etc."""
 
     def __init__(self, client: asana.Client, task_gid: AsanaGID, workspace_gid: AsanaGID):
+        """Initialize the Asana side."""
         self._client = client
         self._task_gid = task_gid
         self._workspace_gid = workspace_gid
@@ -30,11 +29,14 @@ class AsanaSide(SyncSide):
         pass
 
     def get_all_items(self, **kwargs) -> Sequence[AsanaTask]:
+        del kwargs
         results = []
 
         if self._task_gid is None:
             tasks = self._client.tasks.find_all(
-                assignee="me", workspace=self._workspace_gid, page_size=GET_TASKS_PAGE_SIZE
+                assignee="me",
+                workspace=self._workspace_gid,
+                page_size=GET_TASKS_PAGE_SIZE,
             )
 
             for task in tasks:
@@ -84,8 +86,6 @@ class AsanaSide(SyncSide):
         # - If the remote Asana task 'due_on' field is empty, update 'due_at'.
         # - If the remote Asana task 'due_on' field is not empty and the
         #   'due_at' field is empty, update 'due_on'.
-        # TODO: find a way to store this information locally, so we don't have
-        # to fetch the task from Asana to determine this.
         remote_task = self.get_item(item_id)
         if remote_task.get("due_on", None) is None:
             raw_task.pop("due_on", None)
@@ -121,8 +121,7 @@ class AsanaSide(SyncSide):
 
     @classmethod
     def id_key(cls) -> str:
-        """
-        Key in the dictionary of the added/updated/deleted item (task) that refers to the ID of
+        """Key in the dictionary of the added/updated/deleted item (task) that refers to the ID of
         that item (task).
         """
         return "gid"
@@ -139,7 +138,10 @@ class AsanaSide(SyncSide):
 
     @classmethod
     def items_are_identical(
-        cls, item1: AsanaTask, item2: AsanaTask, ignore_keys: Sequence[str] = []
+        cls,
+        item1: AsanaTask,
+        item2: AsanaTask,
+        ignore_keys: Sequence[str] = [],
     ) -> bool:
         """Determine whether two items (tasks) are identical.
 
@@ -152,7 +154,6 @@ class AsanaSide(SyncSide):
                 compare_keys.remove(key)
 
         # Special handling for 'due_at' and 'due_on'
-        # TODO: reduce ['due_at','due_on'] to 'due_at', compare and remove both
         # keys.
         if item1.get("due_at", None) is not None and item2.get("due_at", None) is not None:
             compare_keys.remove("due_on")

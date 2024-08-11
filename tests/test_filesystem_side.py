@@ -2,7 +2,6 @@ import os
 from typing import Sequence
 
 import pytest
-
 from syncall.filesystem.filesystem_file import FilesystemFile
 from syncall.filesystem.filesystem_side import FilesystemSide
 
@@ -32,10 +31,9 @@ def test_create_new_item(fs_side: FilesystemSide):
     fs_side.add_item(new_item)
 
     # get the newly created item - make sure that its the same item as returned by
-    # get_all_items()
     all_items_after_addition = fs_side.get_all_items()
     assert len(all_items_after_addition) == prev_len + 1
-    fs_file = [item for item in all_items_after_addition if item.id == new_id][0]
+    fs_file = next(item for item in all_items_after_addition if item.id == new_id)
     fs_file2 = fs_side.get_item(item_id=new_id)
     assert fs_file == fs_file2
 

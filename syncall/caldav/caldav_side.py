@@ -1,10 +1,14 @@
-from typing import Any, Dict, Optional, Sequence
+from __future__ import annotations
 
-import caldav
+from typing import TYPE_CHECKING, Any, Sequence
+
 from bubop import logger
 from caldav.lib.error import NotFoundError
 from icalendar.prop import vCategory, vDatetime, vText
-from item_synchronizer.types import ID
+
+if TYPE_CHECKING:
+    import caldav
+    from item_synchronizer.types import ID
 
 from syncall.app_utils import error_and_exit
 from syncall.caldav.caldav_utils import calendar_todos, icalendar_component, map_ics_to_item
@@ -12,22 +16,20 @@ from syncall.sync_side import SyncSide
 
 
 class CaldavSide(SyncSide):
-    """
-    Wrapper to add/modify/delete todo entries from a caldav server
-    """
+    """Wrapper to add/modify/delete todo entries from a caldav server."""
 
     ID_KEY = "id"
     SUMMARY_KEY = "summary"
     LAST_MODIFICATION_KEY = "last-modified"
-    _identical_comparison_keys = [
+    _identical_comparison_key: tuple[str] = (
         "description",
         "end",
         "status",
         "summary",
         "due",
-    ]
+    )
 
-    _date_keys = ["end", "start", "last-modified"]
+    _date_keys: tuple[str] = ("end", "start", "last-modified")
 
     def __init__(self, client: caldav.DAVClient, calendar_name: str) -> None:
         super().__init__(name="caldav", fullname="Caldav")
@@ -35,7 +37,7 @@ class CaldavSide(SyncSide):
         self._client = client.principal()
         self._calendar_name = calendar_name
         self._calendar: caldav.Calendar
-        self._items_cache: Dict[str, dict] = {}
+        self._items_cache: dict[str, dict] = {}
 
     def start(self):
         logger.info(f"Initializing {self.fullname}...")
@@ -50,17 +52,19 @@ class CaldavSide(SyncSide):
             if "VTODO" not in acceptable_component_types:
                 error_and_exit(
                     f"Calendar {self._calendar_name} found but does not support VTODO entries"
-                    " - please choose a different calendar"
+                    " - please choose a different calendar",
                 )
         except NotFoundError:
             # Create calendar if not there -------------------------------------------------
             logger.info(f"Calendar not found = Creating new calendar {self._calendar_name}")
             calendar = self._client.make_calendar(
-                name=self._calendar_name, supported_calendar_component_set=["VTODO"]
+                name=self._calendar_name,
+                supported_calendar_component_set=["VTODO"],
             )
         return calendar
 
     def get_all_items(self, **kargs):
+        del kargs
         todos = []
         raw_todos = calendar_todos(self._calendar)
 
@@ -79,8 +83,8 @@ class CaldavSide(SyncSide):
             item = self._find_todo_by_id(item_id=item_id)
         return item
 
-    def _find_todo_by_id_raw(self, item_id: ID) -> Optional[caldav.CalendarObjectResource]:
-        item = next(
+    def _find_todo_by_id_raw(self, item_id: ID) -> caldav.CalendarObjectResource | None:
+        return next(
             (
                 item
                 for item in calendar_todos(self._calendar)
@@ -89,12 +93,12 @@ class CaldavSide(SyncSide):
             None,
         )
 
-        return item
-
-    def _find_todo_by_id(self, item_id: ID) -> Optional[Dict]:
+    def _find_todo_by_id(self, item_id: ID) -> dict | None:
         raw_item = self._find_todo_by_id_raw(item_id=item_id)
         if raw_item:
             return map_ics_to_item(icalendar_component(raw_item))
+
+        return None
 
     def delete_single_item(self, item_id: ID):
         todo = self._find_todo_by_id_raw(item_id=item_id)
@@ -105,12 +109,13 @@ class CaldavSide(SyncSide):
         todo = self._find_todo_by_id_raw(item_id=item_id)
         if todo is None:
             logger.error(
-                f"Trying to update item but cannot find item on the CalDav server -> {item_id}"
+                "Trying to update item but cannot find item on the CalDav server ->"
+                f" {item_id}",
             )
             logger.opt(lazy=True).debug(f"Can't update item {item_id}\n\nchanges: {changes}")
             return
 
-        def set_(key: str, val: Any):
+        def set_(key: str, val: Any):  # noqa: ANN401
             icalendar_component(todo)[key] = val
 
         # pop the key:value (s) that we're intending to potentially update

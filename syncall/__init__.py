@@ -1,4 +1,4 @@
-"""__init__"""
+"""Init module."""
 
 # global imports ------------------------------------------------------------------------------
 from syncall.__version__ import __version__ as version

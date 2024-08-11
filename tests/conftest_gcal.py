@@ -2,7 +2,6 @@ import datetime
 
 import pytest
 from dateutil.tz import tzutc
-
 from syncall.types import GCalItem
 
 

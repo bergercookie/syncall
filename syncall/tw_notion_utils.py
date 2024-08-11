@@ -24,10 +24,7 @@ def create_page(parent_page_id: str, title: str, client: Client) -> NotionPage:
 
 def convert_tw_to_notion(tw_item: TwItem) -> NotionTodoBlock:
     modified = tw_item["modified"]
-    if isinstance(modified, datetime.datetime):
-        dt = modified
-    else:
-        dt = parse_datetime(modified)
+    dt = modified if isinstance(modified, datetime.datetime) else parse_datetime(modified)
 
     return NotionTodoBlock(
         is_archived=False,
