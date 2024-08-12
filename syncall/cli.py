@@ -10,7 +10,7 @@ import sys
 import click
 from bubop import format_list, logger
 
-from syncall import __version__
+from syncall import version
 from syncall.app_utils import (
     determine_app_config_fname,
     error_and_exit,
@@ -470,7 +470,7 @@ def opts_miscellaneous(side_A_name: str, side_B_name: str):
                 (_opt_confirm,),
                 (
                     click.version_option,
-                    __version__,
+                    version,
                 ),
                 (_opt_pdb_on_error,),
                 (_opt_list_combinations, side_A_name, side_B_name),
