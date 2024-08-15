@@ -42,9 +42,23 @@ def test_parse_datetime():
     )
     assert_dt(
         dt_given={"dateTime": "2021-11-14T22:07:49.123456"},
-        dt_expected=datetime.datetime(2021, 11, 14, 22, 7, 49, 123456, tzinfo=localzone),
+        dt_expected=datetime.datetime(
+            2021,
+            11,
+            14,
+            22,
+            7,
+            49,
+            123456,
+            tzinfo=localzone,
+        ),
     )
     assert_dt(
         dt_given={"dateTime": "2021-11-14T22:07:49Z", "timeZone": "Europe/London"},
         dt_expected=datetime.datetime(2021, 11, 14, 22, 7, 49, tzinfo=tzutc()),
+    )
+
+    assert_dt(
+        dt_given={"date": "2021-11-14"},
+        dt_expected=datetime.datetime(2021, 11, 14, 0, 0, 0, tzinfo=localzone),
     )
