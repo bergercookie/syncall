@@ -4,15 +4,15 @@ import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Sequence, cast
 
-import dateutil
 import pkg_resources
-import pytz
-from bubop import format_datetime_tz, logger
+from bubop import logger
 from googleapiclient import discovery
 from googleapiclient.http import HttpError
 
 from syncall.google.google_side import GoogleSide
 from syncall.sync_side import SyncSide
+
+from .common import parse_google_datetime
 
 if TYPE_CHECKING:
     from syncall.types import GTasksItem, GTasksList
@@ -229,7 +229,7 @@ class GTasksSide(GoogleSide):
     def _parse_dt_or_none(item: GTasksItem, field: str) -> datetime.datetime | None:
         """Return the datetime on which task was completed in datetime format."""
         if (dt := item.get(field)) is not None:
-            dt_dt = GTasksSide.parse_datetime(dt)
+            dt_dt = parse_google_datetime(dt)
             assert isinstance(dt_dt, datetime.datetime)
             return dt_dt
 
@@ -245,66 +245,6 @@ class GTasksSide(GoogleSide):
         """Return the datetime on which task was completed in datetime format."""
         return GTasksSide._parse_dt_or_none(item=item, field="completed")
 
-    @staticmethod
-    def format_datetime(dt: datetime.datetime) -> str:
-        assert isinstance(dt, datetime.datetime)
-        return format_datetime_tz(dt)
-
-    @classmethod
-    def parse_datetime(cls, dt: str | dict | datetime.datetime) -> datetime.datetime:
-        """Parse datetime given in the GTasks format(s):
-        - string with ('T', 'Z' separators).
-        - (dateTime, dateZone) dictionary
-        - datetime object
-
-        Usage::
-
-        >>> GTasksSide.parse_datetime("2019-03-05T00:03:09Z")
-        datetime.datetime(2019, 3, 5, 0, 3, 9)
-        >>> GTasksSide.parse_datetime("2019-03-05")
-        datetime.datetime(2019, 3, 5, 0, 0)
-        >>> GTasksSide.parse_datetime("2019-03-05T00:03:01.1234Z")
-        datetime.datetime(2019, 3, 5, 0, 3, 1, 123400)
-        >>> GTasksSide.parse_datetime("2019-03-08T00:29:06.602Z")
-        datetime.datetime(2019, 3, 8, 0, 29, 6, 602000)
-
-        >>> from tzlocal import get_localzone_name
-        >>> tz = get_localzone_name()
-        >>> a = GTasksSide.parse_datetime({"dateTime": "2021-11-14T22:07:49Z", "timeZone": tz})
-        >>> b = GTasksSide.parse_datetime({"dateTime": "2021-11-14T22:07:49.000000Z"})
-        >>> b
-        datetime.datetime(2021, 11, 14, 22, 7, 49)
-        >>> from bubop.time import is_same_datetime
-        >>> is_same_datetime(a, b) or (print(a) or print(b))
-        True
-        >>> GTasksSide.parse_datetime({"dateTime": "2021-11-14T22:07:49.123456"})
-        datetime.datetime(2021, 11, 14, 22, 7, 49, 123456)
-        >>> a = GTasksSide.parse_datetime({"dateTime": "2021-11-14T22:07:49Z", "timeZone": tz})
-        >>> GTasksSide.parse_datetime(a).isoformat() == a.isoformat()
-        True
-        """
-        if isinstance(dt, str):
-            return dateutil.parser.parse(dt).replace(tzinfo=None)  # type: ignore
-
-        if isinstance(dt, dict):
-            date_time = dt.get("dateTime")
-            if date_time is None:
-                raise RuntimeError(f"Invalid structure dict: {dt}")
-            dt_dt = GTasksSide.parse_datetime(date_time)
-            time_zone = dt.get("timeZone")
-            if time_zone is not None:
-                timezone = pytz.timezone(time_zone)
-                dt_dt = timezone.localize(dt_dt)
-
-            return dt_dt
-
-        if isinstance(dt, datetime.datetime):
-            return dt
-
-        raise TypeError(
-            f"Unexpected type of a given date item, type: {type(dt)}, contents: {dt}",
-        )
-
     @classmethod
     def items_are_identical(cls, item1, item2, ignore_keys: Sequence[str] = []) -> bool:
         for item in [item1, item2]:
@@ -312,7 +252,7 @@ class GTasksSide(GoogleSide):
                 if key not in item:
                     continue
 
-                item[key] = cls.parse_datetime(item[key])
+                item[key] = parse_google_datetime(item[key])
 
         return SyncSide._items_are_identical(
             item1,

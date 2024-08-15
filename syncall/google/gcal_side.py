@@ -2,19 +2,16 @@ from __future__ import annotations
 
 import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Sequence, cast
+from typing import Literal, Sequence, cast
 
-import dateutil
 import pkg_resources
-from bubop import assume_local_tz_if_none, format_datetime_tz, logger
+from bubop import logger
 from googleapiclient import discovery
 from googleapiclient.http import HttpError
 
+from syncall.google.common import parse_google_datetime
 from syncall.google.google_side import GoogleSide
 from syncall.sync_side import SyncSide
-
-if TYPE_CHECKING:
-    from syncall.types import GoogleDateT
 
 DEFAULT_CLIENT_SECRET = pkg_resources.resource_filename(
     "syncall",
@@ -216,39 +213,7 @@ class GCalSide(GoogleSide):
         if isinstance(item[t], datetime.datetime):
             return item[t]
 
-        return GCalSide.parse_datetime(item[t][GCalSide.get_date_key(item[t])])
-
-    @staticmethod
-    def format_datetime(dt: datetime.datetime) -> str:
-        assert isinstance(dt, datetime.datetime)
-        return format_datetime_tz(dt)
-
-    @classmethod
-    def parse_datetime(cls, dt: GoogleDateT) -> datetime.datetime:
-        """Parse datetime given in the GCal format(s):
-        - string with ('T', 'Z' separators).
-        - (dateTime, dateZone) dictionary
-        - datetime object
-
-        The output datetime is always in local timezone.
-        """
-        if isinstance(dt, str):
-            dt_dt = dateutil.parser.parse(dt)  # type: ignore
-            return cls.parse_datetime(dt_dt)
-
-        if isinstance(dt, dict):
-            date_time = dt.get("dateTime")
-            if date_time is None:
-                raise RuntimeError(f"Invalid structure dict: {dt}")
-
-            return cls.parse_datetime(date_time)
-
-        if isinstance(dt, datetime.datetime):
-            return assume_local_tz_if_none(dt)
-
-        raise TypeError(
-            f"Unexpected type of a given date item, type: {type(dt)}, contents: {dt}",
-        )
+        return parse_google_datetime(item[t][GCalSide.get_date_key(item[t])])
 
     @classmethod
     def items_are_identical(cls, item1, item2, ignore_keys: Sequence[str] = []) -> bool:
@@ -257,7 +222,7 @@ class GCalSide(GoogleSide):
                 if key not in item:
                     continue
 
-                item[key] = cls.parse_datetime(item[key])
+                item[key] = parse_google_datetime(item[key])
 
         return SyncSide._items_are_identical(
             item1,

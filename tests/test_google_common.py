@@ -1,8 +1,8 @@
 import datetime
 
-import syncall.google.gcal_side as side
 from bubop import is_same_datetime
 from dateutil.tz import gettz, tzutc
+from syncall.google import common
 from syncall.types import GoogleDateT
 
 localzone = gettz("Europe/Athens")
@@ -13,12 +13,9 @@ def assume_local_tz_if_none_(dt: datetime.datetime):
     return dt if dt.tzinfo is not None else dt.replace(tzinfo=localzone)
 
 
-side.assume_local_tz_if_none = assume_local_tz_if_none_
-
-
 def assert_dt(dt_given: GoogleDateT, dt_expected: datetime.datetime):
-    parse_datetime = side.GCalSide.parse_datetime
-    dt_dt_given = parse_datetime(dt_given)
+    common.assume_local_tz_if_none = assume_local_tz_if_none_
+    dt_dt_given = common.parse_google_datetime(dt_given)
 
     # make sure there's always a timezone associated with this date
     assert dt_dt_given.tzinfo is not None

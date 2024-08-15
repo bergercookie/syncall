@@ -1,6 +1,7 @@
-from bubop import logger
+from bubop import format_datetime_tz, logger
 from item_synchronizer.types import Item
 
+from syncall.google.common import parse_google_datetime
 from syncall.google.gtasks_side import GTasksSide
 from syncall.tw_utils import extract_tw_fields_from_string, get_tw_annotations_as_str
 from syncall.types import GTasksItem
@@ -28,9 +29,7 @@ def convert_tw_to_gtask(
 
     # update time
     if "modified" in tw_item.keys():
-        gtasks_item["updated"] = GTasksSide.format_datetime(
-            GTasksSide.parse_datetime(tw_item["modified"]),
-        )
+        gtasks_item["updated"] = format_datetime_tz(parse_google_datetime(tw_item["modified"]))
 
     return gtasks_item
 
@@ -92,6 +91,6 @@ def convert_gtask_to_tw(
 
     # update time
     if "updated" in gtasks_item.keys():
-        tw_item["modified"] = GTasksSide.parse_datetime(gtasks_item["updated"])
+        tw_item["modified"] = parse_google_datetime(gtasks_item["updated"])
 
     return tw_item

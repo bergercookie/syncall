@@ -1,7 +1,7 @@
 from datetime import timedelta
 from uuid import UUID
 
-from bubop import logger
+from bubop import format_datetime_tz, logger
 from item_synchronizer.types import Item
 
 from syncall.google.gcal_side import GCalSide
@@ -84,11 +84,9 @@ def convert_tw_to_gcal(
                 f'Using "{date_key}" date for {tw_item["uuid"]} for setting the end date of'
                 " the event",
             )
-            dt_gcal = GCalSide.format_datetime(tw_item[date_key])
+            dt_gcal = format_datetime_tz(tw_item[date_key])
             gcal_item["start"] = {
-                "dateTime": GCalSide.format_datetime(
-                    tw_item[date_key] - tw_item[tw_duration_key],
-                ),
+                "dateTime": format_datetime_tz(tw_item[date_key] - tw_item[tw_duration_key]),
             }
             gcal_item["end"] = {"dateTime": dt_gcal}
             break
@@ -98,12 +96,12 @@ def convert_tw_to_gcal(
             " event",
         )
         entry_dt = tw_item["entry"]
-        entry_dt_gcal_str = GCalSide.format_datetime(entry_dt)
+        entry_dt_gcal_str = format_datetime_tz(entry_dt)
 
         gcal_item["start"] = {"dateTime": entry_dt_gcal_str}
 
         gcal_item["end"] = {
-            "dateTime": GCalSide.format_datetime(entry_dt + tw_item[tw_duration_key]),
+            "dateTime": format_datetime_tz(entry_dt + tw_item[tw_duration_key]),
         }
 
     return gcal_item
