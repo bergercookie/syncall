@@ -21,7 +21,7 @@ class CaldavSide(SyncSide):
     ID_KEY = "id"
     SUMMARY_KEY = "summary"
     LAST_MODIFICATION_KEY = "last-modified"
-    _identical_comparison_key: tuple[str] = (
+    _identical_comparison_keys: tuple[str] = (
         "description",
         "end",
         "status",
