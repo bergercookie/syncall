@@ -89,9 +89,9 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
 
     tw_item["description"] = caldav_item.get("summary")
     tw_item["annotations"] = annotations
-    if uuid is not None:
+    if uuid is not None:  # old format
         tw_item["uuid"] = uuid
-    else:  # if uuid is not found, try new format
+    else:  # uuid not found, try new format
         if "description" in caldav_item.keys():
             tw_item["annotations"] = [
                 line.strip() for line in caldav_item["description"].split("\n") if line
@@ -103,26 +103,22 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
     tw_item["status"] = aliases_caldav_tw_status[caldav_item["status"]]
 
     # Priority
-    prio = aliases_caldav_tw_priority.get(caldav_item["priority"])
-    if prio:
+    if prio := aliases_caldav_tw_priority.get(caldav_item["priority"]):
         tw_item["priority"] = prio
 
-    # Timestamps
-    if "created" in caldav_item:
-        tw_item["entry"] = caldav_item["created"]
-    if "completed" in caldav_item:
-        tw_item["end"] = caldav_item["completed"]
-    if "last-modified" in caldav_item:
-        tw_item["modified"] = caldav_item["last-modified"]
-
-    # Start/due dates
-    if "due" in caldav_item:
-        tw_item["due"] = caldav_item["due"]
-
-    if "categories" in caldav_item:
-        tw_item["tags"] = caldav_item["categories"]
-
+    # start time
     if caldav_item["status"] == "in-process" and "last-modified" in caldav_item:
         tw_item["start"] = caldav_item["last-modified"]
+
+    # Rest of properties
+    for caldav_key, tw_key in (
+        ("created", "entry"),
+        ("completed", "end"),
+        ("last-modified", "modified"),
+        ("due", "due"),
+        ("categories", "tags"),
+    ):
+        if caldav_key in caldav_item:
+            tw_item[tw_key] = caldav_item[caldav_key]
 
     return tw_item
