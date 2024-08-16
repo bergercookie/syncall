@@ -37,13 +37,11 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
 
     caldav_item["summary"] = tw_item["description"]
     # description
-    caldav_item["description"] = "IMPORTED FROM TASKWARRIOR\n"
-    if "annotations" in tw_item:
-        for i, annotation in enumerate(tw_item["annotations"]):
-            caldav_item["description"] += f"\n* Annotation {i + 1}: {annotation}"
+    if "annotations" in tw_item.keys():
+        caldav_item["description"] = "\n".join(tw_item["annotations"])
 
-    caldav_item["description"] += "\n"
-    caldav_item["description"] += f'\n* uuid: {tw_item["uuid"]}'
+    # uuid
+    caldav_item["x-syncall-tw-uuid"] = f'{tw_item["uuid"]}'
 
     # Status
     caldav_item["status"] = aliases_tw_caldav_status[tw_item["status"]]
@@ -77,7 +75,7 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
 
 
 def convert_caldav_to_tw(caldav_item: Item) -> Item:
-    # Parse the description
+    # Parse the description by old format
     annotations, uuid = parse_caldav_item_desc(caldav_item)
     assert isinstance(annotations, list)
     assert isinstance(uuid, UUID) or uuid is None
@@ -91,33 +89,36 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
 
     tw_item["description"] = caldav_item.get("summary")
     tw_item["annotations"] = annotations
-    if uuid is not None:
+    if uuid is not None:  # old format
         tw_item["uuid"] = uuid
+    else:  # uuid not found, try new format
+        if "description" in caldav_item.keys():
+            tw_item["annotations"] = [
+                line.strip() for line in caldav_item["description"].split("\n") if line
+            ]
+        if "x-syncall-tw-uuid" in caldav_item.keys():
+            tw_item["uuid"] = UUID(caldav_item["x-syncall-tw-uuid"])
 
     # Status
     tw_item["status"] = aliases_caldav_tw_status[caldav_item["status"]]
 
     # Priority
-    prio = aliases_caldav_tw_priority.get(caldav_item["priority"])
-    if prio:
+    if prio := aliases_caldav_tw_priority.get(caldav_item["priority"]):
         tw_item["priority"] = prio
 
-    # Timestamps
-    if "created" in caldav_item:
-        tw_item["entry"] = caldav_item["created"]
-    if "completed" in caldav_item:
-        tw_item["end"] = caldav_item["completed"]
-    if "last-modified" in caldav_item:
-        tw_item["modified"] = caldav_item["last-modified"]
-
-    # Start/due dates
-    if "due" in caldav_item:
-        tw_item["due"] = caldav_item["due"]
-
-    if "categories" in caldav_item:
-        tw_item["tags"] = caldav_item["categories"]
-
+    # start time
     if caldav_item["status"] == "in-process" and "last-modified" in caldav_item:
         tw_item["start"] = caldav_item["last-modified"]
+
+    # Rest of properties
+    for caldav_key, tw_key in (
+        ("created", "entry"),
+        ("completed", "end"),
+        ("last-modified", "modified"),
+        ("due", "due"),
+        ("categories", "tags"),
+    ):
+        if caldav_key in caldav_item:
+            tw_item[tw_key] = caldav_item[caldav_key]
 
     return tw_item

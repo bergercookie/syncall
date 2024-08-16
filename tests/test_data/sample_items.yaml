@@ -35,35 +35,25 @@ tw_item_w_due:
   - This is the annotation text
   - This is the other annotation text
 caldav_item_expected:
-  description: 'IMPORTED FROM TASKWARRIOR
-
-
-    * Annotation 1: This is the annotation text
-
-    * Annotation 2: This is the other annotation text
-
-
-    * uuid: 00208973-20da-4988-ae3e-58ef3650c363'
+  description: |-
+    This is the annotation text
+    This is the other annotation text
   summary: Kalimera!
   last-modified: 2019-03-05 00:03:09
   status: 'needs-action'
   categories: ['remindme']
+  x-syncall-tw-uuid: '00208973-20da-4988-ae3e-58ef3650c363'
 caldav_item_w_date_expected:
-  description: 'IMPORTED FROM TASKWARRIOR
-
-
-    * Annotation 1: This is the annotation text
-
-    * Annotation 2: This is the other annotation text
-
-
-    * uuid: 00208973-20da-4988-ae3e-58ef3650c363'
+  description: |-
+    This is the annotation text
+    This is the other annotation text
   due: 2019-03-09 00:00:00
   start: 2019-03-08 23:00:00
   summary: Kalimera!
   last-modified: 2019-03-05 00:03:09
   status: 'needs-action'
   categories: ['remindme']
+  x-syncall-tw-uuid: '00208973-20da-4988-ae3e-58ef3650c363'
 gcal_item_expected:
   description: 'IMPORTED FROM TASKWARRIOR
 
@@ -150,17 +140,9 @@ gcal_item:
   summary: another summary goes here
   updated: '2019-03-08T00:29:06.602Z'
 caldav_item:
-  description: '
-
-    The same old description
-
-
-    * Annotation 1: kalimera
-
-    * Annotation 2: kalinuxta kai kali vradia
-
-
-    * uuid: 00208973-20da-4988-ae3e-58ef3650c363'
+  description: |-
+    kalimera
+    kalinuxta kai kali vradia
   due: 2019-03-04 05:00:00
   id: 52ggba92l9ph4d0ghabi3ohdh7
   start: 2019-03-04 04:00:00
@@ -168,6 +150,7 @@ caldav_item:
   summary: another summary goes here
   last-modified: 2019-03-08 00:29:06.602
   priority: ''
+  x-syncall-tw-uuid: '00208973-20da-4988-ae3e-58ef3650c363'
 tw_item_expected:
   syncallduration: "PT3600S"
   annotations:

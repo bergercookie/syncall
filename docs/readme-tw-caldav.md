@@ -29,7 +29,8 @@ TW <-> Caldav will make the following mappings between items:
   - `L` <-> 9
   - `M` <-> 5
   - `H` <-> 1
-- TW `annotations`, `uuid` <-> `DESCRIPTION`
+- TW `annotations` <-> `DESCRIPTION` (one annotation <-> one line in description)
+- TW `uuid` <-> `X-SYNCALL-TW-UUID`
 - TW `tags` <-> `CATEGORIES`
 
 ### Current limitations

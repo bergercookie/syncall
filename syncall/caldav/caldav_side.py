@@ -27,6 +27,7 @@ class CaldavSide(SyncSide):
         "status",
         "summary",
         "due",
+        "x-syncall-tw-uuid",
     )
 
     _date_keys: tuple[str] = ("end", "start", "last-modified")
@@ -144,6 +145,7 @@ class CaldavSide(SyncSide):
             categories=item.get("categories"),
             created=item.get("created"),
             completed=item.get("completed"),
+            x_syncall_tw_uuid=item.get("x-syncall-tw-uuid"),
         )
         return map_ics_to_item(icalendar_component(todo))
 
