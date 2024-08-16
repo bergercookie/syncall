@@ -1,12 +1,16 @@
-# [Taskwarrior](https://taskwarrior.org/) ⬄ Caldav Server
+# [Taskwarrior](https://taskwarrior.org/) ⬄ CalDAV Server
 
 ## Description
 
-Synchronize Taskwarrior tasks to a generic caldav server.
-This service has been tested using a self-hosted [nextcloud](https://nextcloud.com/) server as well as , but should theoretically work with any server that implements the [caldav specification](https://www.rfc-editor.org/rfc/rfc4791)
+Synchronize Taskwarrior tasks to a generic CalDAV server.
+This service has been tested using a self-hosted
+[nextcloud](https://nextcloud.com/) server as well as , but should theoretically
+work with any server that implements the [CalDAV
+specification](https://www.rfc-editor.org/rfc/rfc4791)
 
 Upon execution, `tw_caldav_sync` will synchronize, and on subsequent runs of the
-program keep synchronized, the following attributes (tw entries will be converted to a vCard format and visa versa):
+program keep synchronized, the following attributes (TW entries will be
+converted to a vCard format and visa versa):
 
 ## Demo - first run - populating tasklist in Nextcloud
 
@@ -14,33 +18,38 @@ program keep synchronized, the following attributes (tw entries will be converte
 
 ### Mappings
 
-TW <-> Caldav will make the following mappings between items:
+`tw_caldav_sync` will make the following mappings between items:
 
-- `description` <-> `SUMMARY`
-- `status` <-> `STATUS`
-  - `pending`, `waiting` <-> `NEEDS-ACTION`
-  - `completed` <-> `COMPLETED`
-  - `deleted` <-> `CANCELLED`
-- TW `entry` <-> `CREATED`
-- TW `end` <-> `COMPLETED`
-- TW `modified` <-> `LAST-MODIFIED`
-- TW `prioriy` <-> `PRIORITY`
-  - `""` <-> `None`
-  - `L` <-> 9
-  - `M` <-> 5
-  - `H` <-> 1
-- TW `annotations` <-> `DESCRIPTION` (one annotation <-> one line in description)
-- TW `uuid` <-> `X-SYNCALL-TW-UUID`
-- TW `tags` <-> `CATEGORIES`
+- `description` ↔ `SUMMARY`
+- `status` ↔ `STATUS`
+  - `pending`, `waiting` ↔ `NEEDS-ACTION`
+  - `completed` ↔ `COMPLETED` / `CANCELLED` (using a custom `UDA`
+    `caldav_completion_status`, in Taskwarrior to mark cancelled items)
+  - `deleted` ↔ (deletion of CalDAV item)
+
+Regarding timestamps:
+
+- TW `entry` ↔ `CREATED`
+- TW `end` ↔ `COMPLETED`
+- TW `modified` ↔ `LAST-MODIFIED`
+- TW `prioriy` ↔ `PRIORITY`
+  - `""` ↔ `None`
+  - `L` ↔ 9
+  - `M` ↔ 5
+  - `H` ↔ 1
+- TW `annotations` ↔ `DESCRIPTION` (one annotation ↔ one line in description)
+- TW `uuid` ↔ `X-SYNCALL-TW-UUID`
+- TW `tags` ↔ `CATEGORIES`
 
 ### Current limitations
 
-- No specific support for "waiting" tasks in Taskwarrior, they will be treated like any other "needs-action" caldav task
+- No specific support for "waiting" tasks in Taskwarrior, they will be treated
+  like any other "needs-action" CalDAV task
 - No support for recurring tasks sync in either direction
 
 ## Installation
 
-Install the `syncall` package from PyPI, enabling the `caldav` and `Taskwarrior`
+Install the `syncall` package from PyPI, enabling the CalDAV and `Taskwarrior`
 extra:
 
 ```sh
@@ -58,19 +67,19 @@ project.
 Use `--taskwarrior-tags ...` or `--taskwarrior-project` respectively for the
 above
 
-### Caldav
+### CalDAV
 
 In order to successfully run a sync, you will need the following flags set (mandatory):
 
-- `--caldav-url`: URL where the caldav calendar is hosted at (including `/dav` if applicable)
-- `--caldav-user`: Username required to authenticate your caldav instance
+- `--caldav-url`: URL where the CalDAV calendar is hosted at (including `/dav` if applicable)
+- `--caldav-user`: Username required to authenticate your CalDAV instance
   - Can also be provided via the `CALDAV_USERNAME` environment variable
 - `--caldav-passwd`, `--caldav-passwd-pass-path`: Path to your password `.gpg` file in your [password store](https://wiki.archlinux.org/title/Pass)
   - Alternatively, the password can be provided directly via the `CALDAV_PASSWD` environment variable
 
 The following flag is optional:
 
-- `--calendar`: Name of the caldav Calendar to sync (will be created if not there), will default to `Personal` if not set
+- `--calendar`: Name of the CalDAV Calendar to sync (will be created if not there), will default to `Personal` if not set
 
 ### Example Usage
 
@@ -88,8 +97,11 @@ CALDAV_USERNAME=myUser CALDAV_PASSWD=myPass tw_caldav_sync --caldav-url https://
 
 ## Future Work
 
-- [ ] See if we can handle TW "waiting" tasks a little better (possibly by setting the caldav `start` field to when the wait expires)
-- [ ] Consider how to refactor out extra steps in conversion, and just store caldav items in their vTodo formats (though this will make test files much uglier)
+- [ ] See if we can handle TW "waiting" tasks a little better (possibly by
+      setting the CalDAV `start` field to when the wait expires)
+- [ ] Consider how to refactor out extra steps in conversion, and just store
+      CalDAV items in their vTodo formats (though this will make test files much
+      uglier)
 
 ## See also
 

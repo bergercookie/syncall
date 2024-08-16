@@ -14,6 +14,7 @@ from bubop import (
 )
 
 from syncall.app_utils import confirm_before_proceeding, inform_about_app_extras
+from syncall.taskwarrior.taskwarrior_side import TW_CONFIG_DEFAULT_OVERRIDES
 
 try:
     from syncall.caldav.caldav_side import CaldavSide
@@ -32,14 +33,18 @@ from syncall.app_utils import (
     register_teardown_handler,
 )
 from syncall.cli import opts_caldav, opts_miscellaneous, opts_tw_filtering
-from syncall.tw_caldav_utils import convert_caldav_to_tw, convert_tw_to_caldav
+from syncall.tw_caldav_utils import (
+    CALDAV_TASK_CANCELLED_UDA,
+    convert_caldav_to_tw,
+    convert_tw_to_caldav,
+)
 
 
 @click.command()
 @opts_caldav()
 @opts_tw_filtering()
 @opts_miscellaneous("TW", "Caldav")
-def main(
+def main(  # noqa: PLR0915
     caldav_calendar: str,
     caldav_url: str,
     caldav_user: str | None,
@@ -155,10 +160,17 @@ def main(
 
     # initialize sides ------------------------------------------------------------------------
     # tw
+    tw_config_overrides = {}
+    tw_config_overrides["uda"] = TW_CONFIG_DEFAULT_OVERRIDES["uda"]
+    tw_config_overrides["uda"][CALDAV_TASK_CANCELLED_UDA] = {
+        "type": "string",
+        "label": "Task cancelled in Caldav true|false",
+    }
     tw_side = TaskWarriorSide(
         tw_filter=" ".join(tw_filter_li),
         tags=tw_tags,
         project=tw_project,
+        config_overrides=tw_config_overrides,
     )
 
     # caldav

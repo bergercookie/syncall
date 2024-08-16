@@ -25,7 +25,7 @@ OrderByType = Literal[
     "urgency",
 ]
 
-tw_config_default_overrides = {
+TW_CONFIG_DEFAULT_OVERRIDES = {
     "context": "none",
     "uda": {tw_duration_key: {"type": "duration", "label": "Syncall Duration"}},
 }
@@ -64,14 +64,14 @@ class TaskWarriorSide(SyncSide):
                           to sync
         :param config_file: Path to the taskwarrior RC file
         :param config_overrides: Dictionary of taskrc key, values to override. See also
-                                 tw_config_default_overrides
+                                 TW_CONFIG_DEFAULT_OVERRIDES
         """
         super().__init__(name="Tw", fullname="Taskwarrior", **kargs)
         self._tags: set[str] = set(tags)
         self._project: str = project or ""
         self._tw_filter: str = tw_filter
 
-        config_overrides_ = tw_config_default_overrides.copy()
+        config_overrides_ = TW_CONFIG_DEFAULT_OVERRIDES.copy()
         config_overrides_.update(config_overrides)
 
         # determine config file

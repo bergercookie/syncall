@@ -1,23 +1,18 @@
+from __future__ import annotations
+
 from datetime import timedelta
+from typing import TYPE_CHECKING, Literal
 from uuid import UUID
 
-from item_synchronizer.types import Item
+if TYPE_CHECKING:
+    from item_synchronizer.types import Item
 
 from syncall.caldav.caldav_utils import parse_caldav_item_desc
 
-aliases_tw_caldav_status = {
-    "completed": "completed",
-    "pending": "needs-action",
-    "waiting": "needs-action",
-    "deleted": "cancelled",
-}
+CALDAV_TASK_CANCELLED_UDA = "caldav_completion_status"
+SYNCALL_TW_WAITING = "x-syncall-tw-waiting"
+SYNCALL_TW_UUID = "x-syncall-tw-uuid"
 
-aliases_caldav_tw_status = {
-    "completed": "completed",
-    "needs-action": "pending",
-    "in-process": "pending",
-    "cancelled": "deleted",
-}
 
 aliases_tw_caldav_priority = {
     "l": 9,
@@ -26,6 +21,50 @@ aliases_tw_caldav_priority = {
 }
 
 aliases_caldav_tw_priority = {v: k for k, v in aliases_tw_caldav_priority.items()}
+
+
+def _determine_caldav_status(tw_item: Item) -> tuple[str, Literal["true", "false"] | None]:
+    tw_status = tw_item["status"]
+    if tw_status == "pending":
+        caldav_status = "needs-action"
+        tw_waiting_ical_val = "false"
+    elif tw_status == "waiting":
+        caldav_status = "needs-action"
+        tw_waiting_ical_val = "true"
+
+    elif tw_status == "completed":
+        if tw_item.get(CALDAV_TASK_CANCELLED_UDA, "false") == "true":
+            caldav_status = "cancelled"
+        else:
+            caldav_status = "completed"
+        tw_waiting_ical_val = None
+    elif tw_status == "deleted":
+        caldav_status = ""  # shouldn't matter
+        tw_waiting_ical_val = None
+    else:
+        raise ValueError(f"Unknown status: {tw_status}")
+
+    return caldav_status, tw_waiting_ical_val
+
+
+def _determine_tw_status(caldav_item: Item) -> tuple[str, Literal["true", "false"] | None]:
+    caldav_status = caldav_item["status"]
+    if caldav_status in ("needs-action", "in-process"):
+        if caldav_item.get(SYNCALL_TW_WAITING, "false") == "true":
+            tw_status = "waiting"
+        else:
+            tw_status = "pending"
+        task_cancelled_uda_val = None
+    elif caldav_status == "completed":
+        tw_status = "completed"
+        task_cancelled_uda_val = "false"
+    elif caldav_status == "cancelled":
+        tw_status = "completed"
+        task_cancelled_uda_val = "true"
+    else:
+        raise ValueError(f"Unknown caldav status: {caldav_status}")
+
+    return tw_status, task_cancelled_uda_val
 
 
 def convert_tw_to_caldav(tw_item: Item) -> Item:
@@ -37,14 +76,17 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
 
     caldav_item["summary"] = tw_item["description"]
     # description
+    caldav_item["description"] = ""
     if "annotations" in tw_item.keys():
         caldav_item["description"] = "\n".join(tw_item["annotations"])
 
     # uuid
-    caldav_item["x-syncall-tw-uuid"] = f'{tw_item["uuid"]}'
+    caldav_item[SYNCALL_TW_UUID] = tw_item["uuid"]
 
     # Status
-    caldav_item["status"] = aliases_tw_caldav_status[tw_item["status"]]
+    caldav_item["status"], caldav_item[SYNCALL_TW_WAITING] = _determine_caldav_status(
+        tw_item=tw_item,
+    )
 
     # Priority
     if "priority" in tw_item:
@@ -96,11 +138,13 @@ def convert_caldav_to_tw(caldav_item: Item) -> Item:
             tw_item["annotations"] = [
                 line.strip() for line in caldav_item["description"].split("\n") if line
             ]
-        if "x-syncall-tw-uuid" in caldav_item.keys():
-            tw_item["uuid"] = UUID(caldav_item["x-syncall-tw-uuid"])
+        if SYNCALL_TW_UUID in caldav_item.keys():
+            tw_item["uuid"] = UUID(caldav_item[SYNCALL_TW_UUID])
 
-    # Status
-    tw_item["status"] = aliases_caldav_tw_status[caldav_item["status"]]
+    # Status + task cancelled UDA
+    tw_item["status"], tw_item[CALDAV_TASK_CANCELLED_UDA] = _determine_tw_status(
+        caldav_item=caldav_item,
+    )
 
     # Priority
     if prio := aliases_caldav_tw_priority.get(caldav_item["priority"]):

@@ -6,6 +6,8 @@ from bubop import logger
 from caldav.lib.error import NotFoundError
 from icalendar.prop import vCategory, vDatetime, vText
 
+from syncall.tw_caldav_utils import SYNCALL_TW_UUID, SYNCALL_TW_WAITING
+
 if TYPE_CHECKING:
     import caldav
     from item_synchronizer.types import ID
@@ -27,7 +29,7 @@ class CaldavSide(SyncSide):
         "status",
         "summary",
         "due",
-        "x-syncall-tw-uuid",
+        SYNCALL_TW_WAITING,
     )
 
     _date_keys: tuple[str] = ("end", "start", "last-modified")
@@ -140,12 +142,13 @@ class CaldavSide(SyncSide):
             summary=item.get("summary"),
             priority=item.get("priority"),
             description=item.get("description"),
-            status=item.get("status").upper(),
+            status=item["status"].upper(),
             due=item.get("due"),
             categories=item.get("categories"),
             created=item.get("created"),
             completed=item.get("completed"),
-            x_syncall_tw_uuid=item.get("x-syncall-tw-uuid"),
+            x_syncall_tw_uuid=item.get(SYNCALL_TW_UUID),
+            x_syncall_tw_waiting=item.get(SYNCALL_TW_WAITING),
         )
         return map_ics_to_item(icalendar_component(todo))
 
