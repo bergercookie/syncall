@@ -259,6 +259,9 @@ class TaskWarriorSide(SyncSide):
         item2: dict,
         ignore_keys: Sequence[str] = [],
     ) -> bool:
+        item1 = item1.copy()
+        item2 = item2.copy()
+
         keys = [
             k
             for k in [

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 from syncall.caldav.caldav_utils import parse_caldav_item_desc
 
-CALDAV_TASK_CANCELLED_UDA = "caldav_completion_status"
+CALDAV_TASK_CANCELLED_UDA = "syncall_caldav_task_cancelled"
 SYNCALL_TW_WAITING = "x-syncall-tw-waiting"
 SYNCALL_TW_UUID = "x-syncall-tw-uuid"
 
@@ -91,6 +91,8 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
     # Priority
     if "priority" in tw_item:
         caldav_item["priority"] = aliases_tw_caldav_priority[tw_item["priority"].lower()]
+    else:
+        caldav_item["priority"] = ""
 
     # Timestamps
     if "entry" in tw_item:

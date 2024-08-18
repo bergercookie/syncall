@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 from syncall.app_utils import error_and_exit
 from syncall.caldav.caldav_utils import calendar_todos, icalendar_component, map_ics_to_item
-from syncall.sync_side import SyncSide
+from syncall.sync_side import ItemType, SyncSide
 
 
 class CaldavSide(SyncSide):
@@ -137,7 +137,7 @@ class CaldavSide(SyncSide):
 
         todo.save()
 
-    def add_item(self, item):
+    def add_item(self, item) -> ItemType:
         todo = self._calendar.add_todo(
             summary=item.get("summary"),
             priority=item.get("priority"),
