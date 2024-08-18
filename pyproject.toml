@@ -95,7 +95,6 @@ identify = "^2.6.0"
 isort = "^5.13.2"
 mock = "*"
 mypy = "*"
-pdbpp = "^0.10.3"
 pre-commit = "^2.21.0"
 pyfakefs = [
   { version = "^4.7.0", python = "<3.12" },
