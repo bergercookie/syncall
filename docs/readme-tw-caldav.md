@@ -22,8 +22,8 @@ converted to a vCard format and visa versa):
 
 - `description` ↔ `SUMMARY`
 - `status` ↔ `STATUS`
-  - `pending`, `waiting` ↔ `NEEDS-ACTION`
-  - `completed` ↔ `COMPLETED` / `CANCELLED` (using a custom `UDA`
+  - `pending`, `waiting` ↔ `NEEDS-ACTION` (using custom CalDAV attribute)
+  - `completed` ↔ `COMPLETED` / `CANCELLED` (using custom CalDAV attribute)
     `caldav_completion_status`, in Taskwarrior to mark cancelled items)
   - `deleted` ↔ (deletion of CalDAV item)
 
@@ -39,6 +39,7 @@ Regarding timestamps:
   - `H` ↔ 1
 - TW `annotations` ↔ `DESCRIPTION` (one annotation ↔ one line in description)
 - TW `uuid` ↔ `X-SYNCALL-TW-UUID`
+- TW wait status ↔ `X-SYNCALL-TW-WAITING`
 - TW `tags` ↔ `CATEGORIES`
 
 ### Current limitations
