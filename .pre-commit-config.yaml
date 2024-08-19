@@ -17,16 +17,14 @@ repos:
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: trailing-whitespace
-      # - id: check-symlinks
-      # - id: pretty-format-json
-      #   args: ["--autofix"]
-      # - id: sort-simple-yaml
-  - repo: https://github.com/tcort/markdown-link-check
-    rev: "v3.10.3"
+
+  - repo: https://github.com/lycheeverse/lychee.git
+    rev: v0.15.1
     hooks:
-      # https://github.com/tcort/markdown-link-check#config-file-format
-      - id: markdown-link-check
-        args: ["--progress", "--config", ".markdown-link-check.json", "-q"]
+      - id: lychee
+        # Optionally include additional CLI arguments
+        # args: ["--no-progress", "--exclude", "file://"]
+        types: [markdown]
   - repo: https://github.com/markdownlint/markdownlint
     rev: "v0.12.0"
     hooks:
