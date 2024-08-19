@@ -249,7 +249,7 @@ addopts = ["--ignore-glob=quickstart*", "--doctest-modules"]
 
 # build-system -----------------------------------------------------------------
 [tool.poetry-dynamic-versioning]
-enable = false
+enable = true
 metadata = false
 dirty = false
 style = "pep440"
