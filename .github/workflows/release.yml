@@ -1,7 +1,6 @@
 name: Publish package
 on:
   push:
-  pull_request:
 
 jobs:
   publish_package:
@@ -9,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Publish package to pypi
-        uses: JRubics/poetry-publish@v1.16
+        uses: JRubics/poetry-publish@v2.0
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         with:
           pypi_token: ${{ secrets.PYPI_API_TOKEN }}
