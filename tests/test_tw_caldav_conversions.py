@@ -2,6 +2,7 @@ import datetime
 
 import pytest
 from dateutil.tz import tzutc
+
 from syncall.caldav.caldav_side import CaldavSide
 from syncall.taskwarrior.taskwarrior_side import TaskWarriorSide
 from syncall.tw_caldav_utils import (
@@ -156,7 +157,7 @@ def caldav_item_with_priority(prio: int) -> dict:
                 tw_pending_item_with_priority(tw_prio),
                 caldav_item_with_priority(caldav_prio),
             )
-            for tw_prio, caldav_prio in [("L", 9), ("M", 5), ("H", 1)]
+            for tw_prio, caldav_prio in [("L", 9), ("M", 5), ("H", 1), ("T", 0)]
         ),
     ],
     ids=[
@@ -169,6 +170,7 @@ def caldav_item_with_priority(prio: int) -> dict:
         "pending_item_with_priority_L",
         "pending_item_with_priority_M",
         "pending_item_with_priority_H",
+        "pending_item_with_priority_T",
     ],
 )
 def test_convert_tw_to_caldav_n_back(tw_item, caldav_item_expected):
