@@ -2,7 +2,6 @@ import datetime
 
 import pytest
 from dateutil.tz import tzutc
-
 from syncall.caldav.caldav_side import CaldavSide
 from syncall.taskwarrior.taskwarrior_side import TaskWarriorSide
 from syncall.tw_caldav_utils import (
