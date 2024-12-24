@@ -459,6 +459,14 @@ def opt_filename_extension():
         default=".md",
     )
 
+def opt_filename_path():
+    return click.option(
+        "--path",
+        "--filename-path",
+        "filename_path",
+        type=str,
+        help="Use this file path for locally saved data",
+    )
 
 # general options -----------------------------------------------------------------------------
 def opts_miscellaneous(side_A_name: str, side_B_name: str):

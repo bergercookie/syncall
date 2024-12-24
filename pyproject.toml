@@ -49,6 +49,8 @@ tw_notion_sync = "syncall.scripts.tw_notion_sync:main"
 fs_gkeep_sync = "syncall.scripts.fs_gkeep_sync:main"
 tw_caldav_sync = "syncall.scripts.tw_caldav_sync:main"
 tw_gtasks_sync = "syncall.scripts.tw_gtasks_sync:main"
+md_gtasks_sync = "syncall.scripts.md_gtasks_sync:main"
+
 
 # end-user dependencies --------------------------------------------------------
 [tool.poetry.dependencies]
