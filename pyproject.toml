@@ -56,7 +56,7 @@ gkeep = ["gkeepapi>=0.17.1,<0.18"]
 notion = ["notion-client>=0.7.1,<0.8"]
 asana = ["asana>=1.0.0,<2"]
 caldav = ["caldav>=0.11.0,<0.12", "icalendar>=5.0.13,<6"]
-tw = ["taskw-ng==0.2.7", "xdg>=6.0.0,<7"]
+tw = ["taskw-ng==0.2.7", "pyxdg"]
 fs = ["xattr>=1.1.0,<2"]
 
 [project.scripts]
