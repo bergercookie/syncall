@@ -8,7 +8,7 @@ from uuid import UUID
 from bubop import logger, parse_datetime
 from taskw_ng import TaskWarrior
 from taskw_ng.warrior import TASKRC
-from xdg import xdg_config_home
+from xdg.BaseDirectory import xdg_config_home
 
 from syncall.sync_side import ItemType, SyncSide
 from syncall.types import TaskwarriorRawItem
@@ -78,7 +78,7 @@ class TaskWarriorSide(SyncSide):
         config_file = None
         candidate_config_files = [
             Path(TASKRC).expanduser(),
-            xdg_config_home() / "task" / "taskrc",
+            f"{xdg_config_home} / task / taskrc",
         ]
         if config_file_override is not None:
             if not config_file_override.is_file():
