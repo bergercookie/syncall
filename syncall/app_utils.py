@@ -304,19 +304,22 @@ def fetch_from_pass_manager(password_path: str, allow_fail=False) -> str | None:
 
     passwd = None
     try:
-        passwd = read_gpg_token(pass_full_path)
-    except subprocess.CalledProcessError as err:
+        # pass format allows additional metadata (username, url, etc.)
+        # the password itself is a single string on the first line
+        passwd = read_gpg_token(pass_full_path).split("\n")[0]
+    except (subprocess.CalledProcessError, AttributeError) as err:
         if not allow_fail:
-            logger.error(
-                "\n".join(
-                    [
-                        f"Couldn't read {password_path} from pass\n\nFull path:"
-                        f" {pass_full_path}",
-                        non_empty("stdout", err.stdout.decode("utf-8"), join_with=": "),
-                        non_empty("stderr", err.stderr.decode("utf-8"), join_with=": "),
-                    ],
-                ),
-            )
+            log_lines = [
+                f"Couldn't read {password_path} from pass\n\nFull path: {pass_full_path}",
+            ]
+
+            if hasattr(err, "stdout") and hasattr(err, "stderr"):
+                log_lines += [
+                    non_empty("stdout", err.stdout.decode("utf-8"), join_with=": "),
+                    non_empty("stderr", err.stderr.decode("utf-8"), join_with=": "),
+                ]
+
+            logger.error("\n".join(log_lines))
             sys.exit(1)
 
     return passwd
