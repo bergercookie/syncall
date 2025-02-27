@@ -33,7 +33,10 @@ class MarkdownTasksSide(SyncSide):
         self._filename_path = filename_path
         self._filesystem_file = FilesystemFile(path=filename_path)
 
-        all_items = self.get_all_items()
+        self.all_items = self.get_all_items()
+        self._items_cache: dict[str, dict] = {
+            item.id: item for item in self.get_all_items()
+        }
 
     def start(self):
         pass
@@ -53,39 +56,16 @@ class MarkdownTasksSide(SyncSide):
             f"Found {len(all_items)} matching tasks inside {self._filename_path}"
         )
 
-        return all_items
-
     def get_item(self, item_id: ID) -> Optional[MarkdownTasksSide]:
-        item = self._get_item_refresh(item_id=item_id)
-
-        return item
-
-    def _get_item_refresh(self, item_id: ID) -> Optional[FilesystemFile]:
-        """Search for the FilesystemFile in the root directory given its ID."""
-        fs_files = self.get_all_items()
-
-        matching_fs_files = [fs_file for fs_file in fs_files if fs_file.id == item_id]
-        if len(matching_fs_files) > 1:
-            logger.warning(
-                f"Found {len(matching_fs_files)} paths with the item ID [{item_id}]."
-                "Arbitrarily returning the first item."
-            )
-        elif len(matching_fs_files) == 0:
-            return None
-
-        # update the cache & return
-        item = matching_fs_files[0]
-        self._items_cache[item_id] = item
+        item = self._items_cache.get(item_id)
         return item
 
     def delete_single_item(self, item_id: ID):
-        item = self.get_item(item_id)
-        if item is None:
+        try:
+            del self._items_cache[item_id]
+        except Keyerror:
             logger.warning(f"Requested to delete item {item_id} but item cannot be found.")
             return
-
-        item.delete()
-        item.flush()
 
     def update_item(self, item_id: ID, **changes):
         item = self.get_item(item_id)
@@ -93,17 +73,15 @@ class MarkdownTasksSide(SyncSide):
             logger.warning(f"Requested to update item {item_id} but item cannot be found.")
             return
 
-        if not {"title", "contents"}.issubset(changes):
-            logger.warning(f"Invalid changes provided to Fielsystem Side -> {changes}")
+        if not {"title", "is_checked"}.issubset(changes):
+            logger.warning(f"Invalid changes provided to Filesystem Side -> {changes}")
             return
 
         item.title = changes["title"]
-        item.contents = changes["contents"]
-        item.flush()
+        item.is_checked = changes["is_checked"]
 
-    def add_item(self, item: FilesystemFile) -> FilesystemFile:
-        item.root = self.filesystem_root
-        item.flush()
+    def add_item(self, item: MarkdownTaskItem) -> FilesystemFile:
+        self._items_cache[item.id] = item
         return item
 
     @classmethod
