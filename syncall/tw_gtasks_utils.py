@@ -33,6 +33,28 @@ def convert_tw_to_gtask(
 
     return gtasks_item
 
+def convert_md_to_gtask(
+    tw_item: Item,
+) -> Item:
+    """TW -> GTasks conversion."""
+    assert all(
+        i in md_item.keys() for i in ("title", "is_checked", "uuid")
+    ), "Missing keys in tw_item"
+
+    gtasks_item = {}
+
+    # title
+    gtasks_item["title"] = md_item["title"]
+
+    # status
+    gtasks_item["status"] = "needsAction" if md_item["is_checked"] else "completed"
+
+    # update time
+    if "last_modified_date" in md_item.keys():
+        gtasks_item["updated"] = format_datetime_tz(parse_google_datetime(md_item["last_modified_date"]))
+
+    return gtasks_item
+
 
 def convert_gtask_to_tw(
     gtasks_item: GTasksItem,
@@ -94,3 +116,36 @@ def convert_gtask_to_tw(
         tw_item["modified"] = parse_google_datetime(gtasks_item["updated"])
 
     return tw_item
+
+
+def convert_gtask_to_md(
+    gtasks_item: GTasksItem,
+    set_scheduled_date: bool = False,
+) -> Item:
+    """GTasks -> TW Converter.
+
+    If set_scheduled_date, then it will set the "scheduled" date of the produced TW task
+    instead of the "due" date
+    """
+    # Parse the description
+    uuid = None
+
+    md_item: Item = {}
+
+    status_gtask = gtasks_item["status"]
+
+    # status
+    md_item["is_checked"] = status_gtask == "completed"
+
+    # uuid - may just be created -, thus not there
+    if uuid is not None:
+        md_item["uuid"] = uuid
+
+    # Description
+    md_item["title"] = gtasks_item["title"]
+
+    # update time
+    if "updated" in gtasks_item.keys():
+        md_item["last_modified_date"] = parse_google_datetime(gtasks_item["updated"])
+
+    return md_item

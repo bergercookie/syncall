@@ -141,12 +141,12 @@ def main(
 
     # take extra arguments into account -------------------------------------------------------
     def convert_B_to_A(*args, **kargs):
-        return convert_tw_to_gtask(
+        return convert_md_to_gtask(
             *args,
             **kargs,
         )
 
-    convert_B_to_A.__doc__ = convert_tw_to_gtask.__doc__
+    convert_B_to_A.__doc__ = convert_md_to_gtask.__doc__
 
     def convert_A_to_B(*args, **kargs):
         return convert_gtask_to_tw(
