@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import MutableMapping, Optional, Sequence
+from typing import MutableMapping, Optional, Sequence, cast
 
 from item_synchronizer.types import ID
 from loguru import logger
@@ -28,10 +28,10 @@ class MarkdownTasksSide(SyncSide):
     def last_modification_key(cls) -> str:
         return "last_modified_date"
 
-    def __init__(self, filename_path: Path) -> None:
+    def __init__(self, markdown_file: Path) -> None:
         super().__init__(name="Fs", fullname="Filesystem")
-        self._filename_path = filename_path
-        self._filesystem_file = FilesystemFile(path=filename_path)
+        self._filename_path = markdown_file
+        self._filesystem_file = FilesystemFile(path=markdown_file)
 
         self.all_items = self.get_all_items()
         self._items_cache: dict[str, dict] = {
@@ -47,7 +47,11 @@ class MarkdownTasksSide(SyncSide):
     def get_all_items(self, **kargs) -> Sequence[FilesystemFile]:
         """Read all items again from storage."""
         all_items = tuple(
-            MarkdownTask(line)
+            MarkdownTaskItem(
+                is_checked=True,
+                last_modified_date=True,
+                title=line,
+            )
             for line in self._filesystem_file.contents
             if line.startswith("- [")
         )
@@ -55,8 +59,9 @@ class MarkdownTasksSide(SyncSide):
         logger.opt(lazy=True).debug(
             f"Found {len(all_items)} matching tasks inside {self._filename_path}"
         )
+        return all_items
 
-    def get_item(self, item_id: ID) -> Optional[MarkdownTasksSide]:
+    def get_item(self, item_id: ID) -> Optional[MarkdownTaskItem]:
         item = self._items_cache.get(item_id)
         return item
 
@@ -81,6 +86,7 @@ class MarkdownTasksSide(SyncSide):
         item.is_checked = changes["is_checked"]
 
     def add_item(self, item: MarkdownTaskItem) -> FilesystemFile:
+        item = MarkdownTaskItem.from_raw_item(item)
         self._items_cache[item.id] = item
         return item
 

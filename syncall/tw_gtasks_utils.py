@@ -36,7 +36,7 @@ def convert_tw_to_gtask(
 def convert_md_to_gtask(
     tw_item: Item,
 ) -> Item:
-    """TW -> GTasks conversion."""
+    """MD -> GTasks conversion."""
     assert all(
         i in md_item.keys() for i in ("title", "is_checked", "uuid")
     ), "Missing keys in tw_item"
@@ -122,7 +122,7 @@ def convert_gtask_to_md(
     gtasks_item: GTasksItem,
     set_scheduled_date: bool = False,
 ) -> Item:
-    """GTasks -> TW Converter.
+    """GTasks -> MD Converter.
 
     If set_scheduled_date, then it will set the "scheduled" date of the produced TW task
     instead of the "due" date

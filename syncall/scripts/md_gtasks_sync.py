@@ -13,7 +13,7 @@ from syncall.app_utils import confirm_before_proceeding, inform_about_app_extras
 
 try:
     from syncall.google.gtasks_side import GTasksSide
-    from syncall.taskwarrior.taskwarrior_side import TaskWarriorSide
+    from syncall.filesystem.markdown_tasks_side import MarkdownTasksSide
 except ImportError:
     inform_about_app_extras(["google", "fs"])
 
@@ -30,22 +30,23 @@ from syncall.cli import (
     opt_google_oauth_port,
     opt_google_secret_override,
     opt_gtasks_list,
+    opt_markdown_file,
     opts_miscellaneous,
-    opts_filename_path,
 )
+from syncall.tw_gtasks_utils import convert_gtask_to_md, convert_md_to_gtask
 
 
 @click.command()
 @opt_gtasks_list()
 @opt_google_secret_override()
 @opt_google_oauth_port()
+@opt_markdown_file()
 @opts_miscellaneous(side_A_name="Obsidian", side_B_name="Google Tasks")
 def main(
     gtasks_list: str,
     google_secret: str,
     oauth_port: int,
-    filename_path: str,
-    prefer_scheduled_date: bool,
+    markdown_file: str,
     resolution_strategy: str,
     verbose: int,
     combination_name: str,
@@ -70,7 +71,7 @@ def main(
 
     combination_of_file_and_gtasks_list = any(
         [
-            filename_path,
+            markdown_file,
             gtasks_list,
         ]
     )
@@ -83,7 +84,7 @@ def main(
         app_config = fetch_app_configuration(
             side_A_name="Obsidian", side_B_name="Google Tasks", combination=combination_name
         )
-        md_filename_path = app_config["md_filename_path"]
+        markdown_file = app_config["markdown_file"]
         gtasks_list = app_config["gtasks_list"]
 
     # combination manually specified ----------------------------------------------------------
@@ -92,7 +93,7 @@ def main(
         combination_name = cache_or_reuse_cached_combination(
             config_args={
                 "gtasks_list": gtasks_list,
-                "filename_path": filename_path,
+                "markdown_file": markdown_file,
             },
             config_fname="md_gtasks_configs",
             custom_combination_savename=custom_combination_savename,
@@ -111,9 +112,8 @@ def main(
         format_dict(
             header="Configuration",
             items={
-                "Markdown Filename Path": md_filename_path,
+                "Markdown Filename Path": markdown_file,
                 "Google Tasks": gtasks_list,
-                "Prefer scheduled dates": prefer_scheduled_date,
             },
             prefix="\n\n",
             suffix="\n",
@@ -123,8 +123,8 @@ def main(
         confirm_before_proceeding()
 
     # initialize sides ------------------------------------------------------------------------
-    tw_side = MarkdownTasksSide(
-        filename_path=filename_path
+    md_side = MarkdownTasksSide(
+        markdown_file=markdown_file
     )
 
     gtasks_side = GTasksSide(
@@ -149,10 +149,9 @@ def main(
     convert_B_to_A.__doc__ = convert_md_to_gtask.__doc__
 
     def convert_A_to_B(*args, **kargs):
-        return convert_gtask_to_tw(
+        return convert_gtask_to_md(
             *args,
             **kargs,
-            set_scheduled_date=prefer_scheduled_date,
         )
 
     convert_A_to_B.__doc__ = convert_gtask_to_md.__doc__

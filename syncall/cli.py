@@ -357,6 +357,16 @@ def opt_gtasks_list():
     )
 
 
+# google tasks --------------------------------------------------------------------------------
+def opt_markdown_file():
+    return click.option(
+        "-m",
+        "--markdown-file",
+        type=str,
+        help="Name of the Markdown file including tasks list to synchronize",
+    )
+
+
 # google-related options ----------------------------------------------------------------------
 def opt_google_secret_override():
     return click.option(
