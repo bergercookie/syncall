@@ -44,6 +44,120 @@ def _opt_pdb_on_error():
     )
 
 
+# cattr related options -----------------------------------------------------------------------
+def opts_cattr(hidden_gid: bool):
+    print("test")
+    def decorator(f):
+        for d in reversed([
+            _opt_cattr_task_gid,
+            _opt_cattr_token_pass_path,
+            _opt_cattr_url_path,
+            ],):
+            f=d()(f)
+            return _opt_cattr_task_gid(hidden=hidden_gid)(f)
+    return decorator
+
+def _opt_cattr_task_gid(**kwargs):
+    return click.option(
+        "-a",
+        "--cattr-task-gid",
+        "cattr_task_gid",
+        type=str,
+        help="Limit sync to provided task",
+        **kwargs,
+    )
+
+
+def _opt_cattr_url_path():
+    def callback(ctx, param, value):
+        del ctx
+
+        # fetch API token to connect to cattr -------------------------------------------------
+        cattr_url = os.environ.get("CATTR_URL")
+
+        if cattr_url is None:
+            error_and_exit(
+                "You must provide an Cattr Personal Access cattr_url, using the"
+                f" {'/'.join(param.opts)} option",
+            )
+        if cattr_url is not None:
+            logger.debug(
+                "Reading the Cattr Personal Access cattr_url (PAT) from environment"
+                " variable...",
+            )
+
+        return cattr_url
+
+    return click.option(
+        "--url",
+        "--url-path",
+        "cattr_url",
+        help="URL of cattr API",
+        expose_value=True,
+        callback=callback,
+    )
+def _opt_cattr_token_pass_path():
+    def callback(ctx, param, value):
+        del ctx
+
+        api_token_pass_path = value
+
+        # fetch API token to connect to cattr -------------------------------------------------
+        cattr_token = os.environ.get("CATTR_PERSONAL_ACCESS_TOKEN")
+
+        if cattr_token is None and api_token_pass_path is None:
+            error_and_exit(
+                "You must provide an Cattr Personal Access cattr_token, using the"
+                f" {'/'.join(param.opts)} option",
+            )
+        if cattr_token is not None:
+            logger.debug(
+                "Reading the Cattr Personal Access cattr_token (PAT) from environment"
+                " variable...",
+            )
+        else:
+            cattr_token = fetch_from_pass_manager(api_token_pass_path)
+
+        return cattr_token
+
+    return click.option(
+        "--token",
+        "--token-pass-path",
+        "cattr_token",
+        help="Path in the UNIX password manager to fetch",
+        expose_value=True,
+        callback=callback,
+    )
+
+
+def _opt_cattr_workspace_gid():
+    return click.option(
+        "-w",
+        "--cattr-workspace-gid",
+        "cattr_workspace_gid",
+        type=str,
+        help="Cattr workspace GID used to filter tasks",
+    )
+
+
+def _opt_cattr_workspace_name():
+    return click.option(
+        "-W",
+        "--cattr-workspace-name",
+        "cattr_workspace_name",
+        type=str,
+        help="Cattr workspace name used to filter tasks",
+    )
+
+
+def _opt_list_cattr_workspaces():
+    return click.option(
+        "--list-cattr-workspaces",
+        "do_list_cattr_workspaces",
+        is_flag=True,
+        help="List the available Cattr workspaces",
+    )
+
 # asana related options -----------------------------------------------------------------------
 def opts_asana(hidden_gid: bool):
     def decorator(f):
