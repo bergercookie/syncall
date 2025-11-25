@@ -52,7 +52,7 @@ tw_gtasks_sync = "syncall.scripts.tw_gtasks_sync:main"
 
 # end-user dependencies --------------------------------------------------------
 [tool.poetry.dependencies]
-python = ">=3.10,<=3.12.5"
+python = ">=3.10,<4.0"
 
 PyYAML = "~5.3.1"
 bidict = "^0.21.4"
