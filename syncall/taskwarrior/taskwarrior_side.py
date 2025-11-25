@@ -8,7 +8,7 @@ from uuid import UUID
 from bubop import logger, parse_datetime
 from taskw_ng import TaskWarrior
 from taskw_ng.warrior import TASKRC
-from xdg import xdg_config_home
+from xdg_base_dirs import xdg_config_home
 
 from syncall.sync_side import ItemType, SyncSide
 from syncall.types import TaskwarriorRawItem
