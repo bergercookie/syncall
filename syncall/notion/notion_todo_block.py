@@ -112,14 +112,14 @@ class NotionTodoBlock(ConcreteItem):
     @classmethod
     def get_plaintext(cls, todo_section: NotionTodoSection):
         """Get the plaintext from a todo section."""
-        return "".join([li["plain_text"] for li in todo_section["text"]])  # type: ignore
+        return "".join([li["plain_text"] for li in todo_section["rich_text"]])  # type: ignore
 
     def serialize(self) -> dict:
         return {
             "object": "block",
             "type": "to_do",
             "to_do": {
-                "text": [{"type": "text", "text": {"content": self.plaintext}}],
+                "rich_text": [{"type": "text", "text": {"content": self.plaintext}}],
                 "checked": self.is_checked,
             },
         }
