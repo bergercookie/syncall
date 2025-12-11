@@ -28,7 +28,7 @@ def notion_simple_todo() -> NotionTodoBlockItem:
         "archived": False,
         "type": "to_do",
         "to_do": {
-            "text": [
+            "rich_text": [
                 {
                     "type": "text",
                     "text": {"content": "Lacinato kale", "link": None},
@@ -94,7 +94,7 @@ def notion_chained_todo() -> NotionTodoBlockItem:
         "archived": False,
         "type": "to_do",
         "to_do": {
-            "text": [
+            "rich_text": [
                 {
                     "type": "text",
                     "text": {"content": "Bringing it ", "link": None},
@@ -204,7 +204,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "paragraph",
                 "paragraph": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "👋 Welcome to Notion!", "link": None},
@@ -231,7 +231,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "paragraph",
                 "paragraph": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "Here are the basics:", "link": None},
@@ -258,7 +258,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "to_do",
                 "to_do": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "Lacinato kale", "link": None},
@@ -286,7 +286,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "to_do",
                 "to_do": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "Bringing it ", "link": None},
@@ -384,7 +384,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "bulleted_list_item",
                 "bulleted_list_item": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "a list item", "link": None},
@@ -411,7 +411,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "to_do",
                 "to_do": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {
@@ -603,7 +603,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "to_do",
                 "to_do": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "See the ", "link": None},
@@ -668,7 +668,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "to_do",
                 "to_do": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "Click the ", "link": None},
@@ -731,7 +731,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "to_do",
                 "to_do": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "Click ", "link": None},
@@ -794,7 +794,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "toggle",
                 "toggle": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {
@@ -840,7 +840,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "paragraph",
                 "paragraph": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "See it in action:", "link": None},
@@ -895,7 +895,7 @@ def page_contents() -> NotionPageContents:
                 "has_children": False,
                 "archived": False,
                 "type": "paragraph",
-                "paragraph": {"text": []},
+                "paragraph": {"rich_text": []},
             },
             {
                 "object": "block",
@@ -934,7 +934,7 @@ def page_contents() -> NotionPageContents:
                 "has_children": False,
                 "archived": False,
                 "type": "paragraph",
-                "paragraph": {"text": []},
+                "paragraph": {"rich_text": []},
             },
             {
                 "object": "block",
@@ -973,7 +973,7 @@ def page_contents() -> NotionPageContents:
                 "has_children": False,
                 "archived": False,
                 "type": "paragraph",
-                "paragraph": {"text": []},
+                "paragraph": {"rich_text": []},
             },
             {
                 "object": "block",
@@ -1013,7 +1013,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "paragraph",
                 "paragraph": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "Visit our ", "link": None},
@@ -1070,7 +1070,7 @@ def page_contents() -> NotionPageContents:
                 "has_children": False,
                 "archived": False,
                 "type": "paragraph",
-                "paragraph": {"text": []},
+                "paragraph": {"rich_text": []},
             },
             {
                 "object": "block",
@@ -1081,7 +1081,7 @@ def page_contents() -> NotionPageContents:
                 "archived": False,
                 "type": "paragraph",
                 "paragraph": {
-                    "text": [
+                    "rich_text": [
                         {
                             "type": "text",
                             "text": {"content": "👉", "link": None},
@@ -1172,7 +1172,7 @@ def page_contents() -> NotionPageContents:
                 "has_children": False,
                 "archived": False,
                 "type": "paragraph",
-                "paragraph": {"text": []},
+                "paragraph": {"rich_text": []},
             },
         ],
         "next_cursor": None,
