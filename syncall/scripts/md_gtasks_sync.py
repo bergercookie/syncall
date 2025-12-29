@@ -146,6 +146,7 @@ def main(
         return convert_md_to_gtask(
             *args,
             **kargs,
+            set_scheduled_date=prefer_scheduled_date,
         )
 
     convert_B_to_A.__doc__ = convert_md_to_gtask.__doc__
@@ -170,7 +171,7 @@ def main(
         ),
         config_fname=combination_name,
         ignore_keys=(
-            (),
+            ("last_modified_date"),
             (),
         ),
     ) as aggregator:

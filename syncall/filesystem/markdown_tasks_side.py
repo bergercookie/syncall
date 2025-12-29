@@ -101,6 +101,8 @@ class MarkdownTasksSide(SyncSide):
             for k in [
                 "title",
                 "is_checked",
+                "due_date",
+                "done_date",
             ]
             if k not in ignore_keys
         ]

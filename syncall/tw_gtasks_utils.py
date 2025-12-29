@@ -36,6 +36,7 @@ def convert_tw_to_gtask(
 
 def convert_md_to_gtask(
     md_item: Item,
+    set_scheduled_date: bool = False,
 ) -> Item:
     """MD -> GTasks conversion."""
     assert all(
@@ -44,16 +45,22 @@ def convert_md_to_gtask(
 
     gtasks_item = {}
 
-    # import pdb; pdb.set_trace()
     # title
     gtasks_item["title"] = md_item["title"]
 
     # status
     gtasks_item["status"] = "completed" if md_item["is_checked"] else "needsAction"
 
-    # update time
-    if "last_modified_date" in md_item.keys():
-        gtasks_item["updated"] = format_datetime_tz(parse_google_datetime(md_item["last_modified_date"]))
+    # dates
+    if md_item.last_modified_date:
+        gtasks_item["updated"] = format_datetime_tz(parse_google_datetime(md_item.last_modified_date))
+
+    due_date = md_item.scheduled_date if set_scheduled_date else md_item.due_date
+    if md_item.due_date:
+        gtasks_item["due"] = format_datetime_tz(parse_google_datetime(due_date))
+
+    if md_item.done_date:
+        gtasks_item["completed"] = format_datetime_tz(parse_google_datetime(md_item.done_date))
 
     return gtasks_item
 
@@ -139,12 +146,18 @@ def convert_gtask_to_md(
 
     md_item: MarkdownTaskItem = MarkdownTaskItem(is_checked, title)
 
-    date_key = "scheduled" if set_scheduled_date else "due"
-
     # due/scheduled date
     due_date = GTasksSide.get_task_due_time(gtasks_item)
     if due_date is not None:
-        md_item[date_key] = due_date
+        if set_scheduled_date:
+            md_item.scheduled_date = due_date
+        else:
+            md_item.due_date = due_date
+
+    # end date
+    end_date = GTasksSide.get_task_completed_time(gtasks_item)
+    if end_date is not None:
+        md_item.done_date = end_date
 
     # update time
     if "updated" in gtasks_item.keys():
