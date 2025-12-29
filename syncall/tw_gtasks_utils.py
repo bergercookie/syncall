@@ -34,15 +34,16 @@ def convert_tw_to_gtask(
     return gtasks_item
 
 def convert_md_to_gtask(
-    tw_item: Item,
+    md_item: Item,
 ) -> Item:
     """MD -> GTasks conversion."""
     assert all(
         i in md_item.keys() for i in ("title", "is_checked", "uuid")
-    ), "Missing keys in tw_item"
+    ), "Missing keys in md_item"
 
-    gtasks_item = {}
+    gtasks_item: Item = {}
 
+    # import pdb; pdb.set_trace()
     # title
     gtasks_item["title"] = md_item["title"]
 
@@ -148,4 +149,5 @@ def convert_gtask_to_md(
     if "updated" in gtasks_item.keys():
         md_item["last_modified_date"] = parse_google_datetime(gtasks_item["updated"])
 
+    # import pdb; pdb.set_trace()
     return md_item

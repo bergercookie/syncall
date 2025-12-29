@@ -1,3 +1,6 @@
+import datetime
+import re
+
 from pathlib import Path
 from typing import MutableMapping, Optional, Sequence, cast
 
@@ -33,7 +36,6 @@ class MarkdownTasksSide(SyncSide):
         self._filename_path = markdown_file
         self._filesystem_file = FilesystemFile(path=markdown_file)
 
-        self.all_items = self.get_all_items()
         self._items_cache: dict[str, dict] = {
             item.id: item for item in self.get_all_items()
         }
@@ -42,17 +44,14 @@ class MarkdownTasksSide(SyncSide):
         pass
 
     def finish(self):
+        self._filesystem_file.contents='\n'.join(str(i) for i in self._items_cache.values())
         self._filesystem_file.flush()
 
     def get_all_items(self, **kargs) -> Sequence[FilesystemFile]:
         """Read all items again from storage."""
         all_items = tuple(
-            MarkdownTaskItem(
-                is_checked=True,
-                last_modified_date=True,
-                title=line,
-            )
-            for line in self._filesystem_file.contents
+            MarkdownTaskItem.from_markdown(line, self._filesystem_file)
+            for line in self._filesystem_file.contents.splitlines()
             if line.startswith("- [")
         )
 
@@ -73,6 +72,7 @@ class MarkdownTasksSide(SyncSide):
             return
 
     def update_item(self, item_id: ID, **changes):
+        import pdb; pdb.set_trace()
         item = self.get_item(item_id)
         if item is None:
             logger.warning(f"Requested to update item {item_id} but item cannot be found.")
@@ -94,6 +94,6 @@ class MarkdownTasksSide(SyncSide):
     def items_are_identical(
         cls, item1: ConcreteItem, item2: ConcreteItem, ignore_keys: Sequence[str] = []
     ) -> bool:
-        ignore_keys_ = [cls.last_modification_key()]
+        ignore_keys_ = []
         ignore_keys_.extend(ignore_keys)
         return item1.compare(item2, ignore_keys=ignore_keys_)
