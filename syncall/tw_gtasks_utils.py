@@ -150,17 +150,17 @@ def convert_gtask_to_md(
     due_date = GTasksSide.get_task_due_time(gtasks_item)
     if due_date is not None:
         if set_scheduled_date:
-            md_item.scheduled_date = due_date
+            md_item.scheduled_date = due_date.replace(tzinfo=None)
         else:
-            md_item.due_date = due_date
+            md_item.due_date = due_date.replace(tzinfo=None)
 
     # end date
     end_date = GTasksSide.get_task_completed_time(gtasks_item)
     if end_date is not None:
-        md_item.done_date = end_date
+        md_item.done_date = end_date.replace(tzinfo=None)
 
     # update time
     if "updated" in gtasks_item.keys():
-        md_item.last_modified_date = parse_google_datetime(gtasks_item["updated"])
+        md_item.last_modified_date = parse_google_datetime(gtasks_item["updated"]).replace(tzinfo=None)
 
     return md_item
