@@ -2,6 +2,7 @@ from bubop import format_datetime_tz, logger
 from item_synchronizer.types import Item
 
 from syncall.google.common import parse_google_datetime
+from syncall.filesystem.markdown_task_item import MarkdownTaskItem
 from syncall.google.gtasks_side import GTasksSide
 from syncall.tw_utils import extract_tw_fields_from_string, get_tw_annotations_as_str
 from syncall.types import GTasksItem
@@ -38,17 +39,17 @@ def convert_md_to_gtask(
 ) -> Item:
     """MD -> GTasks conversion."""
     assert all(
-        i in md_item.keys() for i in ("title", "is_checked", "uuid")
+        i in md_item.keys() for i in ("title", "is_checked")
     ), "Missing keys in md_item"
 
-    gtasks_item: Item = {}
+    gtasks_item = {}
 
     # import pdb; pdb.set_trace()
     # title
     gtasks_item["title"] = md_item["title"]
 
     # status
-    gtasks_item["status"] = "needsAction" if md_item["is_checked"] else "completed"
+    gtasks_item["status"] = "completed" if md_item["is_checked"] else "needsAction"
 
     # update time
     if "last_modified_date" in md_item.keys():
@@ -128,26 +129,25 @@ def convert_gtask_to_md(
     If set_scheduled_date, then it will set the "scheduled" date of the produced TW task
     instead of the "due" date
     """
-    # Parse the description
-    uuid = None
-
-    md_item: Item = {}
-
     status_gtask = gtasks_item["status"]
 
     # status
-    md_item["is_checked"] = status_gtask == "completed"
-
-    # uuid - may just be created -, thus not there
-    if uuid is not None:
-        md_item["uuid"] = uuid
+    is_checked = status_gtask == "completed"
 
     # Description
-    md_item["title"] = gtasks_item["title"]
+    title = gtasks_item["title"]
+
+    md_item: MarkdownTaskItem = MarkdownTaskItem(is_checked, title)
+
+    date_key = "scheduled" if set_scheduled_date else "due"
+
+    # due/scheduled date
+    due_date = GTasksSide.get_task_due_time(gtasks_item)
+    if due_date is not None:
+        md_item[date_key] = due_date
 
     # update time
     if "updated" in gtasks_item.keys():
-        md_item["last_modified_date"] = parse_google_datetime(gtasks_item["updated"])
+        md_item.last_modified_date = parse_google_datetime(gtasks_item["updated"])
 
-    # import pdb; pdb.set_trace()
     return md_item

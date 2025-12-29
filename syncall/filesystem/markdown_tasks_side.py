@@ -37,7 +37,7 @@ class MarkdownTasksSide(SyncSide):
         self._filesystem_file = FilesystemFile(path=markdown_file)
 
         self._items_cache: dict[str, dict] = {
-            item.id: item for item in self.get_all_items()
+            str(item.id): item for item in self.get_all_items()
         }
 
     def start(self):
@@ -72,7 +72,6 @@ class MarkdownTasksSide(SyncSide):
             return
 
     def update_item(self, item_id: ID, **changes):
-        import pdb; pdb.set_trace()
         item = self.get_item(item_id)
         if item is None:
             logger.warning(f"Requested to update item {item_id} but item cannot be found.")
@@ -94,6 +93,15 @@ class MarkdownTasksSide(SyncSide):
     def items_are_identical(
         cls, item1: ConcreteItem, item2: ConcreteItem, ignore_keys: Sequence[str] = []
     ) -> bool:
-        ignore_keys_ = []
-        ignore_keys_.extend(ignore_keys)
-        return item1.compare(item2, ignore_keys=ignore_keys_)
+        # item1 = item1.copy()
+        # item2 = item2.copy()
+
+        keys = [
+            k
+            for k in [
+                "title",
+                "is_checked",
+            ]
+            if k not in ignore_keys
+        ]
+        return SyncSide._items_are_identical(item1, item2, keys)

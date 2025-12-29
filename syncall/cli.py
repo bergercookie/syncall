@@ -357,8 +357,22 @@ def opt_gtasks_list():
     )
 
 
-# google tasks --------------------------------------------------------------------------------
-def opt_markdown_file():
+# markdown file -------------------------------------------------------------------------------
+def opts_markdown():
+    def decorator(f):
+        for d in reversed(
+            [
+                _opt_md_file,
+                _opt_prefer_scheduled_date,
+            ],
+        ):
+            f = d()(f)
+        return f
+
+    return decorator
+
+
+def _opt_md_file():
     return click.option(
         "-m",
         "--markdown-file",

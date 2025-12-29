@@ -7,6 +7,10 @@ from item_synchronizer.types import ID
 from syncall.concrete_item import ConcreteItem, ItemKey, KeyType
 from syncall.filesystem.filesystem_file import FilesystemFile
 
+MD_TASK_CHECKBOX_RE = r"-\s*\[[ xX]\]\s*"
+MD_TASK_SCHEDULED_EMOJI = "⏳"
+MD_TASK_DUE_EMOJI = "📅"
+MD_TASK_DATE_RE = r"-\s*\[[ xX]\]\s*"
 
 class MarkdownTaskItem(ConcreteItem):
     """A task line inside a Markdown file."""
@@ -20,7 +24,9 @@ class MarkdownTaskItem(ConcreteItem):
             )
         )
 
-        self._markdown_file = None
+        self.last_modified_date = None
+        self.scheduled_date = None
+        self.due_date = None
         self.deleted = False
         self.is_checked = is_checked
         self.title = title
@@ -40,30 +46,27 @@ class MarkdownTaskItem(ConcreteItem):
     def from_markdown(cls, markdown_text: str, markdown_file: FilesystemFile) -> "MarkdownTaskItem":
         """Create a MarkdownTaskItem given the line of text."""
 
-        md_task_checkbox = r"-\s*\[[ xX]\]\s*"
-
-        checkbox_found = re.match(md_task_checkbox, markdown_text)
+        checkbox_found = re.match(MD_TASK_CHECKBOX_RE, markdown_text)
         if checkbox_found:
             is_checked = 'X' in checkbox_found.group(0).upper()
-            title = re.split(md_task_checkbox, markdown_text)[-1]
+            title = re.split(MD_TASK_CHECKBOX_RE, markdown_text)[-1]
 
         result = cls(
             is_checked=is_checked,
             title=title
         )
-        result._markdown_file = markdown_file
+        result.last_modified_date = markdown_file.last_modified_date
         # import pdb; pdb.set_trace()
         return result
-
-    @property
-    def last_modified_date(self) -> datetime.datetime:
-        if self._markdown_file:
-            return self._markdown_file.last_modified_date
 
     def __str__(self):
         return '- [{}] {}'.format(
             'X' if self.is_checked else ' ',
             self.title)
+
+    @classmethod
+    def last_modification_key(cls) -> str:
+        return "last_modified_date"
 
     def _id(self) -> ID:
         return uuid.uuid5(uuid.NAMESPACE_OID, self.title)

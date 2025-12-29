@@ -30,7 +30,7 @@ from syncall.cli import (
     opt_google_oauth_port,
     opt_google_secret_override,
     opt_gtasks_list,
-    opt_markdown_file,
+    opts_markdown,
     opts_miscellaneous,
 )
 from syncall.tw_gtasks_utils import convert_gtask_to_md, convert_md_to_gtask
@@ -40,13 +40,14 @@ from syncall.tw_gtasks_utils import convert_gtask_to_md, convert_md_to_gtask
 @opt_gtasks_list()
 @opt_google_secret_override()
 @opt_google_oauth_port()
-@opt_markdown_file()
+@opts_markdown()
 @opts_miscellaneous(side_A_name="Obsidian", side_B_name="Google Tasks")
 def main(
     gtasks_list: str,
     google_secret: str,
     oauth_port: int,
     markdown_file: str,
+    prefer_scheduled_date: bool,
     resolution_strategy: str,
     verbose: int,
     combination_name: str,
@@ -114,6 +115,7 @@ def main(
             items={
                 "Markdown Filename Path": markdown_file,
                 "Google Tasks": gtasks_list,
+                "Prefer scheduled dates": prefer_scheduled_date,
             },
             prefix="\n\n",
             suffix="\n",
@@ -152,6 +154,7 @@ def main(
         return convert_gtask_to_md(
             *args,
             **kargs,
+            set_scheduled_date=prefer_scheduled_date,
         )
 
     convert_A_to_B.__doc__ = convert_gtask_to_md.__doc__
