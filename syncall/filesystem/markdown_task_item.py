@@ -2,8 +2,9 @@ import datetime
 import re
 import uuid
 
-from item_synchronizer.types import ID
+from typing import Optional
 
+from item_synchronizer.types import ID
 from syncall.concrete_item import ConcreteItem, ItemKey, KeyType
 from syncall.filesystem.filesystem_file import FilesystemFile
 
@@ -29,6 +30,7 @@ class MarkdownTaskItem(ConcreteItem):
             )
         )
 
+        self._persistent_id = None
         self.last_modified_date = None
         self.scheduled_date = None
         self.due_date = None
@@ -100,6 +102,10 @@ class MarkdownTaskItem(ConcreteItem):
 
     def _id(self) -> ID:
         return uuid.uuid5(uuid.NAMESPACE_OID, self.title)
+
+    @property
+    def id(self) -> Optional[ID]:
+        return self._persistent_id or self._id()
 
     def delete(self) -> None:
         self.deleted = True

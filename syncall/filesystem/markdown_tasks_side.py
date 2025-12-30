@@ -1,4 +1,5 @@
 import datetime
+import pickle
 import re
 
 from pathlib import Path
@@ -35,6 +36,12 @@ class MarkdownTasksSide(SyncSide):
         super().__init__(name="Fs", fullname="Filesystem")
         self._filename_path = markdown_file
         self._filesystem_file = FilesystemFile(path=markdown_file)
+        self._filesystem_ids_path = Path(f".{markdown_file}.ids")
+
+        self._ids_map = {}
+        if self._filesystem_ids_path.is_file():
+            with self._filesystem_ids_path.open("rb") as f:
+                self._ids_map = pickle.load(f)
 
         self._items_cache: dict[str, dict] = {
             str(item.id): item for item in self.get_all_items()
@@ -48,6 +55,23 @@ class MarkdownTasksSide(SyncSide):
         self._filesystem_file.contents = contents
         self._filesystem_file.flush()
 
+        # delete id mappings if the item no longer exist
+        existing_ids = [ str(item._id()) for item in self._items_cache.values() ]
+        self._ids_map = {new_id: persistent_id for new_id, persistent_id in self._ids_map.items() if new_id in existing_ids}
+
+        with self._filesystem_ids_path.open("wb") as f:
+            pickle.dump(self._ids_map, f)
+
+    def get_persistent_id(self, id):
+    # Markdown doesnt keep a stable id as it's just a text format
+    # We record ids in a pickle file if they change
+    # so the map in Syncronizer works as expected
+    # this would be the first id ever set for an item
+        try:
+            return self._ids_map[str(id)]
+        except KeyError:
+            return id
+
     def get_all_items(self, **kargs) -> Sequence[FilesystemFile]:
         """Read all items again from storage."""
         all_items = tuple(
@@ -55,10 +79,20 @@ class MarkdownTasksSide(SyncSide):
             for line in self._filesystem_file.contents.splitlines()
         )
 
+        result = []
+        for item in all_items:
+            if item is None:
+                continue
+            item_id = item._id()
+            persistent_id = self.get_persistent_id(item_id)
+            if persistent_id != item_id:
+                item._persistent_id = persistent_id
+            result.append(item)
+
         logger.opt(lazy=True).debug(
             f"Found {len(all_items)} matching tasks inside {self._filename_path}"
         )
-        return [i for i in all_items if i]
+        return result
 
     def get_item(self, item_id: ID) -> Optional[MarkdownTaskItem]:
         item = self._items_cache.get(item_id)
@@ -83,8 +117,9 @@ class MarkdownTasksSide(SyncSide):
 
         if item.title != changes["title"]:
             item.title = changes["title"]
-
             logger.warning(f"The item {item_id} has changed its id to {item._id()}")
+            self._ids_map[str(item._id())] = item_id
+
         item.is_checked = changes["is_checked"]
 
     def add_item(self, item: MarkdownTaskItem) -> FilesystemFile:
@@ -110,8 +145,4 @@ class MarkdownTasksSide(SyncSide):
             ]
             if k not in ignore_keys
         ]
-        result = SyncSide._items_are_identical(item1, item2, keys) 
-        # if not result:
-            # import pdb; pdb.set_trace()
-        return result
-        # return SyncSide._items_are_identical(item1, item2, keys)
+        return SyncSide._items_are_identical(item1, item2, keys)
