@@ -56,12 +56,14 @@ class MarkdownTaskItem(ConcreteItem):
         scheduled_date = re.search(MD_TASK_SCHEDULED_RE, markdown_text)
         done_date = re.search(MD_TASK_DONE_RE, markdown_text)
 
-        if markdown_task:
-            checkbox_found = re.search(MD_TASK_CHECKBOX_RE, markdown_text)
-            is_checked = 'X' in checkbox_found.group(0).upper()
+        if markdown_task is None:
+            return None
 
-            md_task_split_re = "(\\s*{}\\s*|\\s*{}\\s*|\\s*{}\\s*|\\s*{}\\s*)".format(MD_TASK_CHECKBOX_RE, MD_TASK_SCHEDULED_EMOJI, MD_TASK_DUE_EMOJI, MD_TASK_DONE_EMOJI)
-            title = re.split(md_task_split_re, markdown_text)[2].strip()
+        checkbox_found = re.search(MD_TASK_CHECKBOX_RE, markdown_text)
+        is_checked = 'X' in checkbox_found.group(0).upper()
+
+        md_task_split_re = "(\\s*{}\\s*|\\s*{}\\s*|\\s*{}\\s*|\\s*{}\\s*)".format(MD_TASK_CHECKBOX_RE, MD_TASK_SCHEDULED_EMOJI, MD_TASK_DUE_EMOJI, MD_TASK_DONE_EMOJI)
+        title = re.split(md_task_split_re, markdown_text)[2].strip()
 
         result = cls(
             is_checked=is_checked,

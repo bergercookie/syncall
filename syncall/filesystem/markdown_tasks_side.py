@@ -44,7 +44,8 @@ class MarkdownTasksSide(SyncSide):
         pass
 
     def finish(self):
-        self._filesystem_file.contents='\n'.join(str(i) for i in self._items_cache.values())
+        contents = '\n'.join(str(i) for i in self._items_cache.values()) + "\n"
+        self._filesystem_file.contents = contents
         self._filesystem_file.flush()
 
     def get_all_items(self, **kargs) -> Sequence[FilesystemFile]:
@@ -52,13 +53,12 @@ class MarkdownTasksSide(SyncSide):
         all_items = tuple(
             MarkdownTaskItem.from_markdown(line, self._filesystem_file)
             for line in self._filesystem_file.contents.splitlines()
-            if line.startswith("- [")
         )
 
         logger.opt(lazy=True).debug(
             f"Found {len(all_items)} matching tasks inside {self._filename_path}"
         )
-        return all_items
+        return [i for i in all_items if i]
 
     def get_item(self, item_id: ID) -> Optional[MarkdownTaskItem]:
         item = self._items_cache.get(item_id)
@@ -81,7 +81,10 @@ class MarkdownTasksSide(SyncSide):
             logger.warning(f"Invalid changes provided to Filesystem Side -> {changes}")
             return
 
-        item.title = changes["title"]
+        if item.title != changes["title"]:
+            item.title = changes["title"]
+
+            logger.warning(f"The item {item_id} has changed its id to {item._id()}")
         item.is_checked = changes["is_checked"]
 
     def add_item(self, item: MarkdownTaskItem) -> FilesystemFile:
@@ -99,6 +102,7 @@ class MarkdownTasksSide(SyncSide):
         keys = [
             k
             for k in [
+                "id",
                 "title",
                 "is_checked",
                 "due_date",
@@ -106,4 +110,8 @@ class MarkdownTasksSide(SyncSide):
             ]
             if k not in ignore_keys
         ]
-        return SyncSide._items_are_identical(item1, item2, keys)
+        result = SyncSide._items_are_identical(item1, item2, keys) 
+        # if not result:
+            # import pdb; pdb.set_trace()
+        return result
+        # return SyncSide._items_are_identical(item1, item2, keys)
