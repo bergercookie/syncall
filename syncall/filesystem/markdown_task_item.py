@@ -9,14 +9,16 @@ from syncall.concrete_item import ConcreteItem, ItemKey, KeyType
 from syncall.filesystem.filesystem_file import FilesystemFile
 
 MD_TASK_CHECKBOX_RE = r"\[[ xX]\]"
-MD_TASK_LINE_RE = r"-\s*" + MD_TASK_CHECKBOX_RE
+MD_TASK_LINE_START_RE = r"-\s*" + MD_TASK_CHECKBOX_RE
 MD_TASK_SCHEDULED_EMOJI = "⏳"
 MD_TASK_DUE_EMOJI = "📅"
 MD_TASK_DONE_EMOJI = "✅"
 
-MD_TASK_SCHEDULED_RE = r"(?<=⏳ )\d{4}-\d{2}-\d{2}"
-MD_TASK_DUE_RE = r"(?<=📅 )\d{4}-\d{2}-\d{2}"
-MD_TASK_DONE_RE = r"(?<=✅ )\d{4}-\d{2}-\d{2}"
+MD_TASK_DATE_RE = r"(?<={EMOJI} )\d{4}-\d{2}-\d{2}"
+
+MD_TASK_SCHEDULED_RE = MD_TASK_DATE_RE.replace('{EMOJI}', MD_TASK_SCHEDULED_EMOJI)
+MD_TASK_DUE_RE = MD_TASK_DATE_RE.replace('{EMOJI}', MD_TASK_DUE_EMOJI)
+MD_TASK_DONE_RE = MD_TASK_DATE_RE.replace('{EMOJI}', MD_TASK_DONE_EMOJI)
 
 class MarkdownTaskItem(ConcreteItem):
     """A task line inside a Markdown file."""
@@ -53,10 +55,7 @@ class MarkdownTaskItem(ConcreteItem):
     def from_markdown(cls, markdown_text: str, markdown_file: FilesystemFile) -> "MarkdownTaskItem":
         """Create a MarkdownTaskItem given the line of text."""
 
-        markdown_task = re.match(MD_TASK_LINE_RE, markdown_text)
-        due_date = re.search(MD_TASK_DUE_RE, markdown_text)
-        scheduled_date = re.search(MD_TASK_SCHEDULED_RE, markdown_text)
-        done_date = re.search(MD_TASK_DONE_RE, markdown_text)
+        markdown_task = re.match(MD_TASK_LINE_START_RE, markdown_text)
 
         if markdown_task is None:
             return None
@@ -72,6 +71,10 @@ class MarkdownTaskItem(ConcreteItem):
             title=title
         )
         result.last_modified_date = markdown_file.last_modified_date
+
+        due_date = re.search(MD_TASK_DUE_RE, markdown_text)
+        scheduled_date = re.search(MD_TASK_SCHEDULED_RE, markdown_text)
+        done_date = re.search(MD_TASK_DONE_RE, markdown_text)
 
         if due_date:
             result.due_date = datetime.datetime.fromisoformat(due_date.group(0))
