@@ -80,6 +80,11 @@ At the moment the list of supported synchronizations is the following:
     <td><tt>tw-caldav-sync</tt></td>
   </tr>
   <tr>
+    <td><a href="https://github.com/bergercookie/syncall/blob/master/docs/readme-md-gtasks.md">README</a></td>
+    <td> <a href="https://publish.obsidian.md/tasks/Introduction">Obsidian Markdown Taks</a> ⬄  <a href="https://support.google.com/tasks/answer/7675772">Google Tasks</a></td>
+    <td><tt>md-gtasks-sync</tt></td>
+  </tr>
+  <tr>
     <td><a href="https://github.com/bergercookie/syncall/blob/master/docs/readme-fs-gkeep.md">README</a></td>
     <td>  Local Files ⬄  <a href="https://www.google.com/keep/">Google Keep Notes</a></td>
     <td><tt>fs-gkeep-sync</tt></td>
