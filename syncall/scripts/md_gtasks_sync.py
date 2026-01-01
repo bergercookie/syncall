@@ -55,7 +55,7 @@ def main(
     pdb_on_error: bool,
     confirm: bool,
 ):
-    """Synchronize lists from your Google Tasks with filters from Taskwarrior.
+    """Synchronize lists from your Google Tasks with Obsidian Tasks Markdown file.
 
     The list of MD tasks can be based on a Markdown file path
     while the list in GTasks should be provided by their name. if it doesn't

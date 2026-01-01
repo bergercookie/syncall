@@ -515,6 +515,48 @@ Options:
 </details>
 
 <!-- END sniff-and-replace -->
+<!-- START sniff-and-replace md_gtasks_sync --help START -->
+
+<details>
+ <summary><tt>md_gtasks_sync --help</tt></summary>
+
+```
+Usage: md_gtasks_sync [OPTIONS]
+
+  Synchronize lists from your Google Tasks with Obsidian Tasks Markdown file.
+
+    The list of MD tasks can be based on a Markdown file path
+    while the list in GTasks should be provided by their name. if it doesn't
+    exist it will be created.
+
+Options:
+  -l, --gtasks-list TEXT          Name of the Google Tasks list to synchronize
+                                  (will be created if not there)
+  --google-secret FILE            Override the client secret used for the
+                                  communication with the Google APIs
+  --oauth-port INTEGER            Port to use for OAuth Authentication with
+                                  Google Applications
+  -m, --markdown-file TEXT        Name of the Markdown file including tasks
+                                  list to synchronize
+  --list-combinations             List the available named TW<->Google Tasks
+                                  combinations
+  --list-resolution-strategies    List all the available resolution strategies
+                                  and exit
+  -r, --resolution-strategy [MostRecentRS|LeastRecentRS|AlwaysFirstRS|AlwaysSecondRS]
+                                  Resolution strategy to use during conflicts
+  -b, --combination TEXT          Name of an already saved TW<->Google Tasks
+                                  combination
+  -s, --save-as TEXT              Save the given TW<->Google Tasks filters
+                                  combination using a specified custom name.
+  --prefer-scheduled-date         Prefer using the "scheduled" date field
+                                  instead of the "due" date if the former is
+                                  available
+  -v, --verbose
+  --version                       Show the version and exit.
+  --help                          Show this message and exit.
+```
+
+</details>
 
 ## Mechanics / Automatic synchronization
 
