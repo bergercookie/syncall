@@ -49,6 +49,8 @@ tw_notion_sync = "syncall.scripts.tw_notion_sync:main"
 fs_gkeep_sync = "syncall.scripts.fs_gkeep_sync:main"
 tw_caldav_sync = "syncall.scripts.tw_caldav_sync:main"
 tw_gtasks_sync = "syncall.scripts.tw_gtasks_sync:main"
+md_gtasks_sync = "syncall.scripts.md_gtasks_sync:main"
+
 
 # end-user dependencies --------------------------------------------------------
 [tool.poetry.dependencies]
@@ -89,7 +91,7 @@ tw = ["taskw-ng", "xdg"]
 fs = ["xattr"]
 
 # dev dependencies -------------------------------------------------------------
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = { version = "22.3.0", allow-prereleases = true }
 identify = "^2.6.0"
 isort = "^5.13.2"
