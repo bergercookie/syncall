@@ -43,15 +43,41 @@ class MarkdownTasksSide(SyncSide):
             with self._filesystem_ids_path.open("rb") as f:
                 self._ids_map = pickle.load(f)
 
+        all_items = self.get_all_items(include_non_tasks=True)
+
+        # dict with items. Ignore lines with no tasks
         self._items_cache: dict[str, dict] = {
-            str(item.id): item for item in self.get_all_items()
+            str(item.id): item for item in all_items if item
         }
+
+        # Array with item ids in the same order found in the .md file
+        # It will have None in positions with no Markdown tasks
+        self._items_order = [ str(item.id) if item else None for item in all_items ]
 
     def start(self):
         pass
 
     def finish(self):
-        contents = '\n'.join(str(i) for i in self._items_cache.values()) + "\n"
+        contents = ""
+        # add existing file lines as they are if they are not tasks
+        # or change them for the tasks in text format when appropriate
+        for item_id, line in zip(self._items_order, self._filesystem_file.contents.splitlines()):
+            if item_id:
+                try:
+                    line_content = str(self.get_item(item_id))
+                except KeyError:
+                    continue
+            else:
+                line_content = line
+
+            contents += line_content + "\n"
+
+        # so far we've inserted older tasks. add newly synced ones
+        new_ids = [ item_id for item_id in self._items_cache.keys() if item_id not in self._items_order ]
+        for item_id in new_ids:
+            line_content = str(self.get_item(item_id))
+            contents += line_content + "\n"
+
         self._filesystem_file.contents = contents
         self._filesystem_file.flush()
 
@@ -74,23 +100,22 @@ class MarkdownTasksSide(SyncSide):
 
     def get_all_items(self, **kargs) -> Sequence[FilesystemFile]:
         """Read all items again from storage."""
-        all_items = tuple(
-            MarkdownTaskItem.from_markdown(line, self._filesystem_file)
-            for line in self._filesystem_file.contents.splitlines()
-        )
-
+        """The array will have None in lines with no tasks"""
         result = []
-        for item in all_items:
-            if item is None:
-                continue
-            item_id = item._id()
-            persistent_id = self.get_persistent_id(item_id)
-            if persistent_id != item_id:
-                item._persistent_id = persistent_id
-            result.append(item)
+        found_tasks = 0
+        for line in self._filesystem_file.contents.splitlines():
+            item = MarkdownTaskItem.from_markdown(line, self._filesystem_file)
+            if item:
+                found_tasks += 1
+                item_id = item._id()
+                persistent_id = self.get_persistent_id(item_id)
+                if persistent_id != item_id:
+                    item._persistent_id = persistent_id
+            if item or kargs.get('include_non_tasks'):
+                result.append(item)
 
         logger.opt(lazy=True).debug(
-            f"Found {len(all_items)} matching tasks inside {self._filename_path}"
+            f"Found {found_tasks} matching tasks inside {self._filename_path}"
         )
         return result
 
