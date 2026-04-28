@@ -34,13 +34,13 @@ def _add_task_prefix_if_not_present(gcal_item: Item):
 
 
 def _add_success_prefix(gcal_item: Item):
-    gcal_item["summary"] = f'{_prefix_title_success_str}{gcal_item["summary"]}'
+    gcal_item["summary"] = f"{_prefix_title_success_str}{gcal_item['summary']}"
 
 
 def _add_failed_prefix(gcal_item: Item):
-    gcal_item[
-        "summary"
-    ] = f'{_prefix_title_failed_str}{gcal_item["summary"][len(_failed_str)+1:]}'
+    gcal_item["summary"] = (
+        f"{_prefix_title_failed_str}{gcal_item['summary'][len(_failed_str) + 1 :]}"
+    )
 
 
 def convert_tw_to_gcal(
@@ -49,9 +49,9 @@ def convert_tw_to_gcal(
     default_event_duration: timedelta = timedelta(hours=1),
 ) -> Item:
     """TW -> GCal conversion."""
-    assert all(
-        i in tw_item.keys() for i in ("description", "status", "uuid")
-    ), "Missing keys in tw_item"
+    assert all(i in tw_item.keys() for i in ("description", "status", "uuid")), (
+        "Missing keys in tw_item"
+    )
 
     if tw_duration_key not in tw_item.keys():
         tw_item[tw_duration_key] = default_event_duration
@@ -148,8 +148,7 @@ def convert_gcal_to_tw(
 
     # Description
     gcal_summary = gcal_item["summary"]
-    if gcal_summary.startswith(_prefix_title_success_str):
-        gcal_summary = gcal_summary[len(_prefix_title_success_str) :]
+    gcal_summary = gcal_summary.removeprefix(_prefix_title_success_str)
     tw_item["description"] = gcal_summary
     date_key = "scheduled" if set_scheduled_date else "due"
     end_time = GCalSide.get_event_time(gcal_item, t="end")

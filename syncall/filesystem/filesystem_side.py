@@ -1,5 +1,5 @@
+from collections.abc import MutableMapping, Sequence
 from pathlib import Path
-from typing import MutableMapping, Optional, Sequence
 
 from item_synchronizer.types import ID
 from loguru import logger
@@ -69,7 +69,7 @@ class FilesystemSide(SyncSide):
 
         return all_items
 
-    def get_item(self, item_id: ID, use_cached: bool = False) -> Optional[FilesystemFile]:
+    def get_item(self, item_id: ID, use_cached: bool = False) -> FilesystemFile | None:
         item = self._items_cache.get(item_id)
         if not use_cached or item is None:
             logger.trace(f"Couldn't find item {item_id} in cache, fetching from filesystem...")
@@ -77,7 +77,7 @@ class FilesystemSide(SyncSide):
 
         return item
 
-    def _get_item_refresh(self, item_id: ID) -> Optional[FilesystemFile]:
+    def _get_item_refresh(self, item_id: ID) -> FilesystemFile | None:
         """Search for the FilesystemFile in the root directory given its ID."""
         fs_files = self.get_all_items()
 

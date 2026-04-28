@@ -1,6 +1,6 @@
 import pickle
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from bubop import logger
 from google.auth.transport.requests import Request

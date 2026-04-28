@@ -7,9 +7,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Publish package to pypi
-        uses: JRubics/poetry-publish@v1.16
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          pypi_token: ${{ secrets.PYPI_API_TOKEN }}
-          plugins: "poetry-dynamic-versioning[plugin]"
+          python-version: '3.11'
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip build
+      - name: Build distributions
+        run: |
+          python -m build
+      - name: Publish package to PyPI
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

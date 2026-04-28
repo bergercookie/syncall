@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 from bubop import logger
 from caldav.lib.error import NotFoundError
@@ -9,6 +9,8 @@ from icalendar.prop import vCategory, vDatetime, vText
 from syncall.tw_caldav_utils import SYNCALL_TW_UUID, SYNCALL_TW_WAITING
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     import caldav
     from item_synchronizer.types import ID
 

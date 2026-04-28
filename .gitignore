@@ -93,3 +93,5 @@ test-tw-gcal-sync.json
 .tool-versions
 .lvimrc
 a
+syncall/__vf
+syncall/__version__.py

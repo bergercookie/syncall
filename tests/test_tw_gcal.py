@@ -1,5 +1,5 @@
 import datetime
-from typing import Mapping
+from collections.abc import Mapping
 
 import pytest
 from dateutil.tz import tzutc
@@ -8,13 +8,13 @@ from syncall.types import GCalItem, TwItem
 
 
 # Expected properties when converting GCal -> TW ----------------------------------------------
-@pytest.fixture()
+@pytest.fixture
 def gcal_event_expected_tw_props(request):
     param = request.param
     return request.getfixturevalue(param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def gcal_event_pending_expected_tw_props() -> Mapping:
     return {
         "status": "pending",
@@ -23,7 +23,7 @@ def gcal_event_pending_expected_tw_props() -> Mapping:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gcal_event_completed_expected_tw_props() -> Mapping:
     return {
         "status": "completed",
@@ -47,13 +47,13 @@ def test_convert_gcal_to_tw(gcal_event: GCalItem, gcal_event_expected_tw_props):
 
 
 # Expected properties when converting TW -> GCal ----------------------------------------------
-@pytest.fixture()
+@pytest.fixture
 def tw_item_expected_gcal_props(request):
     param = request.param
     return request.getfixturevalue(param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def tw_pending_task_expected_gcal_props() -> Mapping:
     return {
         "summary": "Arrange to do any home pre-departure covid tests",
@@ -65,7 +65,7 @@ def tw_pending_task_expected_gcal_props() -> Mapping:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def tw_pending_with_due_task_expected_gcal_props() -> Mapping:
     return {
         "summary": "Create and share public photos album",
@@ -78,7 +78,7 @@ def tw_pending_with_due_task_expected_gcal_props() -> Mapping:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def tw_completed_task_expected_gcal_props() -> Mapping:
     return {
         "summary": "✅Arrange to do any home pre-departure covid tests",

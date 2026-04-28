@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import datetime
+import importlib.resources
 from pathlib import Path
-from typing import Literal, Sequence, cast
+from typing import TYPE_CHECKING, Literal, cast
 
-import pkg_resources
 from bubop import logger
 from googleapiclient import discovery
 from googleapiclient.http import HttpError
@@ -13,9 +13,11 @@ from syncall.google.common import parse_google_datetime
 from syncall.google.google_side import GoogleSide
 from syncall.sync_side import SyncSide
 
-DEFAULT_CLIENT_SECRET = pkg_resources.resource_filename(
-    "syncall",
-    "res/gcal_client_secret.json",
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+DEFAULT_CLIENT_SECRET = str(
+    importlib.resources.files("syncall") / "res/gcal_client_secret.json"
 )
 
 
@@ -97,7 +99,7 @@ class GCalSide(GoogleSide):
             return None
 
         if len(matching_calendars) == 1:
-            return cast(str, matching_calendars[0])
+            return cast("str", matching_calendars[0])
 
         raise RuntimeError(
             f'Multiple matching calendars for name -> "{self._calendar_summary}"',
@@ -173,7 +175,7 @@ class GCalSide(GoogleSide):
         event = (
             self._service.events().insert(calendarId=self._calendar_id, body=item).execute()
         )
-        logger.debug(f'Event created -> {event.get("htmlLink")}')
+        logger.debug(f"Event created -> {event.get('htmlLink')}")
 
         return event
 

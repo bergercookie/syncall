@@ -25,7 +25,7 @@ def parse_google_datetime(dt: GoogleDateT) -> datetime.datetime:
     if isinstance(dt, dict):
         for key in "dateTime", "date":
             if key in dt:
-                date_time = cast(str, dt.get(key))
+                date_time = cast("str", dt.get(key))
                 break
         else:
             raise RuntimeError(f"Invalid structure dict: {dt}")

@@ -3,14 +3,14 @@ from gkeepapi.node import List
 from syncall.google.gkeep_note import GKeepNote as MyGKeepNote
 
 
-@pytest.fixture()
+@pytest.fixture
 def gkeep_raw_item(request: pytest.FixtureRequest) -> dict:
     """Fixture to parametrize on."""
     param = request.param  # type: ignore
     return request.getfixturevalue(param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def gkeep_simple_done_item():
     return {
         "id": "17dfc18a2f3.8741b729cb5c4951",
@@ -38,7 +38,7 @@ def gkeep_simple_done_item():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gkeep_simple_pending_item():
     return {
         "id": "17dfc186465.a997b5c8c22e6d95",
@@ -66,7 +66,7 @@ def gkeep_simple_pending_item():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gkeep_list0():
     return {
         "id": "1640713336402.1772858868",
@@ -97,7 +97,7 @@ def gkeep_list0():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gkeep_list1():
     return {
         "id": "17bb5ae1fb8.7ce1b3ded4d6a3f7",
@@ -136,7 +136,7 @@ def gkeep_list1():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gkeep_note_empty():
     return {
         "id": "1630840404258.423492350",
@@ -173,7 +173,7 @@ def gkeep_note_empty():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gkeep_list_instance0(gkeep_list0: List) -> List:
     li = List()
     li.load(gkeep_list0)
@@ -184,12 +184,12 @@ def gkeep_list_instance0(gkeep_list0: List) -> List:
     return li
 
 
-@pytest.fixture()
+@pytest.fixture
 def gkeep_note_empty_instance(gkeep_note_empty: dict) -> MyGKeepNote:
     return MyGKeepNote.from_raw_item(gkeep_note_empty)
 
 
-@pytest.fixture()
+@pytest.fixture
 def gkeep_note_instance(gkeep_note_empty_instance: MyGKeepNote) -> MyGKeepNote:
     note = gkeep_note_empty_instance
     note.plaintext = """Some multi

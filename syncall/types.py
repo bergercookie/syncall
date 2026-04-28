@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Literal, Optional, Protocol, Tuple, TypedDict, Union
+from typing import Any, Literal, Protocol, TypedDict
 
 from item_synchronizer.types import ID
 
@@ -41,13 +41,13 @@ class TaskwarriorRawItem(TypedDict, total=False):
 
 
 # Item as returned from the Taskw Python API on tw.get_task(id=...)
-TaskwarriorRawTuple = Tuple[Optional[int], TaskwarriorRawItem]
+TaskwarriorRawTuple = tuple[int | None, TaskwarriorRawItem]
 
 # Google-related types ------------------------------------------------------------------------
-GoogleDateT = Union[str, dict, datetime.datetime]
+GoogleDateT = str | dict | datetime.datetime
 
 # Google Calendar -----------------------------------------------------------------------------
-GCalItem = Dict[str, Any]
+GCalItem = dict[str, Any]
 
 # ---------------------------------------------------------------------------------------------
 # Google Tasks
@@ -307,13 +307,12 @@ class AsanaRawTask(TypedDict):
 
 # Extras --------------------------------------------------------------------------------------
 # Task as returned from get_task(id=...)
-TwRawItem = Tuple[Optional[int], Dict[str, Any]]
-TwItem = Dict[str, Any]
+TwRawItem = tuple[int | None, dict[str, Any]]
+TwItem = dict[str, Any]
 
 
 # create a Protocol class for instances that have the __str__ method
 class SupportsStr(Protocol):
     """Protocol for instances that have the __str__ method."""
 
-    def __str__(self) -> str:
-        ...
+    def __str__(self) -> str: ...

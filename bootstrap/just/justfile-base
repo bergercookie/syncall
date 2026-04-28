@@ -1,0 +1,7 @@
+set shell := ["bash", "-uc"]
+
+set dotenv-required := false
+set allow-duplicate-recipes
+set allow-duplicate-variables
+
+# vim: ft=just

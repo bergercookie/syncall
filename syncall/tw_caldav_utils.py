@@ -68,9 +68,9 @@ def _determine_tw_status(caldav_item: Item) -> tuple[str, Literal["true", "false
 
 
 def convert_tw_to_caldav(tw_item: Item) -> Item:
-    assert all(
-        i in tw_item for i in ("description", "status", "uuid")
-    ), "Missing keys in tw_item"
+    assert all(i in tw_item for i in ("description", "status", "uuid")), (
+        "Missing keys in tw_item"
+    )
 
     caldav_item: Item = {}
 

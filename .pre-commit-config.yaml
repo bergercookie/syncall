@@ -30,23 +30,27 @@ repos:
       - id: markdownlint
         exclude: ^.github/
         entry: mdl -r ~MD033,~MD013,~MD034,~MD029,~MD007
-  - repo: local
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: "0.37.2"
     hooks:
       - id: check-github-workflows
-        name: Validate GitHub Workflows
-        description: "Validate GitHub Workflows against the schema provided by SchemaStore"
-        entry: check-jsonschema --builtin-schema vendor.github-workflows
-        language: python
-        files: ^\.github/workflows/
-        types: [yaml]
-      - id: black
-        name: Black formatter
-        description: "Black: The uncompromising Python code formatter"
-        entry: black
+
+  - repo: local
+    hooks:
+      - id: just-format
+        name: just format
+        description: "Make sure that the justfile is formatted"
+        entry: just self-fmt
         language: system
-        minimum_pre_commit_version: 2.9.2
-        require_serial: true
-        types_or: [python, pyi]
+        pass_filenames: false
+
+      - id: _check-devbox-activated
+        name: check devbox is activated
+        description: "Make sure that the devbox is activated before attempting to commit"
+        entry: bootstrap/pre-commit/check-devbox-activated.py
+        language: system
+        pass_filenames: false
+
 
       - id: pyupgrade
         name: Pyupgrade
@@ -82,13 +86,15 @@ repos:
         args: ["check", "--fix"]
         language: system
         types_or: [python, pyi]
+        require_serial: true
 
-      - id: poetry-check
-        name: Poetry check
-        entry: poetry check
+      - id: ruff
+        name: Ruff Format
+        entry: ruff
+        args: ["format", "--force-exclude"]
         language: system
-        pass_filenames: false
-        files: "pyproject.toml|poetry.lock"
+        types_or: [python, pyi]
+        require_serial: true
 
   - repo: meta
     hooks:

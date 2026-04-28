@@ -12,9 +12,9 @@ import logging
 import os
 import subprocess
 import sys
-from datetime import datetime
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable, Mapping, NoReturn, Sequence, cast
+from typing import TYPE_CHECKING, Any, NoReturn, cast
 from urllib.parse import quote
 
 from bubop import (
@@ -40,6 +40,8 @@ from item_synchronizer.resolution_strategy import (
 from syncall.constants import COMBINATION_FLAGS, ISSUES_URL
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from syncall.sync_side import SyncSide
     from syncall.types import SupportsStr
 
@@ -80,11 +82,11 @@ def get_resolution_strategy(
     if issubclass(rs_class, RecencyRS):
         instance = rs_class(
             date_getter_A=lambda item: cast(
-                datetime,
+                "datetime",
                 item[side_A_type.last_modification_key()],
             ),
             date_getter_B=lambda item: cast(
-                datetime,
+                "datetime",
                 item[side_B_type.last_modification_key()],
             ),
         )
@@ -411,7 +413,7 @@ def determine_app_config_fname(side_A_name: str, side_B_name: str) -> str:
     >>> assert determine_app_config_fname("TW", "Google Calendar") == 'tw__google_calendar__configs.yaml'
     """
     return (
-        f'{side_A_name.replace(" ", "_").lower()}'
+        f"{side_A_name.replace(' ', '_').lower()}"
         "__"
-        f'{side_B_name.replace(" ", "_").lower()}__configs.yaml'
+        f"{side_B_name.replace(' ', '_').lower()}__configs.yaml"
     )

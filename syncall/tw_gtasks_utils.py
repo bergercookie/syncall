@@ -11,9 +11,9 @@ def convert_tw_to_gtask(
     tw_item: Item,
 ) -> Item:
     """TW -> GTasks conversion."""
-    assert all(
-        i in tw_item.keys() for i in ("description", "status", "uuid")
-    ), "Missing keys in tw_item"
+    assert all(i in tw_item.keys() for i in ("description", "status", "uuid")), (
+        "Missing keys in tw_item"
+    )
 
     gtasks_item = {}
 

@@ -5,14 +5,14 @@ import pytest
 from syncall.types import NotionPageContents, NotionTodoBlockItem
 
 
-@pytest.fixture()
+@pytest.fixture
 def notion_todo(request: pytest.FixtureRequest) -> NotionTodoBlockItem:
     """Fixture to parametrize on."""
     param = request.param  # type: ignore
-    return cast(NotionTodoBlockItem, request.getfixturevalue(param))
+    return cast("NotionTodoBlockItem", request.getfixturevalue(param))
 
 
-@pytest.fixture()
+@pytest.fixture
 def notion_simple_todo() -> NotionTodoBlockItem:
     """Get simple to_do block returned by Notion Python SDK.
 
@@ -49,7 +49,7 @@ def notion_simple_todo() -> NotionTodoBlockItem:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def notion_simple_checked_todo(notion_simple_todo: NotionTodoBlockItem) -> NotionTodoBlockItem:
     """Completed Notion todo block."""
     item = deepcopy(notion_simple_todo)
@@ -57,7 +57,7 @@ def notion_simple_checked_todo(notion_simple_todo: NotionTodoBlockItem) -> Notio
     return item
 
 
-@pytest.fixture()
+@pytest.fixture
 def notion_simple_diff_edited_time_todo(
     notion_simple_todo: NotionTodoBlockItem,
 ) -> NotionTodoBlockItem:
@@ -67,7 +67,7 @@ def notion_simple_diff_edited_time_todo(
     return item
 
 
-@pytest.fixture()
+@pytest.fixture
 def notion_simple_archived_todo(
     notion_simple_todo: NotionTodoBlockItem,
 ) -> NotionTodoBlockItem:
@@ -77,7 +77,7 @@ def notion_simple_archived_todo(
     return item
 
 
-@pytest.fixture()
+@pytest.fixture
 def notion_chained_todo() -> NotionTodoBlockItem:
     """Get more complex to_do block returned by Notion Python SDK.
 
@@ -186,7 +186,7 @@ def notion_chained_todo() -> NotionTodoBlockItem:
 
 
 @no_type_check
-@pytest.fixture()
+@pytest.fixture
 def page_contents() -> NotionPageContents:
     """Full example contents of a notion page.
 

@@ -8,17 +8,19 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
       - name: Install with pip3 - no extras
         run: |
-          pip3 install .
-          pip3 show syncall
+          uv run pip install .
+          uv run pip show syncall
 
   install_extras_with_pip3:
     runs-on: ubuntu-latest
@@ -26,7 +28,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         # use python-extra AND executable to tests its imports
         # https://stackoverflow.com/questions/66025220/paired-values-in-github-actions-matrix
         python-extra:
@@ -45,7 +47,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
       - name: Install with pip3 - with ${{ matrix.python-extra }}
         run: |
-          pip install .[${{ matrix.python-extra }}]
-          pip3 show syncall
+          uv run pip install ".[${{ matrix.python-extra }}]"
+          uv run pip show syncall

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from bubop import logger
 from gkeepapi import Keep
 from gkeepapi.exception import LoginException
@@ -15,8 +13,8 @@ class GKeepSide(SyncSide):
     def __init__(
         self,
         gkeep_user: str,
-        gkeep_passwd: Optional[str] = None,
-        gkeep_token: Optional[str] = None,
+        gkeep_passwd: str | None = None,
+        gkeep_token: str | None = None,
         **kargs,
     ):
         """Init."""
@@ -27,7 +25,7 @@ class GKeepSide(SyncSide):
 
         super().__init__(**kargs)
 
-    def get_master_token(self) -> Optional[str]:
+    def get_master_token(self) -> str | None:
         """Return a master token. Use it to authenticate in place of a password on subsequent
         runs.
         """
@@ -63,14 +61,14 @@ class GKeepSide(SyncSide):
         """Return true if the Google Keep note has the said label."""
         return any(label_str == la.name for la in note.labels.all())
 
-    def _get_label_by_name(self, label: str) -> Optional[Label]:
+    def _get_label_by_name(self, label: str) -> Label | None:
         for la in self._keep.labels():
             if la.name == label:
                 return la
 
         return None
 
-    def _create_list(self, title: str, label: Optional[Label] = None) -> GKeepList:
+    def _create_list(self, title: str, label: Label | None = None) -> GKeepList:
         """Create a new list of items in Google Keep.
 
         Applies the given label to the note - if one was provided

@@ -8,8 +8,8 @@ def run_pdb_on_error(type, value, tb):  # noqa: A002
         print("Cannot enable the --pdb-on-error flag")  # noqa: T201
         sys.__excepthook__(type, value, tb)
     else:
-        import pdb  # noqa: T100
-        import traceback
+        import pdb  # noqa: PLC0415, T100
+        import traceback  # noqa: PLC0415
 
         traceback.print_exception(type, value, tb)
         if type is KeyboardInterrupt:

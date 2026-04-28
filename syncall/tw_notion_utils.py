@@ -1,4 +1,5 @@
 """Notion-related utils."""
+
 import datetime
 from typing import cast
 
@@ -11,7 +12,7 @@ from syncall.types import NotionPage, TwItem
 
 def create_page(parent_page_id: str, title: str, client: Client) -> NotionPage:
     return cast(
-        NotionPage,
+        "NotionPage",
         client.pages.create(
             parent={"page_id": parent_page_id},
             properties={

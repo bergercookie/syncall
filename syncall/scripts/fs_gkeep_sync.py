@@ -1,6 +1,6 @@
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
 
 import click
 from bubop import check_optional_mutually_exclusive, format_dict, logger, loguru_tqdm_sink
@@ -47,7 +47,7 @@ from syncall.google.gkeep_note_side import GKeepNoteSide
 @opt_filesystem_root()
 @opts_miscellaneous("Filesystem", "Google Keep")
 def main(
-    filesystem_root: Optional[str],
+    filesystem_root: str | None,
     filename_extension: str,
     gkeep_labels: Sequence[str],
     gkeep_ignore_labels: Sequence[str],
@@ -105,8 +105,7 @@ def main(
             return 1
 
     # Let's strip any "."s in the name of this configuration - may mess up the PrefsManager
-    if filename_extension.startswith("."):
-        filename_extension = filename_extension[1:]
+    filename_extension = filename_extension.removeprefix(".")
 
     # existing combination name is provided ---------------------------------------------------
     if combination_name is not None:

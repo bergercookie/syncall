@@ -6,12 +6,12 @@ from syncall.filesystem.filesystem_file import FilesystemFile
 
 
 # helper fixtures -----------------------------------------------------------------------------
-@pytest.fixture()
+@pytest.fixture
 def flush_on_instantiation(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def fs_file_path(request):
     return request.getfixturevalue(request.param)
 

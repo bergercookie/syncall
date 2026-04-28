@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from item_synchronizer.types import ID
 from syncall.sync_side import ItemType, SyncSide
@@ -17,7 +17,7 @@ class MockSide(SyncSide):
     def get_all_items(self, **kargs) -> Sequence[ItemType]:
         raise NotImplementedError("Implement in derived")
 
-    def get_item(self, item_id: ID, use_cached: bool = False) -> Optional[ItemType]:
+    def get_item(self, item_id: ID, use_cached: bool = False) -> ItemType | None:
         raise NotImplementedError("Should be implemented in derived")
 
     def delete_single_item(self, item_id: ID):

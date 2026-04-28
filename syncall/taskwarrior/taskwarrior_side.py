@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from pathlib import Path
-from typing import Any, Literal, Mapping, Sequence, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 from uuid import UUID
 
 from bubop import logger, parse_datetime
@@ -11,7 +11,11 @@ from taskw_ng.warrior import TASKRC
 from xdg import xdg_config_home
 
 from syncall.sync_side import ItemType, SyncSide
-from syncall.types import TaskwarriorRawItem
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
+    from syncall.types import TaskwarriorRawItem
 
 tw_duration_key = "syncallduration"
 
@@ -125,7 +129,7 @@ class TaskWarriorSide(SyncSide):
             filter_.append(self._tw_filter)
         if self._project:
             filter_.append(f"pro:{self._project}")
-        filter_ = f'( {" and ".join(filter_)} )'
+        filter_ = f"( {' and '.join(filter_)} )"
         logger.debug(f"Using the following filter to fetch TW tasks: {filter_}")
         tasks = self._tw.load_tasks_and_filter(command="all", filter_=filter_)
 
@@ -203,15 +207,15 @@ class TaskWarriorSide(SyncSide):
                       tasks (e.g., proj, tag, due). It is mandatory that it
                       contains the 'description' key for the task title
         """
-        item = cast(TaskwarriorRawItem, item)
+        item = cast("TaskwarriorRawItem", item)
         assert "description" in item.keys(), "Item doesn't have a description."
-        assert (
-            "uuid" not in item.keys()
-        ), "Item already has a UUID, try updating it instead of adding it"
+        assert "uuid" not in item.keys(), (
+            "Item already has a UUID, try updating it instead of adding it"
+        )
 
         curr_status = item.get("status", None)
         if curr_status not in ["pending", "done", "completed"]:
-            logger.warning(f'Invalid status of task [{item["status"]}], setting it to pending')  # type: ignore
+            logger.warning(f"Invalid status of task [{item['status']}], setting it to pending")  # type: ignore
             item["status"] = "pending"
 
         if self._tags:
@@ -235,7 +239,7 @@ class TaskWarriorSide(SyncSide):
             )
             self._tw.task_delete(id=new_id)
 
-        return cast(ItemType, new_item)
+        return cast("ItemType", new_item)
 
     def delete_single_item(self, item_id) -> None:
         self._tw.task_delete(uuid=item_id)
