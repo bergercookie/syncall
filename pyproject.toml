@@ -77,7 +77,7 @@ python-dateutil = "^2.9.0.post0"
 rfc3339 = "^6.2"
 item-synchronizer = "^1.1.5"
 bubop = { version = "0.1.12", allow-prereleases = true }
-setuptools = { version = "^72.1.0", optional = true, python = ">=3.12" }
+setuptools = { version = "<82", optional = true, python = ">=3.12" }
 
 [tool.poetry.extras]
 google = ["google-api-python-client", "google-auth-oauthlib", "setuptools"]
