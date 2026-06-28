@@ -166,19 +166,22 @@ Here's some of the available options for installing it:
   pip3 install --user --upgrade .[gkeep,fs,google,tw,caldav,asana]
   ```
 
-- Setup using a virtualenv and pip - handy for local development and for isolation of dependencies:
+- Local development (recommended) — uses [devbox](https://www.jetify.com/devbox)
+  for a reproducible environment and `just` as the task runner:
 
   ```sh
   git clone https://github.com/bergercookie/syncall
-  python -m venv .venv
-  source .venv/bin/activate
-  python -m pip install --upgrade pip
-  python -m pip install -e ".[all]"
-
-  # now the executables of all the services should be in your PATH for the
-  # current shell and you can also edit the source code without further
-  # re-installation ...
+  cd syncall
+  devbox shell          # activates Python 3.12 + uv, creates .venv automatically
+  just setup-dev        # installs the package (editable) and pre-commit hooks
   ```
+
+  All executables are now in your `PATH` for the current shell and source
+  changes take effect immediately without re-installation. Run `just` to see
+  all available development recipes.
+
+  See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide
+  (linting with `ruff`, running tests, etc.).
 
 ### Sample Usage Instructions
 
