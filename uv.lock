@@ -32,16 +32,17 @@ wheels = [
 
 [[package]]
 name = "asana"
-version = "1.0.0"
+version = "5.2.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "requests" },
-    { name = "requests-oauthlib" },
+    { name = "certifi" },
+    { name = "python-dateutil" },
     { name = "six" },
+    { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ef/a7/ae072b8d97c9440e1404a5f7aa09f588a30f4e51908df9807e0cc3424db6/asana-1.0.0.tar.gz", hash = "sha256:dd4c75bb6d8b7d1cfdba24bd424d9927970676e6afa93ed2a062cd88a612907f", size = 36969, upload-time = "2022-06-30T18:38:14.301Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d6/21/70f0e3cb034e089a5d07089d69c0316ba7669d24cd1ff39371e205240fca/asana-5.2.5.tar.gz", hash = "sha256:5b4610830d5480f12508e6cf154fa2c79adc6d10613daf45c09d3e869f7cf61f", size = 150357, upload-time = "2026-06-09T23:29:26.996Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/6f/a010980d3708ea1591277426f3c171a88dc98dad1cb3ddbfdf1e882042f0/asana-1.0.0-py2.py3-none-any.whl", hash = "sha256:ea970c1e2bf67c6cd5a801173a00a070aec544218eec87e083e180397d032904", size = 80006, upload-time = "2022-06-30T18:38:12.839Z" },
+    { url = "https://files.pythonhosted.org/packages/72/5c/7e18083230f7157444bd8e14766ec56394d48492fd562814f0a3725b159e/asana-5.2.5-py3-none-any.whl", hash = "sha256:8abb5ce8cfa184d8186102596f2e0ac22456d037ca943134061f1f41fdb45c7f", size = 242665, upload-time = "2026-06-09T23:29:25.376Z" },
 ]
 
 [[package]]
@@ -641,15 +642,15 @@ wheels = [
 
 [[package]]
 name = "google-auth-oauthlib"
-version = "0.4.6"
+version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "google-auth" },
     { name = "requests-oauthlib" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/30/21/b84fa7ef834d4b126faad13da6e582c8f888e196326b9d6aab1ae303df4f/google-auth-oauthlib-0.4.6.tar.gz", hash = "sha256:a90a072f6993f2c327067bf65270046384cda5a8ecb20b94ea9a687f1f233a7a", size = 19516, upload-time = "2021-09-01T09:54:17.701Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/70/18/90c7fac516e63cf2058166fce0c88c353647c677b51cc036c09c49bb5cbb/google_auth_oauthlib-1.4.0.tar.gz", hash = "sha256:18b5e28880eb8eba9065c436becdc0ee8e4b59117a73a510679c82f70cd363d2", size = 21675, upload-time = "2026-05-07T08:03:47.816Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b1/0e/0636cc1448a7abc444fb1b3a63655e294e0d2d49092dc3de05241be6d43c/google_auth_oauthlib-0.4.6-py2.py3-none-any.whl", hash = "sha256:3f2a6e802eebbb6fb736a370fbf3b055edcb6b52878bf2f26330b5e041316c73", size = 18306, upload-time = "2021-09-01T09:54:15.745Z" },
+    { url = "https://files.pythonhosted.org/packages/37/d3/d7dff0d58a9e9244b48044bfb6a898bfcc8ecc42e0031d1bebc695344725/google_auth_oauthlib-1.4.0-py3-none-any.whl", hash = "sha256:251314f213a9ee46a5ae73988e84fd7cca8bb68e7ecf4bfd45940f9e7f51d070", size = 19261, upload-time = "2026-05-07T08:02:13.798Z" },
 ]
 
 [[package]]
@@ -729,15 +730,16 @@ wheels = [
 
 [[package]]
 name = "icalendar"
-version = "5.0.14"
+version = "7.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
-    { name = "pytz" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "tzdata" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c7/11/6c403ef5518356195ad8abcc6fb193929c840f1fa64fdb53226c17fd2c8d/icalendar-5.0.14.tar.gz", hash = "sha256:7050ee71d5af55f84a9fef3ca3596da6453a80d26292c91cee7a49b1e08c5864", size = 121210, upload-time = "2025-11-05T12:57:08.124Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2e/6c/3a20edd47656272f2d4016f6680f5bec6e2eb5ec7a23db97ebd1c15c384b/icalendar-7.2.0.tar.gz", hash = "sha256:32dacc396101825b82f9f1bbdf691c02be613130d5ab7a457e553fcd20959fdd", size = 489932, upload-time = "2026-06-23T06:48:16.492Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/64/f77390be4b4a5e6321470bcc8f375d6125df66a68ef6b298534ccfbbf1a1/icalendar-5.0.14-py3-none-any.whl", hash = "sha256:036dae6c027393b926c4a7c94a318a406e74d8bbf753e2b282b2bd443227c33b", size = 118629, upload-time = "2025-11-05T12:57:06.909Z" },
+    { url = "https://files.pythonhosted.org/packages/0b/a5/21a77abb12e68a986d56fdacbfbdda0606a71766662b8d19cd85d49f78dc/icalendar-7.2.0-py3-none-any.whl", hash = "sha256:77922b6be57dfcc2e94f93063d2fd7e948ada9b5bdf7b08bebbc684b1b66c7c4", size = 500620, upload-time = "2026-06-23T06:48:14.861Z" },
 ]
 
 [[package]]
@@ -1120,14 +1122,14 @@ wheels = [
 
 [[package]]
 name = "notion-client"
-version = "0.7.1"
+version = "3.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d2/48/c95c5d98303d9c8a9afcc8c93367154ab1241ee412a11df882376ddcc53b/notion-client-0.7.1.tar.gz", hash = "sha256:58519c4340f99c2b7651a1d671f07411052fb46786fcb41df71c60e6b1b144ac", size = 15108, upload-time = "2021-10-18T09:17:31.335Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c0/e3/4ac01384e86e2c381c21b87a0fefcdfe6d65577ae3153fad27e7e96c5d9c/notion_client-3.1.0.tar.gz", hash = "sha256:516e31326f855ec34559289b57be4e27ad656062f51f594c8f4ee3a608ee333d", size = 38781, upload-time = "2026-05-12T08:54:44.363Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/28/3b821fff31a94cada2ea1ef62332eb5f9135ab91bb99be3a08afc63dd7b3/notion_client-0.7.1-py2.py3-none-any.whl", hash = "sha256:ff9c16beb4c74f59abbd8c8764e078c095791d0b80288eb9e54ca507316c53e1", size = 14321, upload-time = "2021-10-18T09:17:28.854Z" },
+    { url = "https://files.pythonhosted.org/packages/08/08/12645b24044301cb0d7908ec068c55c0d5724f39372891a1a27d630fdf50/notion_client-3.1.0-py2.py3-none-any.whl", hash = "sha256:7e3935f4dbc11231d8ad1fe404112e278501520342eaa35f86456f0df44a8aca", size = 23092, upload-time = "2026-05-12T08:54:43.135Z" },
 ]
 
 [[package]]
@@ -1406,7 +1408,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f95
 
 [[package]]
 name = "recurring-ical-events"
-version = "3.3.4"
+version = "3.8.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "icalendar" },
@@ -1414,9 +1416,9 @@ dependencies = [
     { name = "tzdata" },
     { name = "x-wr-timezone" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e3/5a/2ff008971f688c154fff4c8bbe03af2658cc5173996df4d10cf176772b74/recurring_ical_events-3.3.4.tar.gz", hash = "sha256:8e7f4fb03d1a180445d618327f0698f48cd2cabf40cf37f852cb5799c8883990", size = 50075, upload-time = "2024-12-04T13:18:16.808Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/f5/898abd8fbb25766ec6cb17b244730ebf192f47963c71eeacd61aadd903a1/recurring_ical_events-3.8.2.tar.gz", hash = "sha256:e731af31d0b7dec5cd47a1defacd8549e2f36fab1c1995e8b9f042822a0acf8e", size = 604992, upload-time = "2026-04-30T19:21:46.2Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/94/8e/33e42ab1762ef78d39ef4be4a05589e42629acf4ff2a84622b51c4540b5c/recurring_ical_events-3.3.4-py3-none-any.whl", hash = "sha256:24f8c11687e480ed90e84ee8dc8dc8920241476abe0450bd55606bac894414b1", size = 28642, upload-time = "2024-12-04T13:18:14.677Z" },
+    { url = "https://files.pythonhosted.org/packages/81/f7/d3eb4f545baf5d6daaa5881694517626fb7ad04036d94168197a4f021384/recurring_ical_events-3.8.2-py3-none-any.whl", hash = "sha256:9ad605e27b4fbeb70ee1c66205ade32550be15a57cedc579606522f1c67aef6d", size = 241358, upload-time = "2026-04-30T19:21:44.079Z" },
 ]
 
 [[package]]
@@ -1836,18 +1838,18 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "asana", marker = "extra == 'asana'", specifier = ">=1.0.0,<2" },
+    { name = "asana", marker = "extra == 'asana'", specifier = ">=1.0.0,<6" },
     { name = "bidict", specifier = ">=0.21.4,<0.22" },
     { name = "bubop", specifier = "==0.1.12" },
     { name = "caldav", marker = "extra == 'caldav'", specifier = ">=0.11.0,<0.12" },
     { name = "click", specifier = ">=8.1.7,<9" },
     { name = "gkeepapi", marker = "extra == 'gkeep'", specifier = ">=0.17.1,<0.18" },
     { name = "google-api-python-client", marker = "extra == 'google'", specifier = ">=2.140.0,<3" },
-    { name = "google-auth-oauthlib", marker = "extra == 'google'", specifier = ">=0.4.6,<0.5" },
-    { name = "icalendar", marker = "extra == 'caldav'", specifier = ">=5.0.13,<6" },
+    { name = "google-auth-oauthlib", marker = "extra == 'google'", specifier = ">=0.4.6,<1.5" },
+    { name = "icalendar", marker = "extra == 'caldav'", specifier = ">=5.0.13,<8" },
     { name = "item-synchronizer", specifier = ">=1.1.5,<2" },
     { name = "loguru", specifier = ">=0.5.3,<0.6" },
-    { name = "notion-client", marker = "extra == 'notion'", specifier = ">=0.7.1,<0.8" },
+    { name = "notion-client", marker = "extra == 'notion'", specifier = ">=0.7.1,<3.2" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0,<3" },
     { name = "pyyaml", specifier = "~=5.3.1" },
     { name = "rfc3339", specifier = ">=6.2,<7" },
