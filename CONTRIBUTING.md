@@ -2,59 +2,78 @@
 
 ## Development
 
-- Use a virtual environment and pip for building and packaging of this Python project. For local development, create and activate a venv, then install the extras with pip.
+### Environment setup
 
-- We're using `pytest` for testing the code and a variety of plugins for linting
-  and checking for bugs, including:
+Development uses [devbox](https://www.jetify.com/devbox) to provide a
+reproducible, isolated shell with all required tools (Python 3.12, `uv`,
+`just`, `taskwarrior`, etc.) without touching your system packages.
 
-  - [mypy](http://mypy-lang.org/)
-  - [pyright](https://github.com/Microsoft/pyright)
-  - [pycln](https://hadialqattan.github.io/pycln/)
-  - [isort](https://pypi.org/project/isort/)
-  - [pre-commit](https://pre-commit.com/)
+1. [Install devbox](https://www.jetify.com/docs/devbox/installing-devbox).
 
-  All these development dependencies will be available inside a virtual
-  environment. Recommended steps:
+1. Enter the dev shell and set up the project in one go:
 
-  ```sh
-  # create and activate a venv (example)
-  python -m venv .venv
-  source .venv/bin/activate
-  python -m pip install --upgrade pip
+   ```sh
+   devbox shell
+   just setup-dev
+   ```
 
-  # install development and optional extras for testing
-  python -m pip install -e ".[all]"
-  ```
+   `devbox shell` activates the environment (creates a `.venv` and installs
+   Python dependencies via `uv` automatically on first run). `just setup-dev`
+   installs the package in editable mode and registers the `pre-commit` hooks.
 
-  To run all the linters in one go you can use `pre-commit`. To do this:
+1. For subsequent sessions just re-enter the shell:
 
-  1. Setup the `virtualenv` as described above.
-  1. Get a shell inside the virtualenv. Install the `pre-commit` hook.
+   ```sh
+   devbox shell   # or: just shell
+   ```
 
-     ```sh
-     pre-commit install
-     ```
+### Common tasks via `just`
 
-  1. While inside this `virtualenv` you can run `pre-commit run --all-files` to
-     run all the linting/formatting checks (excluding the tests).
-  1. The linting and formatting programs will run on all files that changed on
-     every new commit automatically.
+`just` is the project's task runner. Run `just` (no arguments) inside the dev
+shell to list all available recipes.
 
-- To run the tests just run `pytest`. The pytest configuration for this project
-  (as well as the configuration for each one of the tools can be found in the
-  `pyproject.toml` file. At the time of writing it's the following:
+| Recipe | What it does |
+|---|---|
+| `just setup-dev` | Full first-time setup (deps + pre-commit) |
+| `just setup-deps` | Re-install Python dependencies only |
+| `just setup-pre-commit` | (Re-)install pre-commit hooks |
+| `just shell` | Open a devbox shell |
+| `just check` | Run all pre-commit checks across the whole codebase |
+| `just test` | Run the test suite |
+| `just gen-completions` | Regenerate shell completions |
 
-  ```toml
-  # pytest -----------------------------------------------------------------------
-  [tool.pytest.ini_options]
-  addopts = ["--ignore-glob=quickstart*", "--doctest-modules"]
-  ```
+### Linting and formatting
 
-- If you want to test your changes during development but don't want to tamper
-  with your existing synchronizations, consider setting the `SYNCALL_TESTENV`
-  environment variable before execution. With this variable set, `syncall`
-  instead of `$XDG_CONFIG_HOME/syncall,` will use the
-  `$XDG_CONFIG_HOME/test_syncall` directory.
+The project uses [ruff](https://docs.astral.sh/ruff/) for linting and
+formatting, wired up through [pre-commit](https://pre-commit.com/). The
+configuration lives in `pyproject.toml` under `[tool.ruff]`.
+
+Use `just check` to run all checks (including ruff) across the whole codebase:
+
+```sh
+just check
+```
+
+All hooks also run automatically on every commit. To run only the ruff hooks:
+
+```sh
+pre-commit run ruff --all-files
+```
+
+### Running the tests
+
+```sh
+just test
+```
+
+The pytest configuration lives in `pyproject.toml`.
+
+### Isolating test runs from your real data
+
+Set `SYNCALL_TESTENV` before running a sync executable to redirect all config
+reads/writes to `$XDG_CONFIG_HOME/test_syncall` instead of the default
+`$XDG_CONFIG_HOME/syncall`. This lets you experiment without touching your
+live synchronization data.
 
 ## Git Guidelines
 

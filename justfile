@@ -30,7 +30,25 @@ setup-pre-commit:
 
 # Install dependencies for local development
 setup-deps:
-    python -m pip install -e ".[all]"
+    uv pip install -e ".[all]"
+
+# check / test recipes ---------------------------------------------------------
+
+alias pre-commit := check
+
+# Run all pre-commit hooks against all files (lint, format, and other checks)
+check:
+    pre-commit run --all-files
+
+# Run the test suite
+test *args='':
+    pytest {{ args }}
+
+# scripts ----------------------------------------------------------------------
+
+# Generate shell completions (bash, zsh, fish) for all sync executables
+gen-completions:
+    bash scripts/generate-shell-completions.sh
 
 # self -------------------------------------------------------------------------
 
