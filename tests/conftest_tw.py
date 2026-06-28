@@ -5,14 +5,14 @@ from dateutil.tz.tz import tzutc
 from syncall.types import TwItem
 
 
-@pytest.fixture()
+@pytest.fixture
 def tw_task(request: pytest.FixtureRequest) -> TwItem:
     """Fixture to parametrize on."""
     param = request.param  # type: ignore
     return request.getfixturevalue(param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def tw_pending_task() -> TwItem:
     return {
         "id": 686,
@@ -26,7 +26,7 @@ def tw_pending_task() -> TwItem:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def tw_pending_with_due_task() -> TwItem:
     return {
         "id": 0,
@@ -48,11 +48,11 @@ def _as_completed(task):
     return task
 
 
-@pytest.fixture()
+@pytest.fixture
 def tw_completed_task(tw_pending_task) -> TwItem:
     return _as_completed(tw_pending_task)
 
 
-@pytest.fixture()
+@pytest.fixture
 def tw_completed_with_due_task(tw_pending_with_due_task) -> TwItem:
     return _as_completed(tw_pending_with_due_task)

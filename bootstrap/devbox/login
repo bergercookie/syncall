@@ -1,0 +1,9 @@
+# tiny script to activate the virtualenv correctly regardless of the shell
+# this syntax has to be compatible with all shells
+test -n "$FISH_VERSION" && source bootstrap/devbox/login.fish
+test -z "$FISH_VERSION" && source bootstrap/devbox/login.sh
+test -n "$USER_LOGIN_SCRIPT" && echo "Attempting to source $USER_LOGIN_SCRIPT" && source "$USER_LOGIN_SCRIPT"
+
+export PATH="$PATH:$PWD/bootstrap/bin:$KREW_ROOT/bin/"
+
+# vim: ft=sh

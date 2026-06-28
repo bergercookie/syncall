@@ -15,12 +15,12 @@ from .conftest_notion import *  # noqa: F403
 from .conftest_tw import *  # noqa: F403
 
 
-@pytest.fixture()
+@pytest.fixture
 def test_data() -> Path:
     return Path(__file__).absolute().parent / "test_data"
 
 
-@pytest.fixture()
+@pytest.fixture
 def caplog(_caplog):  # noqa: F811
     """Fixture that forwards loguru's output to std logging's output so that you can use caplog
     as usual
@@ -50,6 +50,6 @@ class MockPrefsManager(PrefsManager):
         pass
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_prefs_manager() -> MockPrefsManager:
     return MockPrefsManager()

@@ -1,0 +1,34 @@
+{
+  "name":    "syncall-dev",
+  "$schema": "bootstrap/devbox/schema/devbox-schema.json",
+  "packages": [
+    // dev utilities -----------------------------------------------------------
+    // manage python dependencies, see `.venv/`
+    "python@3.12",
+    "uv@latest",
+    // misc --------------------------------------------------------------------
+    // fix issue with locale: https://github.com/jetify-com/devbox/issues/2427
+    "glibcLocalesUtf8@latest",
+    "just@latest",
+    "python312Packages.ipython@latest",
+    "taskwarrior@latest",
+  ],
+  "env": {
+    "UV_PYTHON": "$PWD/.venv/bin/python",
+    // make changes to $PATH in bootstrap/devbox/login instead (so that you can
+    // use env var substitutions as well)
+    // "$PATH": "$PWD/.venv/bin:$PWD/.krew-config/bin:$PATH"
+  },
+  "shell": {
+    "init_hook": [
+      "source bootstrap/devbox/login",
+      "bootstrap/devbox/setup-python-venv.sh",
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1",
+      ],
+    },
+  },
+}
+// vim: ft=jsonc

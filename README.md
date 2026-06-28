@@ -19,8 +19,6 @@
 <img src="https://badge.fury.io/py/syncall.svg" alt="PyPI version" height="18"></a>
 <a href="https://pepy.tech/project/syncall">
 <img alt="Downloads" src="https://pepy.tech/badge/syncall"></a>
-<a href="https://github.com/psf/black">
-<img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
 ## Description
 
@@ -168,14 +166,14 @@ Here's some of the available options for installing it:
   pip3 install --user --upgrade .[gkeep,fs,google,tw,caldav,asana]
   ```
 
-- Setup using [poetry](https://python-poetry.org/) - handy for local
-  development and for isolation of dependencies:
+- Setup using a virtualenv and pip - handy for local development and for isolation of dependencies:
 
   ```sh
   git clone https://github.com/bergercookie/syncall
-  poetry install --all-extras
-  # get an interactive shell
-  poetry shell
+  python -m venv .venv
+  source .venv/bin/activate
+  python -m pip install --upgrade pip
+  python -m pip install -e ".[all]"
 
   # now the executables of all the services should be in your PATH for the
   # current shell and you can also edit the source code without further

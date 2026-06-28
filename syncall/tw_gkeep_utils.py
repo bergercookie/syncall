@@ -1,4 +1,5 @@
 """Google Keep <-> Taskwarrior conversion functions"""
+
 from bubop.time import format_datetime_tz
 
 from syncall.google.gkeep_todo_item import GKeepTodoItem

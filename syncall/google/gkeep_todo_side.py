@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from bubop import logger
 from gkeepapi.node import Label, TopLevelNode
@@ -22,7 +22,7 @@ class GKeepTodoSide(GKeepSide):
     def __init__(
         self,
         note_title: str,
-        notes_label: Optional[str] = None,
+        notes_label: str | None = None,
         **kargs,
     ):
         """Initialise The GKeepTodoSide.
@@ -35,7 +35,7 @@ class GKeepTodoSide(GKeepSide):
         super().__init__(name="GKeep", fullname="Google Keep", **kargs)
         self._note_title = note_title
         self._notes_label_str = notes_label
-        self._notes_label: Optional[Label] = None
+        self._notes_label: Label | None = None
         self._note: GKeepList
 
         self._pending_items: Sequence[GKeepTodoItem] = []
@@ -65,7 +65,7 @@ class GKeepTodoSide(GKeepSide):
         )
 
         # found matching note(s)
-        if len(notes_w_matching_title):
+        if notes_w_matching_title:
             logger.debug(f"Found {len(notes_w_matching_title)} notes with matching title...")
             non_deleted_archived_notes = [
                 note
@@ -125,7 +125,7 @@ class GKeepTodoSide(GKeepSide):
             GKeepTodoItem.from_gkeep_list_item(child) for child in self._note.children
         )
 
-    def get_item(self, item_id: str, use_cached: bool = True) -> Optional[GKeepTodoItem]:
+    def get_item(self, item_id: str, use_cached: bool = True) -> GKeepTodoItem | None:
         del use_cached
         item = self._note.get(item_id)
         if item is None:

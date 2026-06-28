@@ -2,9 +2,7 @@
 
 ## Development
 
-- We're using [poetry](https://python-poetry.org/docs/) for building and
-  packaging of this Python project. You can find installation instructions
-  [here](https://python-poetry.org/docs/#installation).
+- Use a virtual environment and pip for building and packaging of this Python project. For local development, create and activate a venv, then install the extras with pip.
 
 - We're using `pytest` for testing the code and a variety of plugins for linting
   and checking for bugs, including:
@@ -15,22 +13,22 @@
   - [isort](https://pypi.org/project/isort/)
   - [pre-commit](https://pre-commit.com/)
 
-  All these development dependencies will be available inside the virtual
-  environment that poetry sets up. You can get a prompt inside the said virtual
-  environment by running `poetry shell` while at the root of this repo.
+  All these development dependencies will be available inside a virtual
+  environment. Recommended steps:
 
   ```sh
-  # install dependencies and all extras - which are required for running the
-  # tests.
-  poetry install -E google -E gkeep -E notion
+  # create and activate a venv (example)
+  python -m venv .venv
+  source .venv/bin/activate
+  python -m pip install --upgrade pip
 
-  # get a shell inside the virtualenv
-  poetry shell
+  # install development and optional extras for testing
+  python -m pip install -e ".[all]"
   ```
 
   To run all the linters in one go you can use `pre-commit`. To do this:
 
-  1. Setup the `virtulenv` with `poetry` as described above.
+  1. Setup the `virtualenv` as described above.
   1. Get a shell inside the virtualenv. Install the `pre-commit` hook.
 
      ```sh

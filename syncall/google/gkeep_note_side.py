@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from gkeepapi.node import Label, Note, TopLevelNode
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from item_synchronizer.types import ID
 
     from syncall.concrete_item import ConcreteItem
@@ -76,11 +78,13 @@ class GKeepNoteSide(GKeepSide):
 
         matching: Sequence[Note] = list(
             self._keep.find(
-                func=lambda node: note_contains_labels(node, self._gkeep_labels)
-                and note_does_not_contain_labels(node, self._gkeep_ignore_labels)
-                and node_is_of_type_note(node)
-                and not node.deleted
-                and not node.archived,
+                func=lambda node: (
+                    note_contains_labels(node, self._gkeep_labels)
+                    and note_does_not_contain_labels(node, self._gkeep_ignore_labels)
+                    and node_is_of_type_note(node)
+                    and not node.deleted
+                    and not node.archived
+                ),
             ),
         )
 

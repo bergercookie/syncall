@@ -1,7 +1,6 @@
 import datetime
 import uuid
 from pathlib import Path
-from typing import Optional, Union
 
 import xattr
 from bubop.fs import FileType
@@ -40,7 +39,7 @@ class FilesystemFile(ConcreteItem):
 
     def __init__(
         self,
-        path: Union[str, Path],
+        path: str | Path,
         filetype=FileType.FILE,
         flush_on_instantiation: bool = True,
     ):
@@ -56,7 +55,7 @@ class FilesystemFile(ConcreteItem):
             raise NotImplementedError("Only supporting synchronization for raw files.")
 
         path_ = Path(path)
-        self._ext = path_.suffix if path_.suffix else self.default_ext
+        self._ext = path_.suffix or self.default_ext
 
         self._path = path_.with_suffix(self._ext)
         self._contents: str = ""
@@ -156,7 +155,7 @@ class FilesystemFile(ConcreteItem):
         except OSError as err:
             raise AttributeNotSetError(attr_name=cls._attr, path=path) from err
 
-    def _id(self) -> Optional[ID]:
+    def _id(self) -> ID | None:
         return self._id_str
 
     @property

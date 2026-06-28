@@ -1,9 +1,12 @@
 import os
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import pytest
 from syncall.filesystem.filesystem_file import FilesystemFile
 from syncall.filesystem.filesystem_side import FilesystemSide
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 @pytest.mark.parametrize(

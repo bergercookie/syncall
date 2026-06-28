@@ -6,14 +6,14 @@ from syncall.types import GTasksItem
 # API Reference: https://googleapis.github.io/google-api-python-client/docs/dyn/tasks_v1.html
 
 
-@pytest.fixture()
+@pytest.fixture
 def gtask(request: pytest.FixtureRequest) -> GTasksItem:
     """Fixture to parametrize on."""
     param = request.param  # type: ignore
-    return cast(GTasksItem, request.getfixturevalue(param))
+    return cast("GTasksItem", request.getfixturevalue(param))
 
 
-@pytest.fixture()
+@pytest.fixture
 def gtasks_simple_done_item():
     return {
         "id": "Yl9GSzNDVWluTk9heE1sUQ",
@@ -36,7 +36,7 @@ def gtasks_simple_done_item():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gtasks_simple_pending_item():
     return {
         "id": "yl9gszndvwlutk9hee1suq",
@@ -58,7 +58,7 @@ def gtasks_simple_pending_item():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gtasks_deleted_pending_item():
     return {
         "id": "yl9gszndvwlutk9hee1suq",
@@ -81,7 +81,7 @@ def gtasks_deleted_pending_item():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gtasks_completed_hidden_item():
     return {
         "id": "yl9gszndvwlutk9hee1suq",
@@ -105,7 +105,7 @@ def gtasks_completed_hidden_item():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gtasks_deleted_completed_item():
     return {
         "id": "yl9gszndvwlutk9hee1suq",
@@ -128,7 +128,7 @@ def gtasks_deleted_completed_item():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gtasks_note_empty():
     return {
         "id": "yl9gszndvwlutk9hee1suq",
@@ -144,7 +144,7 @@ def gtasks_note_empty():
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gtasks_list0():
     return {
         "etag": '"ltc5odewnzk2mg"',

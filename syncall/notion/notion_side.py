@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence, cast
+from typing import TYPE_CHECKING, cast
 
 from bubop import logger
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from notion_client import Client
+
+    from syncall.types import NotionID, NotionPageContents, NotionTodoBlockItem
 
 from syncall.notion.notion_todo_block import NotionTodoBlock
 from syncall.sync_side import SyncSide
-from syncall.types import NotionID, NotionPageContents, NotionTodoBlockItem
 
 
 class NotionSide(SyncSide):
@@ -47,7 +50,7 @@ class NotionSide(SyncSide):
         # make sure that all IDs are valid and not None
         assert all(todo.id is not None for todo in all_todos)
 
-        return {cast(NotionID, todo.id): todo for todo in all_todos}
+        return {cast("NotionID", todo.id): todo for todo in all_todos}
 
     def get_all_items(self, **kargs) -> Sequence[NotionTodoBlock]:
         del kargs
@@ -145,7 +148,7 @@ class NotionSide(SyncSide):
     def find_todos(page_contents: NotionPageContents) -> Sequence[NotionTodoBlock]:
         assert page_contents["object"] == "list"
         return tuple(
-            NotionTodoBlock.from_raw_item(cast(NotionTodoBlockItem, block))
+            NotionTodoBlock.from_raw_item(cast("NotionTodoBlockItem", block))
             for block in page_contents["results"]
             if NotionTodoBlock.is_todo(block)
         )

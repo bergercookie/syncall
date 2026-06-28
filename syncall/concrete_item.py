@@ -1,8 +1,9 @@
 import datetime
 from abc import ABC, abstractmethod
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any, Iterator, Mapping, Optional, Sequence, Union
+from typing import Any
 
 from bubop.time import is_same_datetime
 from item_synchronizer.types import ID
@@ -42,11 +43,11 @@ class ConcreteItem(_ConcreteItemMeta):
         self._str_to_key: Mapping[str, ItemKey] = {key.name: key for key in self._keys}
 
     @property
-    def id(self) -> Optional[ID]:
+    def id(self) -> ID | None:
         return self._id()
 
     @abstractmethod
-    def _id(self) -> Optional[str]:
+    def _id(self) -> str | None:
         pass
 
     def __getitem__(self, key: str) -> Any:  # noqa: ANN401
@@ -62,7 +63,7 @@ class ConcreteItem(_ConcreteItemMeta):
     def compare(
         self,
         other: "ConcreteItem",
-        ignore_keys: Optional[Sequence[Union[ItemKey, str]]] = None,
+        ignore_keys: Sequence[ItemKey | str] | None = None,
     ) -> bool:
         """Compare two items, return True if they are considered equal, False otherwise.
 

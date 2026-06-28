@@ -5,14 +5,14 @@ from dateutil.tz import tzutc
 from syncall.types import GCalItem
 
 
-@pytest.fixture()
+@pytest.fixture
 def gcal_event(request: pytest.FixtureRequest) -> GCalItem:
     """Fixture to parametrize on."""
     param = request.param  # type: ignore
     return request.getfixturevalue(param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def gcal_event_pending() -> GCalItem:
     return {
         "kind": "calendar#event",
@@ -38,7 +38,7 @@ def gcal_event_pending() -> GCalItem:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def gcal_event_completed() -> GCalItem:
     return {
         "kind": "calendar#event",

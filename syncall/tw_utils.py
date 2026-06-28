@@ -8,12 +8,14 @@ At the time of writing, these are primarily used in the TW<>Gtasks and TW<>Gcal 
 from __future__ import annotations
 
 import traceback
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from bubop import logger
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from syncall.types import TwItem
 
 

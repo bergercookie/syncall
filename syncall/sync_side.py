@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import abc
 import datetime
-from typing import TYPE_CHECKING, Any, Mapping, Sequence, final
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING, Any, final
 
 from bubop.time import is_same_datetime
 

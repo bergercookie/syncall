@@ -28,7 +28,7 @@ with the items of service `beta`.
 The following need to be done:
 
 1. Implement a new top-level executable (`alpha_beta_sync.py`). Add a line about
-   this executable in `pyproject.toml` (under `[tool.poetry.scripts]`) so that
+   this executable in `pyproject.toml` (under `[tool.uv.scripts]`) so that
    it's installed as part of the python package. See for example
    [tw_notion_sync](https://github.com/bergercookie/syncall/blob/master/syncall/scripts/tw_notion_sync.py).
    This executable should take care of setting the command line interface with

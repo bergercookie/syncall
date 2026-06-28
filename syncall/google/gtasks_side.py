@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import datetime
+import importlib.resources
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence, cast
+from typing import TYPE_CHECKING, cast
 
-import pkg_resources
 from bubop import logger
 from googleapiclient import discovery
 from googleapiclient.http import HttpError
@@ -15,11 +15,12 @@ from syncall.sync_side import SyncSide
 from .common import parse_google_datetime
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from syncall.types import GTasksItem, GTasksList
 
-DEFAULT_CLIENT_SECRET = pkg_resources.resource_filename(
-    "syncall",
-    "res/gtasks_client_secret.json",
+DEFAULT_CLIENT_SECRET = str(
+    importlib.resources.files("syncall") / "res/gtasks_client_secret.json"
 )
 
 # API Reference: https://googleapis.github.io/google-api-python-client/docs/dyn/tasks_v1.html
@@ -106,7 +107,7 @@ class GTasksSide(GoogleSide):
             return None
 
         if len(matching_task_lists) == 1:
-            return cast(str, matching_task_lists[0])
+            return cast("str", matching_task_lists[0])
 
         raise RuntimeError(
             f'Multiple matching task lists for title -> "{self._task_list_title}"',
@@ -206,7 +207,7 @@ class GTasksSide(GoogleSide):
 
     def add_item(self, item) -> dict:
         task = self._service.tasks().insert(tasklist=self._task_list_id, body=item).execute()  # type: ignore
-        logger.debug(f'Task created -> {task.get("selfLink")}')
+        logger.debug(f"Task created -> {task.get('selfLink')}")
 
         return task
 

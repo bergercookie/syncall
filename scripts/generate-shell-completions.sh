@@ -34,7 +34,7 @@ function get_ext_for() {
 
 # sanity checks ----------------------------------------------------------------
 if ! inside_virtualenv; then
-  echo "You are not inside a virtualenv, can't proceed. Run "poetry shell" first".
+  echo "You are not inside a virtualenv, can't proceed. Activate one, e.g. source .venv/bin/activate"
   exit 1
 fi
 

@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import asana
 
@@ -49,7 +49,7 @@ class AsanaSide(SyncSide):
 
         return results
 
-    def get_item(self, item_id: AsanaGID) -> Optional[AsanaTask]:
+    def get_item(self, item_id: AsanaGID) -> AsanaTask | None:
         """Get a single item (task) based on the given ID.
 
         :returns: None if not found, the item (task) in dict representation otherwise
