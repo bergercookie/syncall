@@ -21,9 +21,8 @@ repos:
     rev: v0.15.1
     hooks:
       - id: lychee-docker
-        # Optionally include additional CLI arguments
-        # args: ["--no-progress", "--exclude", "file://"]
         types: [markdown]
+        args: ["--max-retries", "10"]
   - repo: https://github.com/markdownlint/markdownlint
     rev: "v0.12.0"
     hooks:

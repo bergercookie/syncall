@@ -1,13 +1,14 @@
+# Dependabot to monitor package ecosystems to monitor for updates
 version: 2
 updates:
-  - package-ecosystem: "pip"
+  - package-ecosystem: "uv"
     directory: "/"
     schedule:
       interval: "weekly"
     commit-message:
-      prefix: "chore(pip-deps)"
+      prefix: "[CHORE] python-deps"
     groups:
-      pip-deps:
+      uv-deps:
         patterns:
           - "*"
   - package-ecosystem: "github-actions"
@@ -15,7 +16,7 @@ updates:
     schedule:
       interval: "weekly"
     commit-message:
-      prefix: "chore(ci-deps)"
+      prefix: "[CHORE] python-deps"
     groups:
       gh-actions-deps:
         patterns:
