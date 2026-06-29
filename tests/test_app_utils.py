@@ -5,6 +5,7 @@ import pytest
 from syncall.app_utils import (
     cache_or_reuse_cached_combination,
     fetch_app_configuration,
+    fetch_from_pass_manager,
     inform_about_combination_name_usage,
     report_toplevel_exception,
 )
@@ -98,3 +99,20 @@ def test_cache_or_reuse_cached_combination(fs, caplog, mock_prefs_manager):
         assert "Loading cached configuration" in caplog.text
         assert "1__2__3" in caplog.text
         caplog.clear()
+
+
+def test_fetch_from_pass_manager():
+    with patch("syncall.app_utils.valid_path", return_value="password_store"):
+        with patch(
+            "syncall.app_utils.read_gpg_token",
+            return_value="foobar\nusername: foo@bar",
+        ):
+            assert fetch_from_pass_manager("password_store") == "foobar"
+
+        with patch("syncall.app_utils.read_gpg_token", return_value=""):
+            assert fetch_from_pass_manager("password_store") == ""
+
+        with patch("syncall.app_utils.read_gpg_token", return_value=None):
+            with pytest.raises(SystemExit):
+                assert fetch_from_pass_manager("password_store")
+            assert fetch_from_pass_manager("password_store", allow_fail=True) is None
