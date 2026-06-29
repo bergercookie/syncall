@@ -357,6 +357,30 @@ def opt_gtasks_list():
     )
 
 
+# markdown file -------------------------------------------------------------------------------
+def opts_markdown():
+    def decorator(f):
+        for d in reversed(
+            [
+                _opt_md_file,
+                _opt_prefer_scheduled_date,
+            ],
+        ):
+            f = d()(f)
+        return f
+
+    return decorator
+
+
+def _opt_md_file():
+    return click.option(
+        "-m",
+        "--markdown-file",
+        type=str,
+        help="Name of the Markdown file including tasks list to synchronize",
+    )
+
+
 # google-related options ----------------------------------------------------------------------
 def opt_google_secret_override():
     return click.option(
@@ -459,6 +483,14 @@ def opt_filename_extension():
         default=".md",
     )
 
+def opt_filename_path():
+    return click.option(
+        "--path",
+        "--filename-path",
+        "filename_path",
+        type=str,
+        help="Use this file path for locally saved data",
+    )
 
 # general options -----------------------------------------------------------------------------
 def opts_miscellaneous(side_A_name: str, side_B_name: str):

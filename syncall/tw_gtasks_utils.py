@@ -2,6 +2,7 @@ from bubop import format_datetime_tz, logger
 from item_synchronizer.types import Item
 
 from syncall.google.common import parse_google_datetime
+from syncall.filesystem.markdown_task_item import MarkdownTaskItem
 from syncall.google.gtasks_side import GTasksSide
 from syncall.tw_utils import extract_tw_fields_from_string, get_tw_annotations_as_str
 from syncall.types import GTasksItem
@@ -30,6 +31,36 @@ def convert_tw_to_gtask(
     # update time
     if "modified" in tw_item.keys():
         gtasks_item["updated"] = format_datetime_tz(parse_google_datetime(tw_item["modified"]))
+
+    return gtasks_item
+
+def convert_md_to_gtask(
+    md_item: Item,
+    set_scheduled_date: bool = False,
+) -> Item:
+    """MD -> GTasks conversion."""
+    assert all(
+        i in md_item.keys() for i in ("title", "is_checked")
+    ), "Missing keys in md_item"
+
+    gtasks_item = {}
+
+    # title
+    gtasks_item["title"] = md_item["title"]
+
+    # status
+    gtasks_item["status"] = "completed" if md_item["is_checked"] else "needsAction"
+
+    # dates
+    if md_item.last_modified_date:
+        gtasks_item["updated"] = format_datetime_tz(parse_google_datetime(md_item.last_modified_date))
+
+    due_date = md_item.scheduled_date if set_scheduled_date else md_item.due_date
+    if md_item.due_date:
+        gtasks_item["due"] = format_datetime_tz(parse_google_datetime(due_date))
+
+    if md_item.done_date:
+        gtasks_item["completed"] = format_datetime_tz(parse_google_datetime(md_item.done_date))
 
     return gtasks_item
 
@@ -94,3 +125,42 @@ def convert_gtask_to_tw(
         tw_item["modified"] = parse_google_datetime(gtasks_item["updated"])
 
     return tw_item
+
+
+def convert_gtask_to_md(
+    gtasks_item: GTasksItem,
+    set_scheduled_date: bool = False,
+) -> Item:
+    """GTasks -> MD Converter.
+
+    If set_scheduled_date, then it will set the "scheduled" date of the produced TW task
+    instead of the "due" date
+    """
+    status_gtask = gtasks_item["status"]
+
+    # status
+    is_checked = status_gtask == "completed"
+
+    # Description
+    title = gtasks_item["title"]
+
+    md_item: MarkdownTaskItem = MarkdownTaskItem(is_checked, title)
+
+    # due/scheduled date
+    due_date = GTasksSide.get_task_due_time(gtasks_item)
+    if due_date is not None:
+        if set_scheduled_date:
+            md_item.scheduled_date = due_date.replace(tzinfo=None)
+        else:
+            md_item.due_date = due_date.replace(tzinfo=None)
+
+    # end date
+    end_date = GTasksSide.get_task_completed_time(gtasks_item)
+    if end_date is not None:
+        md_item.done_date = end_date.replace(tzinfo=None)
+
+    # update time
+    if "updated" in gtasks_item.keys():
+        md_item.last_modified_date = parse_google_datetime(gtasks_item["updated"]).replace(tzinfo=None)
+
+    return md_item
