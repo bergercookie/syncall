@@ -22,7 +22,7 @@ repos:
     hooks:
       - id: lychee-docker
         types: [markdown]
-        args: ["--max-retries", "10"]
+        args: ["--max-retries", "100", "-v"]
   - repo: https://github.com/markdownlint/markdownlint
     rev: "v0.12.0"
     hooks:
