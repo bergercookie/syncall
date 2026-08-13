@@ -75,8 +75,12 @@ class CaldavSide(SyncSide):
 
         # Format & cache items from ics files
         for t in raw_todos:
-            data = icalendar_component(t)
-            item = map_ics_to_item(data)
+            try:
+                data = icalendar_component(t)
+                item = map_ics_to_item(data)
+            except Exception as err:  # noqa: BLE001
+                logger.warning(f"Skipping unparsable calendar object (url={t.url}: {err})")
+                continue
             todos.append(item)
             self._items_cache[item["id"]] = item
 
@@ -110,6 +114,25 @@ class CaldavSide(SyncSide):
         if todo is not None:
             todo.delete()
 
+    def _update_todo_changes(self, todo, **changes):
+        def set_(key: str, val: Any):  # noqa: ANN401
+            icalendar_component(todo)[key] = val
+
+        for key, value in changes.items():
+            if key == "status":
+                set_(key, vText(value.upper()))
+            elif key in ["due", "created", "last-modified"]:
+                set_(key, vDatetime(value))
+            elif key == "priority":
+                if value:
+                    set_(key, vText(value))
+                else:
+                    icalendar_component(todo).pop("priority", None)
+            elif key in ["description", "summary"]:
+                set_(key, vText(value))
+            elif key == "categories":
+                set_(key, vCategory([vText(cat) for cat in value]))
+
     def update_item(self, item_id: ID, **changes):
         todo = self._find_todo_by_id_raw(item_id=item_id)
         if todo is None:
@@ -120,22 +143,11 @@ class CaldavSide(SyncSide):
             logger.opt(lazy=True).debug(f"Can't update item {item_id}\n\nchanges: {changes}")
             return
 
-        def set_(key: str, val: Any):  # noqa: ANN401
-            icalendar_component(todo)[key] = val
-
         # pop the key:value (s) that we're intending to potentially update
         for key in self._identical_comparison_keys:
             icalendar_component(todo).pop(key)
 
-        for key, value in changes.items():
-            if key == "status":
-                set_(key, vText(value.upper()))
-            if key in ["due", "created", "last-modified"]:
-                set_(key, vDatetime(value))
-            if key in ["priority", "description", "summary"]:
-                set_(key, vText(value))
-            if key == "categories":
-                set_(key, vCategory([vText(cat) for cat in value]))
+        self._update_todo_changes(todo, **changes)
 
         todo.save()
 

@@ -92,7 +92,7 @@ def convert_tw_to_caldav(tw_item: Item) -> Item:
     if "priority" in tw_item:
         caldav_item["priority"] = aliases_tw_caldav_priority[tw_item["priority"].lower()]
     else:
-        caldav_item["priority"] = ""
+        caldav_item["priority"] = None
 
     # Timestamps
     if "entry" in tw_item:
