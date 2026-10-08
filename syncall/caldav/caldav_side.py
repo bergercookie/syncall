@@ -136,6 +136,8 @@ class CaldavSide(SyncSide):
                 set_(key, vText(value))
             if key == "categories":
                 set_(key, vCategory([vText(cat) for cat in value]))
+            if key == SYNCALL_TW_WAITING:
+                set_(key, vText(value))
 
         todo.save()
 
