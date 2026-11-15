@@ -406,14 +406,35 @@ def register_teardown_handler(
     return hooks
 
 
+# Abbreviations used by the sync scripts for config filenames. Maps the full
+# service name (lowercased) to the short form used in the write path (e.g.
+# tw_gtasks_sync.py writes to "tw_gtasks_configs"). Without this mapping,
+# determine_app_config_fname generated names like "tw__google_tasks__configs.yaml"
+# which never matched the write path's "tw_gtasks_configs.yaml" — see #161.
+_SERVICE_ABBREVIATIONS = {
+    "google_tasks": "gtasks",
+    "google_calendar": "gcal",
+    "google_keep": "gkeep",
+}
+
+
 def determine_app_config_fname(side_A_name: str, side_B_name: str) -> str:
     """Get the configuration name for the app at hand given the names of the sides involved.
 
-    >>> assert determine_app_config_fname("TW", "Google Tasks") == 'tw__google_tasks__configs.yaml'
-    >>> assert determine_app_config_fname("TW", "Google Calendar") == 'tw__google_calendar__configs.yaml'
+    The filename must match what the sync scripts use as ``config_fname`` when
+    *writing* combinations (e.g. ``tw_gtasks_sync.py`` writes to
+    ``tw_gtasks_configs``).  Previously this function used double-underscore +
+    full service names (``tw__google_tasks__configs.yaml``), which did not match
+    the write path and caused combinations to be unreadable (#161).
+
+    >>> determine_app_config_fname("TW", "Google Tasks")
+    'tw_gtasks_configs.yaml'
+    >>> determine_app_config_fname("TW", "Google Calendar")
+    'tw_gcal_configs.yaml'
+    >>> determine_app_config_fname("TW", "Asana")
+    'tw_asana_configs.yaml'
     """
-    return (
-        f"{side_A_name.replace(' ', '_').lower()}"
-        "__"
-        f"{side_B_name.replace(' ', '_').lower()}__configs.yaml"
-    )
+    side_a = side_A_name.replace(" ", "_").lower()
+    side_b_key = side_B_name.replace(" ", "_").lower()
+    side_b = _SERVICE_ABBREVIATIONS.get(side_b_key, side_b_key)
+    return f"{side_a}_{side_b}_configs.yaml"
