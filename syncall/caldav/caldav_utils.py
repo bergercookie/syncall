@@ -48,6 +48,10 @@ def map_ics_to_item(vtodo) -> dict:
     for name in ["description", "summary"]:
         todo_item[name] = _convert_one(name)
     todo_item["uuid"] = _convert_one("x-syncall-tw-uuid")
+    # Read the waiting flag back too: the TW -> CalDAV conversion always sets it, so without it a
+    # changed item never compares equal to its counterpart and is updated again on every run.
+    if vtodo.get("x-syncall-tw-waiting") is not None:
+        todo_item["x-syncall-tw-waiting"] = str(vtodo.get("x-syncall-tw-waiting"))
 
     for date_field in ("due", "created", "completed", "last-modified"):
         if vtodo.get(date_field):

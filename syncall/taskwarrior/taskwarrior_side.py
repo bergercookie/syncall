@@ -278,6 +278,10 @@ class TaskWarriorSide(SyncSide):
                 tw_duration_key,
             ]
             if k not in ignore_keys
+            # Fields that the other side may not carry (e.g. CalDAV has no "scheduled" or
+            # duration) only count when both items have them; otherwise such a task never
+            # compares equal and is updated on every run.
+            and not (k in ("scheduled", tw_duration_key) and ((k in item1) != (k in item2)))
         ]
 
         # special care for the annotations key
