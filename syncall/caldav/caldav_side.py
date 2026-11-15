@@ -31,6 +31,7 @@ class CaldavSide(SyncSide):
         "status",
         "summary",
         "due",
+        "priority",
         SYNCALL_TW_WAITING,
     )
 

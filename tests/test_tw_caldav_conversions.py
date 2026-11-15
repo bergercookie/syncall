@@ -26,7 +26,7 @@ tw_pending_item = {
 caldav_pending_item = {
     "summary": "task in project - and with date",
     "description": "",
-    "priority": "",
+    "priority": 0,
     SYNCALL_TW_UUID: "4471f2ac-4a70-4012-9eff-b4ddfc860d26",
     "status": "needs-action",
     SYNCALL_TW_WAITING: "false",
